@@ -1,0 +1,3 @@
+rootProject.name = 'netifi-sdk-java'
+include 'netifi-sdk-java-core'
+include 'netifi-sdk-java-test'

@@ -1,0 +1,54 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+syntax = "proto3";
+package tutorial;
+import "google/protobuf/empty.proto";
+
+option java_multiple_files = true;
+option java_package = "io.generated";
+
+
+message Person {
+  string name = 1;
+  int32 id = 2;  // Unique ID number for this person.
+  string email = 3;
+
+  enum PhoneType {
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+  }
+
+  message PhoneNumber {
+    string number = 1;
+    PhoneType type = 2;
+  }
+
+  repeated PhoneNumber phones = 4;
+}
+
+message Addressbook {
+  repeated Person people = 1;
+}
+
+
+service SearchService {
+  rpc rr (Person) returns (Person);
+  rpc ff (Person) returns (Empty);
+  rpc streaming (Person) returns (stream Person);
+  rpc channel (stream Person) returns (Person);
+  rpc channel2 (stream Addressbook) returns (Person);
+
+}
+
+
+service SearchService2 {
+  rpc search (Addressbook) returns (Person);
+  rpc search2 (Person) returns (Addressbook);
+}
