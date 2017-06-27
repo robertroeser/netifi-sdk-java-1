@@ -9,37 +9,45 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
-/**
- * Maps an incoming request to a namespace using the incoming requests metadata.
- */
+/** Maps an incoming request to a namespace using the incoming requests metadata. */
 public class ServiceHandler implements Handler {
   private LongObjectHashMap<Handler> handlers;
 
   public ServiceHandler() {
     this.handlers = new LongObjectHashMap<>();
   }
-    
-    /**
-     * Registers a service with the ServiceHandler so that incoming requests can be mapped to it
-     * @param clazz The class that is the implementation of the service you want to register
-     * @param <T>
-     */
-  public <T> void register(Class<T> clazz) {
+
+  /**
+   * Registers a service with the ServiceHandler so that incoming requests can be mapped to it
+   *
+   * @param t Instance of the service you want to register
+   * @param <T>
+   */
+  public <T> void register(T t) {
     try {
+      Handler handler;
+      Class<?> clazz = t.getClass();
       Package aPackage = clazz.getPackage();
       String namespace = aPackage.getName() + "namespace";
       Class<?> namespaceClass =
           Class.forName(namespace, false, Thread.currentThread().getContextClassLoader());
       Namespace annotation = namespaceClass.getAnnotation(Namespace.class);
-      long id = annotation.id();
-      Constructor<?> constructor = namespaceClass.getConstructor(null);
-      Handler handler = (Handler) constructor.newInstance();
-
       synchronized (ServiceHandler.this) {
-        handlers.put(id, handler);
+        long id = annotation.id();
+        handler = handlers.get(id);
+        if (handler == null) {
+          Constructor<?> constructor = namespaceClass.getConstructor(null);
+          constructor.setAccessible(true);
+          handler = (Handler) constructor.newInstance();
+          handlers.put(id, handler);
+        }
       }
+      Method declaredMethod = namespaceClass.getDeclaredMethod(clazz.getName(), clazz);
+      declaredMethod.setAccessible(true);
+      declaredMethod.invoke(handler, t);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

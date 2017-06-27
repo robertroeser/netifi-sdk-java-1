@@ -23,12 +23,16 @@ public final class namespace implements Handler {
 
   private namespace() {}
 
-  public void setSearchService(SearchService searchService) {
-    this.searchService = searchService;
+  private void SearchService(SearchService searchService) {
+    if (searchService != null) {
+      this.searchService = searchService;
+    }
   }
 
-  public void setSearchService2(SearchService2 searchService2) {
-    this.searchService2 = searchService2;
+  private void SearchService2(SearchService2 searchService2) {
+    if (searchService2 != null) {
+      this.searchService2 = searchService2;
+    }
   }
 
   @Override

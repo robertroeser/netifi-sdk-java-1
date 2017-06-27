@@ -1,6 +1,9 @@
+import io.generated.Person;
+import io.generated.SearchService;
+import io.generated.SearchService2;
+import io.netifi.sdk.Netifi;
 import net.openhft.hashing.LongHashFunction;
 import org.junit.Test;
-import reactor.core.publisher.Flux;
 
 /** Created by robertroeser on 6/25/17. */
 public class TestHashing {
@@ -30,9 +33,25 @@ public class TestHashing {
     System.out.println("search -> " + search);
     System.out.println("search2 -> " + search2);
   }
-  
-  @Test
+
   public void test2() {
+    Netifi netifi = Netifi.newInstance();
   
+    Person person = Person.newBuilder()
+                        .setName("test")
+                        .setEmail("test@test.io")
+                        .setId(1234)
+                        .build();
+    
+    netifi
+        .findServiceById(SearchService.class, "1234")
+        .rr(person)
+        .subscribe();
+    
+    netifi
+        .findService(SearchService2.class, "search", "staging")
+        .search(person)
+        .subscribe();
+        
   }
 }
