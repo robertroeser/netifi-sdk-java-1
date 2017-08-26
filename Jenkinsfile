@@ -16,6 +16,9 @@ node {
                 checkout scm
             }
             stage('Build Project') {
+              jdk = tool name: 'JDK18'
+              env.JAVA_HOME = "${jdk}"
+
                sh './gradlew -P$secret clean build --info'
             }
         }
