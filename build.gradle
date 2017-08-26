@@ -1,0 +1,38 @@
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+group = 'io.netifi.nrqp.frames'
+version = '0.5'
+
+repositories {
+    jcenter()
+    mavenCentral()
+    maven { url 'http://repo.spring.io/milestone' }
+    maven { url 'https://oss.jfrog.org/libs-snapshot' }
+    maven { url 'https://dl.bintray.com/rsocket/RSocket' }
+    maven { url 'https://dl.bintray.com/reactivesocket/ReactiveSocket' }
+    mavenLocal()
+}
+
+
+dependencies {
+    compile 'io.netty:netty-buffer:4.1.9.Final'
+    testCompile 'junit:junit:4.10'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            // change to point to your repo, e.g. http://my.org/repo
+            url "http://artifactory.netifiinc.com:8081/artifactory/netifi-repo-local/"
+        }
+    }
+}
