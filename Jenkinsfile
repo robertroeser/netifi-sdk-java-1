@@ -6,7 +6,7 @@ properties([
 node {
     ansiColor('xterm') {
         withCredentials([
-            file(credentialsId: '	artifactory-user', variable: 'secret')
+            file(credentialsId: 'artifactory-user', variable: 'secret')
         ]) {
             stage('Clean workspace') {
                 deleteDir()
