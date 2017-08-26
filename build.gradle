@@ -31,10 +31,10 @@ publishing {
     repositories {
         maven {
             // change to point to your repo, e.g. http://my.org/repo
-            credentials {
+            /*credentials {
                         username 'jenkins'
                         password project.findProperty("password") ?: ""
-                    }
+                    }*/
             url "http://artifactory.netifiinc.com:8081/artifactory/netifi-repo-local/"
         }
     }
