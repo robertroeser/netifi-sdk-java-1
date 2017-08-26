@@ -19,6 +19,7 @@ dependencies {
     testCompile 'junit:junit:4.10'
 }
 
+/*
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -38,4 +39,4 @@ publishing {
             url "http://artifactory.netifiinc.com:8081/artifactory/netifi-repo-local/"
         }
     }
-}
+}*/
