@@ -16,7 +16,7 @@ node {
                 checkout scm
             }
             stage('Build Project') {
-               sh './gradlew clean build --info -P$secret'
+               sh './gradlew -P$secret clean build --info'
             }
         }
     }
