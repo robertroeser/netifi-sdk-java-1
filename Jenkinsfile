@@ -6,7 +6,7 @@ properties([
 node {
     ansiColor('xterm') {
         withCredentials([
-            file(credentialsId: 'azure_mgmt_secrets', variable: 'secret_file')
+            file(credentialsId: '	artifactory-user', variable: 'secret')
         ]) {
             stage('Clean workspace') {
                 deleteDir()
@@ -14,6 +14,9 @@ node {
             }
             stage('Checkout Code') {
                 checkout scm
+            }
+            stage('Build Project') {
+               sh './gradlew clean build publish --info -P$secret'
             }
         }
     }

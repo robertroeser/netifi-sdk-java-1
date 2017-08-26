@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 group = 'io.netifi.nrqp.frames'
-version = '0.5'
+version = '0.5-SNAPSHOT'
 
 repositories {
     jcenter()
@@ -13,7 +13,6 @@ repositories {
     maven { url 'https://dl.bintray.com/reactivesocket/ReactiveSocket' }
     mavenLocal()
 }
-
 
 dependencies {
     compile 'io.netty:netty-buffer:4.1.9.Final'
@@ -32,6 +31,10 @@ publishing {
     repositories {
         maven {
             // change to point to your repo, e.g. http://my.org/repo
+            credentials {
+                        username 'jenkins'
+                        password project.getProperty('password')
+                    }
             url "http://artifactory.netifiinc.com:8081/artifactory/netifi-repo-local/"
         }
     }
