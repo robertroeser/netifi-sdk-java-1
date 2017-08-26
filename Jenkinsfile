@@ -8,18 +8,14 @@ node {
         withCredentials([
             string(credentialsId: 'artifactory-user', variable: 'secret')
         ]) {
-            stage('Clean workspace') {
-                deleteDir()
-                sh 'ls -lah'
-            }
-            stage('Checkout Code') {
+            stage('Checkout') {
                 checkout scm
             }
-            stage('Build Project') {
-              jdk = tool name: 'JDK18'
-              env.JAVA_HOME = "${jdk}"
-
-               sh './gradlew -P$secret clean build --info'
+            stage('Build') {
+               sh './gradlew clean build --info'
+            }
+            stage('Publish') {
+               sh './gradlew publish -P$secret --info'
             }
         }
     }
