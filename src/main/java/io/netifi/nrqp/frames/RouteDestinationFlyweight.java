@@ -111,8 +111,8 @@ public class RouteDestinationFlyweight {
   }
 
   public static int encodeRouteByDestination(
-      ByteBuf byteBuf, boolean last, RouteType routeType, long accountId, long destinationId) {
-    return encode(byteBuf, last, routeType, accountId, destinationId, null);
+      ByteBuf byteBuf, boolean last, RouteType routeType, long accountId, long destinationId, long... groupIds) {
+    return encode(byteBuf, last, routeType, accountId, destinationId, groupIds);
   }
 
   public static int encodeRouteByGroup(
