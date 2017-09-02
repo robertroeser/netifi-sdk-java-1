@@ -2,7 +2,6 @@ package io.netifi.nrqp.frames;
 
 import io.netty.buffer.ByteBuf;
 
-import java.util.List;
 import java.util.Objects;
 
 /** */
@@ -13,19 +12,13 @@ public class RoutingFlyweight {
   private static final int USER_METADATA_LENGTH_SIZE = BitUtil.SIZE_OF_INT;
   private static final int ACCESS_KEY_SIZE = BitUtil.SIZE_OF_LONG;
   private static final int DESTINATION_ID_SIZE = BitUtil.SIZE_OF_LONG;
-  private static final int GROUP_ID_SIZE = BitUtil.SIZE_OF_LONG;
   private static final int TOKEN_SIZE = BitUtil.SIZE_OF_INT;
 
   private RoutingFlyweight() {}
 
-  public static int computeLength(
-      boolean apiCall, boolean metadata, boolean token, int numGroups, ByteBuf... routes) {
+  public static int computeLength(boolean apiCall, boolean metadata, boolean token, ByteBuf route) {
     int length = FrameHeaderFlyweight.computeFrameHeaderLength();
-    if (routes != null) {
-      for (ByteBuf byteBuf : routes) {
-        length += byteBuf.capacity();
-      }
-    }
+    length += route.capacity();
 
     if (apiCall) {
       length += NAMESPACE_ID_SIZE + CLASS_ID_SIZE + METHOD_ID_SIZE;
@@ -39,7 +32,7 @@ public class RoutingFlyweight {
       length += TOKEN_SIZE;
     }
 
-    length += ACCESS_KEY_SIZE + DESTINATION_ID_SIZE; // + GROUP_ID_SIZE * numGroups;
+    length += ACCESS_KEY_SIZE + DESTINATION_ID_SIZE;
 
     return length;
   }
@@ -177,7 +170,7 @@ public class RoutingFlyweight {
     return byteBuf.getLong(offset);
   }
 
-  public static List<ByteBuf> routes(ByteBuf byteBuf) {
+  public static ByteBuf route(ByteBuf byteBuf) {
 
     int offset =
         FrameHeaderFlyweight.computeFrameHeaderLength()
@@ -190,9 +183,7 @@ public class RoutingFlyweight {
       offset += NAMESPACE_ID_SIZE + CLASS_ID_SIZE + METHOD_ID_SIZE;
     }
 
-    ByteBuf routes = byteBuf.slice(offset, byteBuf.capacity() - offset);
-
-    return RouteDestinationFlyweight.decodeRouterDestinations(routes);
+    return byteBuf.slice(offset, byteBuf.capacity() - offset);
   }
 }
 

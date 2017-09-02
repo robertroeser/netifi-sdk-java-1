@@ -24,13 +24,13 @@ public class RouteDestinationFlyweightTest {
 
   @Test(expected = IllegalStateException.class)
   public void testExpectErrorWhenRoutingByGroupAndNoGroupsPresent() {
-    RouteDestinationFlyweight.computeLength(RouteType.CHANNEL_ACKED_GROUP_ROUTE);
+    RouteDestinationFlyweight.computeLength(RouteType.STREAM_GROUP_ROUTE);
   }
 
   @Test
   public void testComputeLengthWithGroups() {
     int expected = 33;
-    int length = RouteDestinationFlyweight.computeLength(RouteType.CHANNEL_ACKED_GROUP_ROUTE, 3);
+    int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_GROUP_ROUTE, 3);
     Assert.assertEquals(expected, length);
   }
 
@@ -46,7 +46,7 @@ public class RouteDestinationFlyweightTest {
     ByteBuf byteBuf = Unpooled.buffer(length);
     int encodedLength =
         RouteDestinationFlyweight.encodeRouteByDestination(
-            byteBuf, last, routeType, accountId, destinationId);
+            byteBuf, routeType, accountId, destinationId);
 
     Assert.assertEquals(length, encodedLength);
 
@@ -65,9 +65,6 @@ public class RouteDestinationFlyweightTest {
 
     long destinationId1 = RouteDestinationFlyweight.destinationId(byteBuf);
     Assert.assertEquals(destinationId, destinationId1);
-
-    boolean last1 = RouteDestinationFlyweight.isLast(byteBuf);
-    Assert.assertEquals(last, last1);
   }
 
   @Test
@@ -77,14 +74,14 @@ public class RouteDestinationFlyweightTest {
         new long[] {Math.abs(rnd.nextLong()), Math.abs(rnd.nextLong()), Math.abs(rnd.nextLong())};
     int length =
         RouteDestinationFlyweight.computeLength(
-            RouteType.CHANNEL_ACKED_GROUP_ROUTE, groupIds.length);
+            RouteType.STREAM_GROUP_ROUTE, groupIds.length);
     boolean last = true;
-    RouteType routeType = RouteType.CHANNEL_ACKED_GROUP_ROUTE;
+    RouteType routeType = RouteType.STREAM_GROUP_ROUTE;
     long accountId = Math.abs(rnd.nextLong());
 
     ByteBuf byteBuf = Unpooled.buffer(length);
     int encodedLength =
-        RouteDestinationFlyweight.encodeRouteByGroup(byteBuf, last, routeType, accountId, groupIds);
+        RouteDestinationFlyweight.encodeRouteByGroup(byteBuf, routeType, accountId, groupIds);
 
     Assert.assertEquals(length, encodedLength);
 
@@ -104,168 +101,6 @@ public class RouteDestinationFlyweightTest {
     long[] groupIds1 = RouteDestinationFlyweight.groupIds(byteBuf);
     Assert.assertArrayEquals(groupIds, groupIds1);
 
-    boolean last1 = RouteDestinationFlyweight.isLast(byteBuf);
-    Assert.assertEquals(last, last1);
   }
-
-  @Test
-  public void testDecodeMultipleDestinationRoutes() {
-    ThreadLocalRandom rnd = ThreadLocalRandom.current();
-    int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_ID_ROUTE);
-    int count = 9;
-
-    ByteBuf routes = Unpooled.buffer(length * count);
-    List<ByteBuf> routeList = new ArrayList<>();
-    for (int i = 0; i < count; i++) {
-      boolean last = i + 1 >= count;
-      RouteType routeType = i % 2 == 0 ? RouteType.STREAM_ID_ROUTE : RouteType.CHANNEL_ID_ROUTE;
-      long accountId = Math.abs(rnd.nextLong());
-      long destinationId = Math.abs(rnd.nextLong());
-      ByteBuf byteBuf = Unpooled.buffer(length);
-      RouteDestinationFlyweight.encodeRouteByDestination(
-          byteBuf, last, routeType, accountId, destinationId);
-      routes.setBytes(i * length, byteBuf.array());
-      routeList.add(byteBuf);
-    }
-
-    List<ByteBuf> decodedRoutes = RouteDestinationFlyweight.decodeRouterDestinations(routes);
-    Assert.assertEquals(routeList.size(), decodedRoutes.size());
-
-    for (int i = 0; i < routeList.size(); i++) {
-      ByteBuf o1 = routeList.get(i);
-      ByteBuf o2 = decodedRoutes.get(i);
-
-      Assert.assertEquals(
-          RouteDestinationFlyweight.accountId(o1), RouteDestinationFlyweight.accountId(o2));
-
-      Assert.assertEquals(
-          RouteDestinationFlyweight.routeType(o1), RouteDestinationFlyweight.routeType(o2));
-
-      Assert.assertEquals(
-          RouteDestinationFlyweight.destinationId(o1), RouteDestinationFlyweight.destinationId(o2));
-    }
-  }
-
-  @Test
-  public void testDecodeMultipleGroupRoutes() {
-    ThreadLocalRandom rnd = ThreadLocalRandom.current();
-    int length = RouteDestinationFlyweight.computeLength(RouteType.CHANNEL_GROUP_ROUTE, 3);
-    int count = 9;
-
-    ByteBuf routes = Unpooled.buffer(length * count);
-    List<ByteBuf> routeList = new ArrayList<>();
-    for (int i = 0; i < count; i++) {
-      boolean last = i + 1 >= count;
-      RouteType routeType = RouteType.CHANNEL_GROUP_ROUTE;
-      long accountId = Math.abs(rnd.nextLong());
-
-      long[] groupIds =
-          new long[] {Math.abs(rnd.nextLong()), Math.abs(rnd.nextLong()), Math.abs(rnd.nextLong())};
-
-      ByteBuf byteBuf = Unpooled.buffer(length);
-      RouteDestinationFlyweight.encodeRouteByGroup(byteBuf, last, routeType, accountId, groupIds);
-      routes.setBytes(i * length, byteBuf.array());
-      routeList.add(byteBuf);
-    }
-
-    List<ByteBuf> decodedRoutes = RouteDestinationFlyweight.decodeRouterDestinations(routes);
-    Assert.assertEquals(routeList.size(), decodedRoutes.size());
-
-    for (int i = 0; i < routeList.size(); i++) {
-      ByteBuf o1 = routeList.get(i);
-      ByteBuf o2 = decodedRoutes.get(i);
-
-      Assert.assertEquals(
-          RouteDestinationFlyweight.accountId(o1), RouteDestinationFlyweight.accountId(o2));
-
-      Assert.assertEquals(
-          RouteDestinationFlyweight.routeType(o1), RouteDestinationFlyweight.routeType(o2));
-
-      long[] g1 = RouteDestinationFlyweight.groupIds(o1);
-      long[] g2 = RouteDestinationFlyweight.groupIds(o2);
-
-      Assert.assertArrayEquals(g1, g2);
-    }
-  }
-
-  private ByteBuf encodeGroup(boolean last) {
-    ThreadLocalRandom rnd = ThreadLocalRandom.current();
-    RouteType routeType = RouteType.CHANNEL_GROUP_ROUTE;
-    int length = RouteDestinationFlyweight.computeLength(RouteType.CHANNEL_GROUP_ROUTE, 3);
-    long accountId = Math.abs(rnd.nextLong());
-
-    long[] groupIds =
-        new long[] {Math.abs(rnd.nextLong()), Math.abs(rnd.nextLong()), Math.abs(rnd.nextLong())};
-
-    ByteBuf byteBuf = Unpooled.buffer(length);
-    RouteDestinationFlyweight.encodeRouteByGroup(byteBuf, last, routeType, accountId, groupIds);
-    return byteBuf;
-  }
-
-  private ByteBuf encodeDestination(boolean last) {
-    ThreadLocalRandom rnd = ThreadLocalRandom.current();
-    int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_ID_ROUTE);
-    RouteType routeType = RouteType.STREAM_ID_ROUTE;
-    long accountId = Math.abs(rnd.nextLong());
-    long destinationId = Math.abs(rnd.nextLong());
-    ByteBuf byteBuf = Unpooled.buffer(length);
-    RouteDestinationFlyweight.encodeRouteByDestination(
-        byteBuf, last, routeType, accountId, destinationId);
-    return byteBuf;
-  }
-
-  @Test
-  public void testDecodeMultipleRoutes() {
-    int count = 10;
-    List<ByteBuf> routeList = new ArrayList<>();
-    for (int i = 0; i < count; i++) {
-      boolean last = i + 1 >= count;
-      if (i % 2 == 0) {
-        routeList.add(encodeDestination(last));
-      } else {
-        routeList.add(encodeGroup(last));
-      }
-    }
   
-    int length = routeList
-                .stream()
-                .map(ByteBuf::capacity)
-                .reduce(0, (a, b) -> a + b);
-    
-    ByteBuf routes = Unpooled.buffer(length);
-  
-    routeList
-        .forEach(b -> routes.writeBytes(b.array()));
-    
-    List<ByteBuf> decodedRoutes = RouteDestinationFlyweight.decodeRouterDestinations(routes);
-    for (int i = 0; i < count; i++) {
-      if (i % 2 == 0) {
-        ByteBuf o1 = routeList.get(i);
-        ByteBuf o2 = decodedRoutes.get(i);
-  
-        Assert.assertEquals(
-            RouteDestinationFlyweight.accountId(o1), RouteDestinationFlyweight.accountId(o2));
-  
-        Assert.assertEquals(
-            RouteDestinationFlyweight.routeType(o1), RouteDestinationFlyweight.routeType(o2));
-  
-        Assert.assertEquals(
-            RouteDestinationFlyweight.destinationId(o1), RouteDestinationFlyweight.destinationId(o2));
-      } else {
-        ByteBuf o1 = routeList.get(i);
-        ByteBuf o2 = decodedRoutes.get(i);
-  
-        Assert.assertEquals(
-            RouteDestinationFlyweight.accountId(o1), RouteDestinationFlyweight.accountId(o2));
-  
-        Assert.assertEquals(
-            RouteDestinationFlyweight.routeType(o1), RouteDestinationFlyweight.routeType(o2));
-  
-        long[] g1 = RouteDestinationFlyweight.groupIds(o1);
-        long[] g2 = RouteDestinationFlyweight.groupIds(o2);
-  
-        Assert.assertArrayEquals(g1, g2);
-      }
-    }
-  }
 }

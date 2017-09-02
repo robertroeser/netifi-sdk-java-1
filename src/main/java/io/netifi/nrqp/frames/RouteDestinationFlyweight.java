@@ -56,45 +56,6 @@ public class RouteDestinationFlyweight {
     }
   }
 
-  /**
-   * Takes a ByteBuf and decodes route destinations, returning an array of route destinations
-   *
-   * @return array of ByteBuf that head hold a route
-   */
-  public static List<ByteBuf> decodeRouterDestinations(ByteBuf byteBuf) {
-    List<ByteBuf> destinations = new ArrayList<>();
-    int capacity = byteBuf.capacity();
-    for (int offset = 0; offset < capacity; ) {
-      int length = 0;
-      int id = byteBuf.getByte(offset);
-      boolean last = (id & LAST_MASK) == LAST_MASK;
-      RouteType routeType = RouteType.from(id & REMOVE_FLAG);
-      if (RouteType.UNDEFINED == routeType) {
-        throw UNDEFINED_ROUTE_EXCEPTION;
-      }
-      length += ROUTE_TYPE_SIZE + ACCOUNT_ID_SIZE;
-      if (routeType.hasDestination()) {
-        length += DESTINATION_ID_SIZE;
-      } else {
-        boolean lastGroup = false;
-        while (!lastGroup) {
-          long groupId = byteBuf.getLong(offset + length);
-          length += GROUP_ID_SIZE;
-          lastGroup = groupId < 0;
-        }
-      }
-
-      ByteBuf slice = byteBuf.slice(offset, length);
-      destinations.add(slice);
-      offset += length;
-      if (last) {
-        break;
-      }
-    }
-
-    return destinations;
-  }
-
   public static int computeLength(RouteType routeType) {
     return computeLength(routeType, 0);
   }
@@ -111,18 +72,17 @@ public class RouteDestinationFlyweight {
   }
 
   public static int encodeRouteByDestination(
-      ByteBuf byteBuf, boolean last, RouteType routeType, long accountId, long destinationId, long... groupIds) {
-    return encode(byteBuf, last, routeType, accountId, destinationId, groupIds);
+      ByteBuf byteBuf, RouteType routeType, long accountId, long destinationId, long... groupIds) {
+    return encode(byteBuf, routeType, accountId, destinationId, groupIds);
   }
 
   public static int encodeRouteByGroup(
-      ByteBuf byteBuf, boolean last, RouteType routeType, long accountId, long... groupIds) {
-    return encode(byteBuf, last, routeType, accountId, 0, groupIds);
+      ByteBuf byteBuf, RouteType routeType, long accountId, long... groupIds) {
+    return encode(byteBuf, routeType, accountId, 0, groupIds);
   }
 
   private static int encode(
       ByteBuf byteBuf,
-      boolean last,
       RouteType routeType,
       long accountId,
       long destinationId,
@@ -130,9 +90,6 @@ public class RouteDestinationFlyweight {
     int offset = 0;
     int encodedType = routeType.getEncodedType();
 
-    if (last) {
-      encodedType |= LAST_MASK;
-    }
     byteBuf.setByte(0, encodedType);
     offset += ROUTE_TYPE_SIZE;
 
@@ -159,7 +116,4 @@ public class RouteDestinationFlyweight {
     return offset;
   }
 
-  public static boolean isLast(ByteBuf byteBuf) {
-    return (byteBuf.getByte(0) & LAST_MASK) == LAST_MASK;
-  }
 }
