@@ -1,5 +1,7 @@
 package io.netifi.sdk.serializer;
 
+import io.netifi.sdk.annotations.FIRE_FORGET;
+
 import java.nio.ByteBuffer;
 
 /** */
