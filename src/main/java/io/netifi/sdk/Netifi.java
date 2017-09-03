@@ -96,7 +96,11 @@ public class Netifi implements AutoCloseable {
             .retry(throwable -> running)
             .subscribe();
   }
-
+  
+  public <T> T create(Class<T> service, long accountId, String group) {
+    return create(service, accountId, group, -1);
+  }
+  
   /**
    * Routes to a group
    *
