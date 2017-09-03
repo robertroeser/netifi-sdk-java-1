@@ -11,5 +11,5 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface REQUEST_CHANNEL {
-    Class<Serializer<?>> serializer();
+    Class<? extends Serializer> serializer();
 }

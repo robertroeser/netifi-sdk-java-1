@@ -129,8 +129,8 @@ public class Netifi implements AutoCloseable {
                     long[] groupIds = GroupUtil.toGroupIdArray(group);
                     validate(method, args);
                     FIRE_FORGET fire_forget = (FIRE_FORGET) annotation;
-                    Class<Serializer<?>> serializer = fire_forget.serializer();
-                    Constructor<Serializer<?>> serializerConstructor =
+                    Class<? extends Serializer> serializer = fire_forget.serializer();
+                    Constructor<? extends Serializer> serializerConstructor =
                         serializer.getDeclaredConstructor(Class.class);
                     Object arg = args[0];
                     Serializer<?> requestSerializer =
@@ -166,8 +166,8 @@ public class Netifi implements AutoCloseable {
                     long[] groupIds = GroupUtil.toGroupIdArray(group);
                     validate(method, args);
                     REQUEST_CHANNEL request_channel = (REQUEST_CHANNEL) annotation;
-                    Class<Serializer<?>> serializer = request_channel.serializer();
-                    Constructor<Serializer<?>> serializerConstructor =
+                    Class<? extends Serializer> serializer = request_channel.serializer();
+                    Constructor<? extends Serializer> serializerConstructor =
                         serializer.getDeclaredConstructor(Class.class);
                     Object arg = args[0];
                     Serializer<?> requestSerializer =
@@ -226,8 +226,8 @@ public class Netifi implements AutoCloseable {
                     long[] groupIds = GroupUtil.toGroupIdArray(group);
                     validate(method, args);
                     REQUEST_RESPONSE request_response = (REQUEST_RESPONSE) annotation;
-                    Class<Serializer<?>> serializer = request_response.serializer();
-                    Constructor<Serializer<?>> serializerConstructor =
+                    Class<? extends Serializer> serializer = request_response.serializer();
+                    Constructor<? extends Serializer> serializerConstructor =
                         serializer.getDeclaredConstructor(Class.class);
                     Object arg = args[0];
                     Serializer<?> requestSerializer =
@@ -272,8 +272,8 @@ public class Netifi implements AutoCloseable {
                     long[] groupIds = GroupUtil.toGroupIdArray(group);
                     validate(method, args);
                     REQUEST_STREAM request_stream = (REQUEST_STREAM) annotation;
-                    Class<Serializer<?>> serializer = request_stream.serializer();
-                    Constructor<Serializer<?>> serializerConstructor =
+                    Class<? extends Serializer> serializer = request_stream.serializer();
+                    Constructor<? extends Serializer> serializerConstructor =
                         serializer.getDeclaredConstructor(Class.class);
                     Object arg = args[0];
                     Serializer<?> requestSerializer =
@@ -356,7 +356,7 @@ public class Netifi implements AutoCloseable {
             long methodId = xx.hashChars(method.getName());
 
             FIRE_FORGET fire_forget = (FIRE_FORGET) annotation;
-            Class<Serializer<?>> serializerClass = fire_forget.serializer();
+            Class<? extends Serializer> serializerClass = fire_forget.serializer();
             Class<?> returnType = getParameterizedClass(method.getReturnType());
 
             if (returnType.isAssignableFrom(Void.class)) {
@@ -366,7 +366,7 @@ public class Netifi implements AutoCloseable {
                       + " should return void if its annotated with fired forget");
             }
 
-            Constructor<Serializer<?>> constructor = serializerClass.getConstructor(Class.class);
+            Constructor<? extends Serializer> constructor = serializerClass.getConstructor(Class.class);
             Serializer<?> requestSerializer = constructor.newInstance(returnType);
 
             RequestHandlerMetadata handlerMetadata =
@@ -379,10 +379,10 @@ public class Netifi implements AutoCloseable {
           } else if (annotation instanceof REQUEST_CHANNEL) {
             long methodId = xx.hashChars(method.getName());
             REQUEST_CHANNEL request_channel = (REQUEST_CHANNEL) annotation;
-            Class<Serializer<?>> serializerClass = request_channel.serializer();
+            Class<? extends Serializer> serializerClass = request_channel.serializer();
 
             Class<?> returnType = getParameterizedClass(method.getReturnType());
-            Constructor<Serializer<?>> constructor = serializerClass.getConstructor(Class.class);
+            Constructor<? extends Serializer> constructor = serializerClass.getConstructor(Class.class);
             Serializer<?> requestSerializer = constructor.newInstance(returnType);
 
             Class<?>[] parameterTypes = method.getParameterTypes();
@@ -410,10 +410,10 @@ public class Netifi implements AutoCloseable {
           } else if (annotation instanceof REQUEST_RESPONSE) {
             long methodId = xx.hashChars(method.getName());
             REQUEST_RESPONSE request_response = (REQUEST_RESPONSE) annotation;
-            Class<Serializer<?>> serializerClass = request_response.serializer();
+            Class<? extends Serializer> serializerClass = request_response.serializer();
 
             Class<?> returnType = getParameterizedClass(method.getReturnType());
-            Constructor<Serializer<?>> constructor = serializerClass.getConstructor(Class.class);
+            Constructor<? extends Serializer> constructor = serializerClass.getConstructor(Class.class);
             Serializer<?> requestSerializer = constructor.newInstance(returnType);
 
             Class<?>[] parameterTypes = method.getParameterTypes();
@@ -440,10 +440,10 @@ public class Netifi implements AutoCloseable {
           } else if (annotation instanceof REQUEST_STREAM) {
             long methodId = xx.hashChars(method.getName());
             REQUEST_STREAM request_stream = (REQUEST_STREAM) annotation;
-            Class<Serializer<?>> serializerClass = request_stream.serializer();
+            Class<? extends Serializer> serializerClass = request_stream.serializer();
             Class<?> returnType = getParameterizedClass(method.getReturnType());
 
-            Constructor<Serializer<?>> constructor = serializerClass.getConstructor(Class.class);
+            Constructor<? extends Serializer> constructor = serializerClass.getConstructor(Class.class);
             Serializer<?> requestSerializer = constructor.newInstance(returnType);
 
             Class<?>[] parameterTypes = method.getParameterTypes();
@@ -550,12 +550,6 @@ public class Netifi implements AutoCloseable {
         groupIds[i] = Math.abs(xx.hashChars(split[i]));
       }
 
-      return this;
-    }
-
-    private Builder destination(String destination) {
-      this.destination = destination;
-      this.destinationId = xx.hashChars(destination);
       return this;
     }
 
