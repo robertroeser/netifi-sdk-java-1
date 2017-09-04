@@ -35,11 +35,14 @@ public class NetifiInvocationHandlerTest {
                 Thread.currentThread().getContextClassLoader(),
                 new Class<?>[] {TestService.class},
                 new NetifiInvocationHandler(
-                    rSocketPublishProcessor, accountId, group, destination, new TimebasedIdGenerator(1)));
+                    rSocketPublishProcessor,
+                    accountId,
+                    group,
+                    destination,
+                    new TimebasedIdGenerator(1)));
 
     String s = testService.test(1234).blockingFirst();
-    System.out.println(s);
-    Assert.assertEquals("1234", s);
+    Assert.assertEquals("hi", s);
   }
 
   public interface TestService {

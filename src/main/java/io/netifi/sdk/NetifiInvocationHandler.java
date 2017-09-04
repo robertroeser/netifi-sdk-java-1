@@ -21,13 +21,8 @@ import net.openhft.hashing.LongHashFunction;
 import org.reactivestreams.Publisher;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.nio.ByteBuffer;
-
-import static io.netifi.sdk.util.ClassUtil.getParameterizedClass;
-
 /** */
 class NetifiInvocationHandler implements InvocationHandler {
   private static final LongHashFunction xx = LongHashFunction.xx();
@@ -65,8 +60,11 @@ class NetifiInvocationHandler implements InvocationHandler {
     long namespaceId = xx.hashChars(declaringClass.getPackage().getName());
     long classId = xx.hashChars(declaringClass.getName());
     long methodId = xx.hashChars(method.getName());
+    Type type = method.getGenericReturnType();
+    ParameterizedType parameterizedType = (ParameterizedType) type;
+    Type[] typeArguments = parameterizedType.getActualTypeArguments();
+    Class<?> returnType = (Class<?>) typeArguments[0];
 
-    Class<?> returnType = method.getReturnType();
     Annotation[] annotations = method.getDeclaredAnnotations();
     for (Annotation annotation : annotations) {
       if (annotation instanceof FIRE_FORGET) {
@@ -117,8 +115,7 @@ class NetifiInvocationHandler implements InvocationHandler {
             serializer.getDeclaredConstructor(Class.class);
         Object arg = args[0];
         Serializer<?> requestSerializer = serializerConstructor.newInstance(arg.getClass());
-        Serializer<?> responseSerializer =
-            serializerConstructor.newInstance(getParameterizedClass(returnType));
+        Serializer<?> responseSerializer = serializerConstructor.newInstance((returnType));
 
         return rSocketPublishProcessor.flatMap(
             rSocket -> {
@@ -175,8 +172,7 @@ class NetifiInvocationHandler implements InvocationHandler {
             serializer.getDeclaredConstructor(Class.class);
         Object arg = args[0];
         Serializer<?> requestSerializer = serializerConstructor.newInstance(arg.getClass());
-        Serializer<?> responseSerializer =
-            serializerConstructor.newInstance(getParameterizedClass(returnType));
+        Serializer<?> responseSerializer = serializerConstructor.newInstance((returnType));
 
         return rSocketPublishProcessor.flatMap(
             rSocket -> {
@@ -244,8 +240,7 @@ class NetifiInvocationHandler implements InvocationHandler {
             serializer.getDeclaredConstructor(Class.class);
         Object arg = args[0];
         Serializer<?> requestSerializer = serializerConstructor.newInstance(arg.getClass());
-        Serializer<?> responseSerializer =
-            serializerConstructor.newInstance(getParameterizedClass(returnType));
+        Serializer<?> responseSerializer = serializerConstructor.newInstance((returnType));
 
         return rSocketPublishProcessor.flatMap(
             rSocket -> {
