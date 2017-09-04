@@ -8,21 +8,27 @@ import java.nio.ByteBuffer;
 
 /** Created by robertroeser on 9/3/17. */
 public class NetifiTest {
+  
   public void test() {
-    Netifi netifi = new Netifi.Builder().accessKey(123).host("router.netifi.io").port(7001).build();
+    Netifi netifi = new Netifi.Builder()
+                        .accessKey(123)
+                        .host("router.netifi.io")
+                        .port(7001)
+                        .build();
 
     netifi.registerHandler(new SomeServiceImpl(), SomeServiceImpl.class);
 
-    SomeService someService = netifi.create(SomeService.class, 123, "test.uswest", 1234);
+    SomeService someService = netifi.create(SomeService.class, 123, "test.uswest");
     String s = someService.getUserName(123).blockingFirst();
     System.out.println("there name " + s);
   }
 
   interface SomeService {
-    @REQUEST_RESPONSE(serializer = Serializers.CBOR)
+    
+    //@REQUEST_RESPONSE(serializer = Serializers.CBOR)
     Flowable<String> getUserName(int userId);
 
-    @REQUEST_RESPONSE(serializer = Serializers.BINARY)
+   // @REQUEST_RESPONSE(serializer = Serializers.BINARY)
     Flowable<ByteBuffer> getUserId(ByteBuffer buffer);
   }
 

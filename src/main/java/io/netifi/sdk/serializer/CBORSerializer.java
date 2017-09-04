@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /** */
-class CBORSerializer<T> implements Serializer<T> {
+public class CBORSerializer<T> implements Serializer<T> {
   private static final ObjectMapper MAPPER;
 
   static {

@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /** */
-class JSONSerializer<T> implements Serializer<T> {
+public class JSONSerializer<T> implements Serializer<T> {
   private static final ObjectMapper MAPPER;
 
   static {

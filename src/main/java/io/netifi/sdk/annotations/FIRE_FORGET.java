@@ -1,7 +1,5 @@
 package io.netifi.sdk.annotations;
 
-import io.netifi.sdk.serializer.Serializer;
-
 import java.lang.annotation.*;
 
 /**
@@ -11,5 +9,5 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FIRE_FORGET {
-    Class<? extends Serializer> serializer();
+    String serializer();
 }

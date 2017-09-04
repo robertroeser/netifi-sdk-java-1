@@ -46,9 +46,10 @@ public class RequestHandlingRSocket extends AbstractRSocket {
       Serializer<?> requestSerializer = metadata.getRequestSerializer();
 
       ByteBuffer data = payload.getData();
-      Object apply = requestSerializer.deserialize(data);
+      Object apply = requestSerializer != null ? requestSerializer.deserialize(data) : null;
 
-      Flowable<Void> single = (Flowable<Void>) method.invoke(object, apply);
+      Flowable<Void> single =
+          (Flowable<Void>) (apply != null ? method.invoke(object, apply) : method.invoke(object));
 
       return Mono.from(single);
     } catch (Throwable t) {
@@ -77,10 +78,11 @@ public class RequestHandlingRSocket extends AbstractRSocket {
       Serializer<?> requestSerializer = metadata.getRequestSerializer();
 
       ByteBuffer data = payload.getData();
-      Object apply = requestSerializer.deserialize(data);
+      Object apply = requestSerializer != null ? requestSerializer.deserialize(data) : null;
 
       Flowable<PayloadImpl> map =
-          ((Flowable<Object>) method.invoke(object, apply))
+          ((Flowable<Object>)
+                  (apply != null ? method.invoke(object, apply) : method.invoke(object)))
               .map(
                   o -> {
                     Serializer<?> responseSerializer = metadata.getResponseSerializer();
@@ -115,10 +117,11 @@ public class RequestHandlingRSocket extends AbstractRSocket {
       Serializer<?> requestSerializer = metadata.getRequestSerializer();
 
       ByteBuffer data = payload.getData();
-      Object apply = requestSerializer.deserialize(data);
+      Object apply = requestSerializer != null ? requestSerializer.deserialize(data) : null;
 
       Flowable<PayloadImpl> map =
-          ((Flowable<Object>) method.invoke(object, apply))
+          ((Flowable<Object>)
+                  (apply != null ? method.invoke(object, apply) : method.invoke(object)))
               .map(
                   o -> {
                     Serializer<?> responseSerializer = metadata.getResponseSerializer();

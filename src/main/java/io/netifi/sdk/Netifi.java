@@ -47,7 +47,7 @@ public class Netifi implements AutoCloseable {
   private long[] groupIds;
   private String destination;
   private long destinationId;
-  private String address;
+  private String group;
   private String accessToken;
   private byte[] accessTokenBytes;
   private volatile boolean running = true;
@@ -68,7 +68,7 @@ public class Netifi implements AutoCloseable {
       long[] groupIds,
       String destination,
       long destinationId,
-      String address,
+      String group,
       String accessToken,
       byte[] accessTokenBytes) {
     this.host = host;
@@ -78,7 +78,7 @@ public class Netifi implements AutoCloseable {
     this.groupIds = groupIds;
     this.destination = destination;
     this.destinationId = destinationId;
-    this.address = address;
+    this.group = group;
     this.accessToken = accessToken;
     this.accessTokenBytes = accessTokenBytes;
     this.rSocketPublishProcessor = ReplayProcessor.create(1);
@@ -96,11 +96,11 @@ public class Netifi implements AutoCloseable {
             .retry(throwable -> running)
             .subscribe();
   }
-  
+
   public <T> T create(Class<T> service, long accountId, String group) {
     return create(service, accountId, group, -1);
   }
-  
+
   /**
    * Routes to a group
    *
@@ -129,7 +129,12 @@ public class Netifi implements AutoCloseable {
                     long[] groupIds = GroupUtil.toGroupIdArray(group);
                     validate(method, args);
                     FIRE_FORGET fire_forget = (FIRE_FORGET) annotation;
-                    Class<? extends Serializer> serializer = fire_forget.serializer();
+                    Class<? extends Serializer> serializer =
+                        (Class<? extends Serializer>)
+                            Class.forName(
+                                fire_forget.serializer(),
+                                true,
+                                Thread.currentThread().getContextClassLoader());
                     Constructor<? extends Serializer> serializerConstructor =
                         serializer.getDeclaredConstructor(Class.class);
                     Object arg = args[0];
@@ -166,7 +171,12 @@ public class Netifi implements AutoCloseable {
                     long[] groupIds = GroupUtil.toGroupIdArray(group);
                     validate(method, args);
                     REQUEST_CHANNEL request_channel = (REQUEST_CHANNEL) annotation;
-                    Class<? extends Serializer> serializer = request_channel.serializer();
+                    Class<? extends Serializer> serializer =
+                        (Class<? extends Serializer>)
+                            Class.forName(
+                                request_channel.serializer(),
+                                true,
+                                Thread.currentThread().getContextClassLoader());
                     Constructor<? extends Serializer> serializerConstructor =
                         serializer.getDeclaredConstructor(Class.class);
                     Object arg = args[0];
@@ -226,7 +236,12 @@ public class Netifi implements AutoCloseable {
                     long[] groupIds = GroupUtil.toGroupIdArray(group);
                     validate(method, args);
                     REQUEST_RESPONSE request_response = (REQUEST_RESPONSE) annotation;
-                    Class<? extends Serializer> serializer = request_response.serializer();
+                    Class<? extends Serializer> serializer =
+                        (Class<? extends Serializer>)
+                            Class.forName(
+                                request_response.serializer(),
+                                true,
+                                Thread.currentThread().getContextClassLoader());
                     Constructor<? extends Serializer> serializerConstructor =
                         serializer.getDeclaredConstructor(Class.class);
                     Object arg = args[0];
@@ -272,7 +287,12 @@ public class Netifi implements AutoCloseable {
                     long[] groupIds = GroupUtil.toGroupIdArray(group);
                     validate(method, args);
                     REQUEST_STREAM request_stream = (REQUEST_STREAM) annotation;
-                    Class<? extends Serializer> serializer = request_stream.serializer();
+                    Class<? extends Serializer> serializer =
+                        (Class<? extends Serializer>)
+                            Class.forName(
+                                request_stream.serializer(),
+                                true,
+                                Thread.currentThread().getContextClassLoader());
                     Constructor<? extends Serializer> serializerConstructor =
                         serializer.getDeclaredConstructor(Class.class);
                     Object arg = args[0];
@@ -356,7 +376,12 @@ public class Netifi implements AutoCloseable {
             long methodId = xx.hashChars(method.getName());
 
             FIRE_FORGET fire_forget = (FIRE_FORGET) annotation;
-            Class<? extends Serializer> serializerClass = fire_forget.serializer();
+            Class<? extends Serializer> serializerClass =
+                (Class<? extends Serializer>)
+                    Class.forName(
+                        fire_forget.serializer(),
+                        true,
+                        Thread.currentThread().getContextClassLoader());
             Class<?> returnType = getParameterizedClass(method.getReturnType());
 
             if (returnType.isAssignableFrom(Void.class)) {
@@ -366,7 +391,8 @@ public class Netifi implements AutoCloseable {
                       + " should return void if its annotated with fired forget");
             }
 
-            Constructor<? extends Serializer> constructor = serializerClass.getConstructor(Class.class);
+            Constructor<? extends Serializer> constructor =
+                serializerClass.getConstructor(Class.class);
             Serializer<?> requestSerializer = constructor.newInstance(returnType);
 
             RequestHandlerMetadata handlerMetadata =
@@ -379,10 +405,16 @@ public class Netifi implements AutoCloseable {
           } else if (annotation instanceof REQUEST_CHANNEL) {
             long methodId = xx.hashChars(method.getName());
             REQUEST_CHANNEL request_channel = (REQUEST_CHANNEL) annotation;
-            Class<? extends Serializer> serializerClass = request_channel.serializer();
+            Class<? extends Serializer> serializerClass =
+                (Class<? extends Serializer>)
+                    Class.forName(
+                        request_channel.serializer(),
+                        true,
+                        Thread.currentThread().getContextClassLoader());
 
             Class<?> returnType = getParameterizedClass(method.getReturnType());
-            Constructor<? extends Serializer> constructor = serializerClass.getConstructor(Class.class);
+            Constructor<? extends Serializer> constructor =
+                serializerClass.getConstructor(Class.class);
             Serializer<?> requestSerializer = constructor.newInstance(returnType);
 
             Class<?>[] parameterTypes = method.getParameterTypes();
@@ -410,10 +442,16 @@ public class Netifi implements AutoCloseable {
           } else if (annotation instanceof REQUEST_RESPONSE) {
             long methodId = xx.hashChars(method.getName());
             REQUEST_RESPONSE request_response = (REQUEST_RESPONSE) annotation;
-            Class<? extends Serializer> serializerClass = request_response.serializer();
+            Class<? extends Serializer> serializerClass =
+                (Class<? extends Serializer>)
+                    Class.forName(
+                        request_response.serializer(),
+                        true,
+                        Thread.currentThread().getContextClassLoader());
 
             Class<?> returnType = getParameterizedClass(method.getReturnType());
-            Constructor<? extends Serializer> constructor = serializerClass.getConstructor(Class.class);
+            Constructor<? extends Serializer> constructor =
+                serializerClass.getConstructor(Class.class);
             Serializer<?> requestSerializer = constructor.newInstance(returnType);
 
             Class<?>[] parameterTypes = method.getParameterTypes();
@@ -440,10 +478,16 @@ public class Netifi implements AutoCloseable {
           } else if (annotation instanceof REQUEST_STREAM) {
             long methodId = xx.hashChars(method.getName());
             REQUEST_STREAM request_stream = (REQUEST_STREAM) annotation;
-            Class<? extends Serializer> serializerClass = request_stream.serializer();
+            Class<? extends Serializer> serializerClass =
+                (Class<? extends Serializer>)
+                    Class.forName(
+                        request_stream.serializer(),
+                        true,
+                        Thread.currentThread().getContextClassLoader());
             Class<?> returnType = getParameterizedClass(method.getReturnType());
 
-            Constructor<? extends Serializer> constructor = serializerClass.getConstructor(Class.class);
+            Constructor<? extends Serializer> constructor =
+                serializerClass.getConstructor(Class.class);
             Serializer<?> requestSerializer = constructor.newInstance(returnType);
 
             Class<?>[] parameterTypes = method.getParameterTypes();
@@ -509,10 +553,10 @@ public class Netifi implements AutoCloseable {
     private Integer port;
     private Long accessKey;
     private Long accountId;
+    private String group;
     private long[] groupIds;
     private String destination;
     private Long destinationId;
-    private String address = null;
     private String accessToken = null;
     private byte[] accessTokenBytes = new byte[20];
 
@@ -537,14 +581,9 @@ public class Netifi implements AutoCloseable {
       return this;
     }
 
-    private Builder address(String address) {
-      this.address = address;
-
-      int pos = address.lastIndexOf(':');
-      this.accountId = Long.valueOf(address.substring(0, pos));
-
-      String[] split = address.substring(pos + 1, address.length()).split(".");
-      groupIds = new long[split.length];
+    public Builder group(String group) {
+      String[] split = group.split(".");
+      this.groupIds = new long[split.length];
 
       for (int i = 0; i < split.length; i++) {
         groupIds[i] = Math.abs(xx.hashChars(split[i]));
@@ -553,10 +592,16 @@ public class Netifi implements AutoCloseable {
       return this;
     }
 
+    public Builder accountId(long accountId) {
+      this.accountId = accountId;
+      return this;
+    }
+
     public Netifi build() {
       Objects.requireNonNull(host, "host is required");
       Objects.requireNonNull(port, "port is required");
-      Objects.requireNonNull(address, "address is required");
+      Objects.requireNonNull(accountId, "account Id is required");
+      Objects.requireNonNull(group, "group is required");
       Objects.requireNonNull(destinationId, "destination id is required");
 
       return new Netifi(
@@ -567,7 +612,7 @@ public class Netifi implements AutoCloseable {
           groupIds,
           destination,
           destinationId,
-          address,
+          group,
           accessToken,
           accessTokenBytes);
     }
