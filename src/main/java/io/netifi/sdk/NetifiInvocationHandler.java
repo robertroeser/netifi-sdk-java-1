@@ -8,6 +8,7 @@ import io.netifi.sdk.annotations.REQUEST_CHANNEL;
 import io.netifi.sdk.annotations.REQUEST_RESPONSE;
 import io.netifi.sdk.annotations.REQUEST_STREAM;
 import io.netifi.sdk.serializer.Serializer;
+import io.netifi.sdk.serializer.Serializers;
 import io.netifi.sdk.util.GroupUtil;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
@@ -18,15 +19,17 @@ import io.rsocket.Frame;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.util.PayloadImpl;
-import net.openhft.hashing.LongHashFunction;
 import org.reactivestreams.Publisher;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.nio.ByteBuffer;
+
+import static io.netifi.sdk.serializer.Serializers.getSerializerClass;
+import static io.netifi.sdk.util.HashUtil.hash;
+
 /** */
 class NetifiInvocationHandler implements InvocationHandler {
-  private static final LongHashFunction xx = LongHashFunction.xx();
 
   private final ReplayProcessor<RSocket> rSocketPublishProcessor;
 
@@ -58,9 +61,9 @@ class NetifiInvocationHandler implements InvocationHandler {
     }
 
     Class<?> declaringClass = method.getDeclaringClass();
-    long namespaceId = xx.hashChars(declaringClass.getPackage().getName());
-    long classId = xx.hashChars(declaringClass.getName());
-    long methodId = xx.hashChars(method.getName());
+    long namespaceId = hash(declaringClass.getPackage().getName());
+    long classId = hash(declaringClass.getName());
+    long methodId = hash(method.getName());
     Type type = method.getGenericReturnType();
     ParameterizedType parameterizedType = (ParameterizedType) type;
     Type[] typeArguments = parameterizedType.getActualTypeArguments();
@@ -75,14 +78,11 @@ class NetifiInvocationHandler implements InvocationHandler {
       if (annotation instanceof FIRE_FORGET) {
         long[] groupIds = GroupUtil.toGroupIdArray(group);
         FIRE_FORGET fire_forget = (FIRE_FORGET) annotation;
-        Class<? extends Serializer> serializer =
-            (Class<? extends Serializer>)
-                Class.forName(
-                    fire_forget.serializer(), true, Thread.currentThread().getContextClassLoader());
-        Constructor<? extends Serializer> serializerConstructor =
-            serializer.getDeclaredConstructor(Class.class);
-        Object arg = args[0];
-        Serializer<?> requestSerializer = serializerConstructor.newInstance(arg.getClass());
+          Object arg = args != null ? args[0] : null;
+          Serializer<?> requestSerializer =
+              arg != null ? Serializers.getSerializer(fire_forget.serializer(), arg) : null;
+          Serializer<?> responseSerializer =
+              Serializers.getSerializer(fire_forget.serializer(), returnType);
 
         return rSocketPublishProcessor.flatMap(
             rSocket -> {
@@ -108,17 +108,11 @@ class NetifiInvocationHandler implements InvocationHandler {
       } else if (annotation instanceof REQUEST_CHANNEL) {
         long[] groupIds = GroupUtil.toGroupIdArray(group);
         REQUEST_CHANNEL request_channel = (REQUEST_CHANNEL) annotation;
-        Class<? extends Serializer> serializer =
-            (Class<? extends Serializer>)
-                Class.forName(
-                    request_channel.serializer(),
-                    true,
-                    Thread.currentThread().getContextClassLoader());
-        Constructor<? extends Serializer> serializerConstructor =
-            serializer.getDeclaredConstructor(Class.class);
-        Object arg = args[0];
-        Serializer<?> requestSerializer = serializerConstructor.newInstance(arg.getClass());
-        Serializer<?> responseSerializer = serializerConstructor.newInstance((returnType));
+          Object arg = args != null ? args[0] : null;
+          Serializer<?> requestSerializer =
+              arg != null ? Serializers.getSerializer(request_channel.serializer(), arg) : null;
+          Serializer<?> responseSerializer =
+              Serializers.getSerializer(request_channel.serializer(), returnType);
 
         return rSocketPublishProcessor.flatMap(
             rSocket -> {
@@ -164,18 +158,11 @@ class NetifiInvocationHandler implements InvocationHandler {
       } else if (annotation instanceof REQUEST_RESPONSE) {
         long[] groupIds = GroupUtil.toGroupIdArray(group);
         REQUEST_RESPONSE request_response = (REQUEST_RESPONSE) annotation;
-        Class<? extends Serializer> serializer =
-            (Class<? extends Serializer>)
-                Class.forName(
-                    request_response.serializer(),
-                    true,
-                    Thread.currentThread().getContextClassLoader());
-        Constructor<? extends Serializer> serializerConstructor =
-            serializer.getDeclaredConstructor(Class.class);
         Object arg = args != null ? args[0] : null;
         Serializer<?> requestSerializer =
-            arg != null ? serializerConstructor.newInstance(arg.getClass()) : null;
-        Serializer<?> responseSerializer = serializerConstructor.newInstance((returnType));
+            arg != null ? Serializers.getSerializer(request_response.serializer(), arg) : null;
+        Serializer<?> responseSerializer =
+            Serializers.getSerializer(request_response.serializer(), returnType);
 
         return rSocketPublishProcessor.flatMap(
             rSocket -> {
@@ -231,73 +218,66 @@ class NetifiInvocationHandler implements InvocationHandler {
             });
 
       } else if (annotation instanceof REQUEST_STREAM) {
-          long[] groupIds = GroupUtil.toGroupIdArray(group);
-          REQUEST_STREAM request_stream = (REQUEST_STREAM) annotation;
-          Class<? extends Serializer> serializer =
-              (Class<? extends Serializer>)
-                  Class.forName(
-                      request_stream.serializer(),
-                      true,
-                      Thread.currentThread().getContextClassLoader());
-          Constructor<? extends Serializer> serializerConstructor =
-              serializer.getDeclaredConstructor(Class.class);
-          Object arg = args != null ? args[0] : null;
-          Serializer<?> requestSerializer =
-              arg != null ? serializerConstructor.newInstance(arg.getClass()) : null;
-          Serializer<?> responseSerializer = serializerConstructor.newInstance((returnType));
-    
-          return rSocketPublishProcessor.flatMap(
-              rSocket -> {
-                  ByteBuf route;
-            
-                  if (destination > 0) {
-                      int length =
-                          RouteDestinationFlyweight.computeLength(
-                              RouteType.STREAM_ID_ROUTE, groupIds.length);
-                      route = PooledByteBufAllocator.DEFAULT.directBuffer(length);
-                      RouteDestinationFlyweight.encodeRouteByDestination(
-                          route, RouteType.STREAM_ID_ROUTE, accountId, destination, groupIds);
-                  } else {
-                      int length =
-                          RouteDestinationFlyweight.computeLength(
-                              RouteType.STREAM_GROUP_ROUTE, groupIds.length);
-                      route = PooledByteBufAllocator.DEFAULT.directBuffer(length);
-                      RouteDestinationFlyweight.encodeRouteByGroup(
-                          route, RouteType.STREAM_GROUP_ROUTE, accountId, groupIds);
-                  }
-            
-                  int length = RoutingFlyweight.computeLength(true, false, false, route);
-            
-                  ByteBuf metadata = PooledByteBufAllocator.DEFAULT.directBuffer(length);
-                  RoutingFlyweight.encode(
-                      metadata,
-                      true,
-                      false,
-                      false,
-                      0,
-                      0,
-                      destination,
-                      0,
-                      namespaceId,
-                      classId,
-                      methodId,
-                      generator.nextId(),
-                      route);
-            
-                  ByteBuffer data =
-                      arg != null ? requestSerializer.serialize(arg) : Frame.NULL_BYTEBUFFER;
-                  byte[] bytes = new byte[metadata.capacity()];
-                  metadata.getBytes(0, bytes);
-                  PayloadImpl payload = new PayloadImpl(data, ByteBuffer.wrap(bytes));
-            
-                  return rSocket
-                             .requestStream(payload)
-                             .map(
-                                 payload1 -> {
-                                     ByteBuffer data1 = payload1.getData();
-                                     return responseSerializer.deserialize(data1);
-                                 });
-              });
+        long[] groupIds = GroupUtil.toGroupIdArray(group);
+        REQUEST_STREAM request_stream = (REQUEST_STREAM) annotation;
+        Object arg = args != null ? args[0] : null;
+        Serializer<?> requestSerializer =
+            arg != null ? Serializers.getSerializer(request_stream.serializer(), arg) : null;
+        Serializer<?> responseSerializer =
+            Serializers.getSerializer(request_stream.serializer(), returnType);
+
+        return rSocketPublishProcessor.flatMap(
+            rSocket -> {
+              ByteBuf route;
+
+              if (destination > 0) {
+                int length =
+                    RouteDestinationFlyweight.computeLength(
+                        RouteType.STREAM_ID_ROUTE, groupIds.length);
+                route = PooledByteBufAllocator.DEFAULT.directBuffer(length);
+                RouteDestinationFlyweight.encodeRouteByDestination(
+                    route, RouteType.STREAM_ID_ROUTE, accountId, destination, groupIds);
+              } else {
+                int length =
+                    RouteDestinationFlyweight.computeLength(
+                        RouteType.STREAM_GROUP_ROUTE, groupIds.length);
+                route = PooledByteBufAllocator.DEFAULT.directBuffer(length);
+                RouteDestinationFlyweight.encodeRouteByGroup(
+                    route, RouteType.STREAM_GROUP_ROUTE, accountId, groupIds);
+              }
+
+              int length = RoutingFlyweight.computeLength(true, false, false, route);
+
+              ByteBuf metadata = PooledByteBufAllocator.DEFAULT.directBuffer(length);
+              RoutingFlyweight.encode(
+                  metadata,
+                  true,
+                  false,
+                  false,
+                  0,
+                  0,
+                  destination,
+                  0,
+                  namespaceId,
+                  classId,
+                  methodId,
+                  generator.nextId(),
+                  route);
+
+              ByteBuffer data =
+                  arg != null ? requestSerializer.serialize(arg) : Frame.NULL_BYTEBUFFER;
+              byte[] bytes = new byte[metadata.capacity()];
+              metadata.getBytes(0, bytes);
+              PayloadImpl payload = new PayloadImpl(data, ByteBuffer.wrap(bytes));
+
+              return rSocket
+                  .requestStream(payload)
+                  .map(
+                      payload1 -> {
+                        ByteBuffer data1 = payload1.getData();
+                        return responseSerializer.deserialize(data1);
+                      });
+            });
       }
     }
 

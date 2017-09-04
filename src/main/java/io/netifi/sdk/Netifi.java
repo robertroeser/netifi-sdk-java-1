@@ -13,7 +13,6 @@ import io.reactivex.processors.ReplayProcessor;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
-import net.openhft.hashing.LongHashFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
@@ -26,11 +25,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static io.netifi.sdk.util.HashUtil.hash;
+
 /** This is where the magic happens */
 public class Netifi implements AutoCloseable {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
 
-  private static final LongHashFunction xx = LongHashFunction.xx();
 
   private String host;
   private int port;
@@ -53,7 +53,7 @@ public class Netifi implements AutoCloseable {
 
   private volatile Disposable disposable;
 
-  public Netifi(
+  private Netifi(
       String host,
       int port,
       long accessKey,
@@ -134,8 +134,8 @@ public class Netifi implements AutoCloseable {
     String packageName = clazz.getPackage().getName();
     String clazzName = clazz.getName();
 
-    long namespaceId = xx.hashChars(packageName);
-    long classId = xx.hashChars(clazzName);
+    long namespaceId = hash(packageName);
+    long classId = hash(clazzName);
 
     List<RequestHandlerMetadata> list = new ArrayList<>();
     try {
@@ -144,7 +144,7 @@ public class Netifi implements AutoCloseable {
         Annotation[] annotations = method.getAnnotations();
         for (Annotation annotation : annotations) {
           if (annotation instanceof FIRE_FORGET) {
-            long methodId = xx.hashChars(method.getName());
+            long methodId = hash(method.getName());
 
             FIRE_FORGET fire_forget = (FIRE_FORGET) annotation;
             Class<? extends Serializer> serializerClass =
@@ -153,7 +153,7 @@ public class Netifi implements AutoCloseable {
                         fire_forget.serializer(),
                         true,
                         Thread.currentThread().getContextClassLoader());
-            Class<?> returnType = getParameterizedClass(method.getReturnType());
+            Class<?> returnType = getParametrizedClass(method.getReturnType());
 
             if (returnType.isAssignableFrom(Void.class)) {
               throw new IllegalStateException(
@@ -174,7 +174,7 @@ public class Netifi implements AutoCloseable {
             break;
 
           } else if (annotation instanceof REQUEST_CHANNEL) {
-            long methodId = xx.hashChars(method.getName());
+            long methodId = hash(method.getName());
             REQUEST_CHANNEL request_channel = (REQUEST_CHANNEL) annotation;
             Class<? extends Serializer> serializerClass =
                 (Class<? extends Serializer>)
@@ -183,7 +183,7 @@ public class Netifi implements AutoCloseable {
                         true,
                         Thread.currentThread().getContextClassLoader());
 
-            Class<?> returnType = getParameterizedClass(method.getReturnType());
+            Class<?> returnType = getParametrizedClass(method.getReturnType());
             Constructor<? extends Serializer> constructor =
                 serializerClass.getConstructor(Class.class);
             Serializer<?> requestSerializer = constructor.newInstance(returnType);
@@ -195,7 +195,7 @@ public class Netifi implements AutoCloseable {
             }
             Class<?> requestType = parameterTypes[0];
             Serializer<?> responseSerializer =
-                constructor.newInstance(getParameterizedClass(requestType));
+                constructor.newInstance(getParametrizedClass(requestType));
 
             RequestHandlerMetadata handlerMetadata =
                 new RequestHandlerMetadata(
@@ -211,7 +211,7 @@ public class Netifi implements AutoCloseable {
             list.add(handlerMetadata);
             break;
           } else if (annotation instanceof REQUEST_RESPONSE) {
-            long methodId = xx.hashChars(method.getName());
+            long methodId = hash(method.getName());
             REQUEST_RESPONSE request_response = (REQUEST_RESPONSE) annotation;
             Class<? extends Serializer> serializerClass =
                 (Class<? extends Serializer>)
@@ -220,7 +220,7 @@ public class Netifi implements AutoCloseable {
                         true,
                         Thread.currentThread().getContextClassLoader());
 
-            Class<?> returnType = getParameterizedClass(method.getReturnType());
+            Class<?> returnType = getParametrizedClass(method.getReturnType());
             Constructor<? extends Serializer> constructor =
                 serializerClass.getConstructor(Class.class);
             Serializer<?> requestSerializer = constructor.newInstance(returnType);
@@ -247,7 +247,7 @@ public class Netifi implements AutoCloseable {
             list.add(handlerMetadata);
             break;
           } else if (annotation instanceof REQUEST_STREAM) {
-            long methodId = xx.hashChars(method.getName());
+            long methodId = hash(method.getName());
             REQUEST_STREAM request_stream = (REQUEST_STREAM) annotation;
             Class<? extends Serializer> serializerClass =
                 (Class<? extends Serializer>)
@@ -255,7 +255,7 @@ public class Netifi implements AutoCloseable {
                         request_stream.serializer(),
                         true,
                         Thread.currentThread().getContextClassLoader());
-            Class<?> returnType = getParameterizedClass(method.getReturnType());
+            Class<?> returnType = getParametrizedClass(method.getReturnType());
 
             Constructor<? extends Serializer> constructor =
                 serializerClass.getConstructor(Class.class);
@@ -296,7 +296,7 @@ public class Netifi implements AutoCloseable {
     list.forEach(metadata -> cachedMethods.putIfAbsent(metadata.getStringKey(), metadata));
   }
 
-  private Class<?> getParameterizedClass(Class<?> clazz) throws Exception {
+  private Class<?> getParametrizedClass(Class<?> clazz) throws Exception {
     Type superclassType = clazz.getGenericSuperclass();
     if (!ParameterizedType.class.isAssignableFrom(superclassType.getClass())) {
       return null;
@@ -318,6 +318,10 @@ public class Netifi implements AutoCloseable {
     }
     running = false;
   }
+  
+  public static Builder builder() {
+    return new Builder();
+  }
 
   public static class Builder {
     private String host;
@@ -330,6 +334,8 @@ public class Netifi implements AutoCloseable {
     private Long destinationId;
     private String accessToken = null;
     private byte[] accessTokenBytes = new byte[20];
+    
+    private Builder() {}
 
     public Builder host(String host) {
       this.host = host;
@@ -357,7 +363,7 @@ public class Netifi implements AutoCloseable {
       this.groupIds = new long[split.length];
 
       for (int i = 0; i < split.length; i++) {
-        groupIds[i] = Math.abs(xx.hashChars(split[i]));
+        groupIds[i] = Math.abs(hash(split[i]));
       }
 
       return this;

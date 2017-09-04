@@ -1,5 +1,7 @@
 package io.netifi.sdk.annotations;
 
+import io.netifi.sdk.serializer.Serializers;
+
 import java.lang.annotation.*;
 
 /**
@@ -9,5 +11,5 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface REQUEST_RESPONSE {
-    String serializer();
+    String serializer() default "";
 }

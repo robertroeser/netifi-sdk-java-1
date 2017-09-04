@@ -90,7 +90,8 @@ public class NetifiInvocationHandlerTest {
                     destination,
                     new TimebasedIdGenerator(1)));
 
-    testService.stream().forEach(i -> System.out.println("test got " + i));
+    List<Integer> integers = testService.stream().take(10).toList().blockingGet();
+    Assert.assertEquals(10, integers.size());
   }
 
   public interface TestService {
@@ -120,7 +121,6 @@ public class NetifiInvocationHandlerTest {
           .doFinally(s -> System.out.println("done"))
           .map(
               i -> {
-                System.out.println("here -> " + i);
                 ByteBuffer serialize = jsonSerializer.serialize(i);
                 return new PayloadImpl(serialize);
               });
