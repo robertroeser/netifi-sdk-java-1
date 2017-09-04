@@ -1,19 +1,25 @@
 package io.netifi.sdk;
 
+import io.netifi.nrqp.frames.DestinationSetupFlyweight;
 import io.netifi.sdk.rs.RequestHandlingRSocket;
 import io.netifi.sdk.util.TimebasedIdGenerator;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.reactivex.Flowable;
 import io.reactivex.processors.ReplayProcessor;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
+import io.rsocket.util.PayloadImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
 
 import javax.xml.bind.DatatypeConverter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.time.Duration;
 import java.util.Objects;
 
 import static io.netifi.sdk.util.HashUtil.hash;
@@ -21,8 +27,7 @@ import static io.netifi.sdk.util.HashUtil.hash;
 /** This is where the magic happens */
 public class Netifi implements AutoCloseable {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
-
-
+  private final TimebasedIdGenerator idGenerator;
   private String host;
   private int port;
   private long accessKey;
@@ -33,11 +38,10 @@ public class Netifi implements AutoCloseable {
   private String group;
   private String accessToken;
   private byte[] accessTokenBytes;
-  private final TimebasedIdGenerator idGenerator;
   private volatile boolean running = true;
 
   private RequestHandlerRegistry registry;
-  
+
   private ReplayProcessor<RSocket> rSocketPublishProcessor;
 
   private volatile Disposable disposable;
@@ -66,18 +70,39 @@ public class Netifi implements AutoCloseable {
     this.accessTokenBytes = accessTokenBytes;
     this.rSocketPublishProcessor = ReplayProcessor.create(1);
     this.idGenerator = new TimebasedIdGenerator((int) destinationId);
-    this.disposable =
-        RSocketFactory.connect()
-            .errorConsumer(throwable -> logger.error("unhandled error", throwable))
-            .acceptor(
-                rSocket -> {
-                  rSocketPublishProcessor.onNext(rSocket);
-                  return new RequestHandlingRSocket(registry);
-                })
-            .transport(TcpClientTransport.create(host, port))
-            .start()
-            .retry(throwable -> running)
-            .subscribe();
+  
+    this.disposable = Mono.defer(
+        () -> {
+          int length = DestinationSetupFlyweight.computeLength(false, groupIds.length);
+          byte[] bytes = new byte[length];
+          ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+          DestinationSetupFlyweight.encode(
+              byteBuf,
+              Unpooled.EMPTY_BUFFER,
+              Unpooled.EMPTY_BUFFER,
+              accountId,
+              destinationId,
+              idGenerator.nextId(),
+              groupIds);
+
+          return RSocketFactory.connect()
+              .errorConsumer(throwable -> logger.error("unhandled error", throwable))
+              .setupPayload(new PayloadImpl(new byte[0], bytes))
+              .acceptor(
+                  rSocket -> {
+                    rSocketPublishProcessor.onNext(rSocket);
+                    return new RequestHandlingRSocket(registry);
+                  })
+              .transport(TcpClientTransport.create(host, port))
+              .start();
+        })
+        .delayElement(Duration.ofSeconds(10))
+        .retry(throwable -> running)
+        .subscribe();
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   public <T> T create(Class<T> service, long accountId, String group) {
@@ -98,7 +123,8 @@ public class Netifi implements AutoCloseable {
         Proxy.newProxyInstance(
             Thread.currentThread().getContextClassLoader(),
             new Class<?>[] {service},
-            new NetifiInvocationHandler(rSocketPublishProcessor, accountId, group, destination, idGenerator));
+            new NetifiInvocationHandler(
+                rSocketPublishProcessor, accountId, group, destination, idGenerator));
 
     return (T) o;
   }
@@ -115,9 +141,7 @@ public class Netifi implements AutoCloseable {
     }
   }
 
-  public <T> void registerHandler(T t, Class<T> clazz) {
-  
-  }
+  public <T> void registerHandler(T t, Class<T> clazz) {}
 
   @Override
   public void close() throws Exception {
@@ -126,14 +150,10 @@ public class Netifi implements AutoCloseable {
     }
     running = false;
   }
-  
-  public static Builder builder() {
-    return new Builder();
-  }
 
   public static class Builder {
-    private String host;
-    private Integer port;
+    private String host = "edge.netifi.io";
+    private Integer port = 7001;
     private Long accessKey;
     private Long accountId;
     private String group;
@@ -142,7 +162,7 @@ public class Netifi implements AutoCloseable {
     private Long destinationId;
     private String accessToken = null;
     private byte[] accessTokenBytes = new byte[20];
-    
+
     private Builder() {}
 
     public Builder host(String host) {
