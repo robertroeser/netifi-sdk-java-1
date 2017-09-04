@@ -9,6 +9,7 @@ import io.netifi.sdk.annotations.REQUEST_RESPONSE;
 import io.netifi.sdk.annotations.REQUEST_STREAM;
 import io.netifi.sdk.serializer.Serializer;
 import io.netifi.sdk.serializer.Serializers;
+import io.netifi.sdk.util.ClassUtil;
 import io.netifi.sdk.util.GroupUtil;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
@@ -80,9 +81,9 @@ class NetifiInvocationHandler implements InvocationHandler {
       if (annotation instanceof FIRE_FORGET) {
         long[] groupIds = GroupUtil.toGroupIdArray(group);
         FIRE_FORGET fire_forget = (FIRE_FORGET) annotation;
-          Object arg = args != null ? args[0] : null;
-          Serializer<?> requestSerializer =
-              arg != null ? Serializers.getSerializer(fire_forget.serializer(), arg) : null;
+        Object arg = args != null ? args[0] : null;
+        Serializer<?> requestSerializer =
+            arg != null ? Serializers.getSerializer(fire_forget.serializer(), arg) : null;
 
         return rSocketPublishProcessor.flatMap(
             rSocket -> {
@@ -108,11 +109,17 @@ class NetifiInvocationHandler implements InvocationHandler {
       } else if (annotation instanceof REQUEST_CHANNEL) {
         long[] groupIds = GroupUtil.toGroupIdArray(group);
         REQUEST_CHANNEL request_channel = (REQUEST_CHANNEL) annotation;
-          Object arg = args != null ? args[0] : null;
-          Serializer<?> requestSerializer =
-              arg != null ? Serializers.getSerializer(request_channel.serializer(), arg) : null;
-          Serializer<?> responseSerializer =
-              Serializers.getSerializer(request_channel.serializer(), returnType);
+        Object arg = args != null ? args[0] : null;
+
+        if (args == null) {
+          throw new IllegalStateException("request channel must have an argument");
+        }
+
+        Class<?> requestType = ClassUtil.getParametrizedClass(arg.getClass());
+        Serializer<?> requestSerializer =
+            Serializers.getSerializer(request_channel.serializer(), requestType);
+        Serializer<?> responseSerializer =
+            Serializers.getSerializer(request_channel.serializer(), returnType);
 
         return rSocketPublishProcessor.flatMap(
             rSocket -> {

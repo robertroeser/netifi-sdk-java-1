@@ -6,28 +6,37 @@ import io.netifi.sdk.annotations.REQUEST_RESPONSE;
 import io.netifi.sdk.annotations.REQUEST_STREAM;
 import io.netifi.sdk.rs.RequestHandlerMetadata;
 import io.netifi.sdk.serializer.Serializer;
+import io.netifi.sdk.serializer.Serializers;
+import io.netifi.sdk.util.ClassUtil;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.netifi.sdk.util.HashUtil.hash;
 
 /** */
 public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
-  private ConcurrentHashMap<String, RequestHandlerMetadata> cachedMethods;
+  Map<String, RequestHandlerMetadata> cachedMethods;
 
-  public DefaultRequestHandlerRegistry() {}
+  public DefaultRequestHandlerRegistry() {
+    cachedMethods = new ConcurrentHashMap<>();
+  }
 
-  @Override
-  public synchronized <T> void registerHandler(T t, Class<T> clazz) {
-    if (clazz.isInterface()) {
-      throw new IllegalArgumentException("must a class");
+  public synchronized <T> void registerHandler(T t) {}
+
+  public synchronized <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {
+    if (!clazz.isInterface()) {
+      throw new IllegalStateException("class must interface");
+    }
+
+    if (!clazz.isAssignableFrom(t.getClass())) {
+      throw new IllegalStateException("class provided must implement the interface provided");
     }
 
     String packageName = clazz.getPackage().getName();
@@ -38,63 +47,52 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
 
     List<RequestHandlerMetadata> list = new ArrayList<>();
     try {
-      Method[] methods = clazz.getMethods();
+      Method[] methods = clazz.getDeclaredMethods();
       for (Method method : methods) {
-        Annotation[] annotations = method.getAnnotations();
+        Class<?>[] parameters = method.getParameterTypes();
+        if (parameters.length > 1) {
+          throw new IllegalStateException("can only have 0 or 1 parameters");
+        }
+
+        Class<?> requestType = parameters.length > 0 ? parameters[0].getClass() : null;
+        long methodId = hash(method.getName());
+        Type type = method.getGenericReturnType();
+        ParameterizedType parameterizedType = (ParameterizedType) type;
+        Type[] typeArguments = parameterizedType.getActualTypeArguments();
+        Class<?> returnType = (Class<?>) typeArguments[0];
+        Annotation[] annotations = method.getDeclaredAnnotations();
         for (Annotation annotation : annotations) {
           if (annotation instanceof FIRE_FORGET) {
-            long methodId = hash(method.getName());
-
             FIRE_FORGET fire_forget = (FIRE_FORGET) annotation;
-            Class<? extends Serializer> serializerClass =
-                (Class<? extends Serializer>)
-                    Class.forName(
-                        fire_forget.serializer(),
-                        true,
-                        Thread.currentThread().getContextClassLoader());
-            Class<?> returnType = getParametrizedClass(method.getReturnType());
-
-            if (returnType.isAssignableFrom(Void.class)) {
-              throw new IllegalStateException(
-                  "method "
-                      + method.getName()
-                      + " should return void if its annotated with fired forget");
-            }
-
-            Constructor<? extends Serializer> constructor =
-                serializerClass.getConstructor(Class.class);
-            Serializer<?> requestSerializer = constructor.newInstance(returnType);
+            Serializer<?> requestSerializer =
+                requestType != null
+                    ? Serializers.getSerializer(fire_forget.serializer(), requestType)
+                    : null;
+            Serializer<?> responseSerializer = null;
 
             RequestHandlerMetadata handlerMetadata =
                 new RequestHandlerMetadata(
-                    requestSerializer, null, method, clazz, t, namespaceId, classId, methodId);
+                    requestSerializer,
+                    responseSerializer,
+                    method,
+                    clazz,
+                    t,
+                    namespaceId,
+                    classId,
+                    methodId);
 
             list.add(handlerMetadata);
             break;
 
           } else if (annotation instanceof REQUEST_CHANNEL) {
-            long methodId = hash(method.getName());
             REQUEST_CHANNEL request_channel = (REQUEST_CHANNEL) annotation;
-            Class<? extends Serializer> serializerClass =
-                (Class<? extends Serializer>)
-                    Class.forName(
-                        request_channel.serializer(),
-                        true,
-                        Thread.currentThread().getContextClassLoader());
-
-            Class<?> returnType = getParametrizedClass(method.getReturnType());
-            Constructor<? extends Serializer> constructor =
-                serializerClass.getConstructor(Class.class);
-            Serializer<?> requestSerializer = constructor.newInstance(returnType);
-
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            if (parameterTypes.length != 1) {
-              throw new IllegalStateException(
-                  "method " + method.getName() + " should take one argument");
-            }
-            Class<?> requestType = parameterTypes[0];
+            Serializer<?> requestSerializer =
+                requestType != null
+                    ? Serializers.getSerializer(
+                        request_channel.serializer(), ClassUtil.getParametrizedClass(requestType))
+                    : null;
             Serializer<?> responseSerializer =
-                constructor.newInstance(getParametrizedClass(requestType));
+                Serializers.getSerializer(request_channel.serializer(), returnType);
 
             RequestHandlerMetadata handlerMetadata =
                 new RequestHandlerMetadata(
@@ -110,27 +108,13 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
             list.add(handlerMetadata);
             break;
           } else if (annotation instanceof REQUEST_RESPONSE) {
-            long methodId = hash(method.getName());
             REQUEST_RESPONSE request_response = (REQUEST_RESPONSE) annotation;
-            Class<? extends Serializer> serializerClass =
-                (Class<? extends Serializer>)
-                    Class.forName(
-                        request_response.serializer(),
-                        true,
-                        Thread.currentThread().getContextClassLoader());
-
-            Class<?> returnType = getParametrizedClass(method.getReturnType());
-            Constructor<? extends Serializer> constructor =
-                serializerClass.getConstructor(Class.class);
-            Serializer<?> requestSerializer = constructor.newInstance(returnType);
-
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            if (parameterTypes.length != 1) {
-              throw new IllegalStateException(
-                  "method " + method.getName() + " should take one argument");
-            }
-            Class<?> requestType = parameterTypes[0];
-            Serializer<?> responseSerializer = constructor.newInstance(requestType);
+            Serializer<?> requestSerializer =
+                requestType != null
+                    ? Serializers.getSerializer(request_response.serializer(), requestType)
+                    : null;
+            Serializer<?> responseSerializer =
+                Serializers.getSerializer(request_response.serializer(), returnType);
 
             RequestHandlerMetadata handlerMetadata =
                 new RequestHandlerMetadata(
@@ -146,27 +130,13 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
             list.add(handlerMetadata);
             break;
           } else if (annotation instanceof REQUEST_STREAM) {
-            long methodId = hash(method.getName());
             REQUEST_STREAM request_stream = (REQUEST_STREAM) annotation;
-            Class<? extends Serializer> serializerClass =
-                (Class<? extends Serializer>)
-                    Class.forName(
-                        request_stream.serializer(),
-                        true,
-                        Thread.currentThread().getContextClassLoader());
-            Class<?> returnType = getParametrizedClass(method.getReturnType());
-
-            Constructor<? extends Serializer> constructor =
-                serializerClass.getConstructor(Class.class);
-            Serializer<?> requestSerializer = constructor.newInstance(returnType);
-
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            if (parameterTypes.length != 1) {
-              throw new IllegalStateException(
-                  "method " + method.getName() + " should take one argument");
-            }
-            Class<?> requestType = parameterTypes[0];
-            Serializer<?> responseSerializer = constructor.newInstance(requestType);
+            Serializer<?> requestSerializer =
+                requestType != null
+                    ? Serializers.getSerializer(request_stream.serializer(), requestType)
+                    : null;
+            Serializer<?> responseSerializer =
+                Serializers.getSerializer(request_stream.serializer(), returnType);
 
             RequestHandlerMetadata handlerMetadata =
                 new RequestHandlerMetadata(
@@ -197,22 +167,8 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
 
   @Override
   public RequestHandlerMetadata lookup(String name) {
-
-    return null;
+    return cachedMethods.get(name);
   }
 
-  private Class<?> getParametrizedClass(Class<?> clazz) throws Exception {
-    Type superclassType = clazz.getGenericSuperclass();
-    if (!ParameterizedType.class.isAssignableFrom(superclassType.getClass())) {
-      return null;
-    }
-
-    Type[] actualTypeArguments = ((ParameterizedType) superclassType).getActualTypeArguments();
-    Class<?> aClass =
-        Class.forName(
-            actualTypeArguments[0].getTypeName(),
-            false,
-            Thread.currentThread().getContextClassLoader());
-    return aClass;
-  }
+  
 }
