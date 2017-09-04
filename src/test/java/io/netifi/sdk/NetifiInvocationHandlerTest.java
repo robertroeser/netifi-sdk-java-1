@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Proxy;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 /** */
 public class NetifiInvocationHandlerTest {
@@ -45,9 +46,59 @@ public class NetifiInvocationHandlerTest {
     Assert.assertEquals("hi", s);
   }
 
+  @Test
+  public void testRequestResponseInvocationNoArgs() throws Exception {
+    ReplayProcessor<RSocket> rSocketPublishProcessor = ReplayProcessor.create();
+    rSocketPublishProcessor.onNext(new TestSocket());
+    long accountId = 1;
+    String group = "foo.bar.baz";
+    long destination = -1;
+
+    TestService testService =
+        (TestService)
+            Proxy.newProxyInstance(
+                Thread.currentThread().getContextClassLoader(),
+                new Class<?>[] {TestService.class},
+                new NetifiInvocationHandler(
+                    rSocketPublishProcessor,
+                    accountId,
+                    group,
+                    destination,
+                    new TimebasedIdGenerator(1)));
+
+    String s = testService.noArgs().blockingFirst();
+    Assert.assertEquals("hi", s);
+  }
+
+  @Test
+  public void testStream() throws Exception {
+    ReplayProcessor<RSocket> rSocketPublishProcessor = ReplayProcessor.create();
+    rSocketPublishProcessor.onNext(new TestSocket());
+    long accountId = 1;
+    String group = "foo.bar.baz";
+    long destination = -1;
+
+    TestService testService =
+        (TestService)
+            Proxy.newProxyInstance(
+                Thread.currentThread().getContextClassLoader(),
+                new Class<?>[] {TestService.class},
+                new NetifiInvocationHandler(
+                    rSocketPublishProcessor,
+                    accountId,
+                    group,
+                    destination,
+                    new TimebasedIdGenerator(1)));
+
+    testService.stream().forEach(i -> System.out.println("test got " + i));
+  }
+
   public interface TestService {
     @REQUEST_RESPONSE(serializer = Serializers.JSON)
     Flowable<String> test(Integer integer);
+
+    @REQUEST_RESPONSE(serializer = Serializers.JSON)
+    Flowable<String> noArgs();
 
     @REQUEST_STREAM(serializer = Serializers.JSON)
     Flowable<Integer> stream();
@@ -66,8 +117,10 @@ public class NetifiInvocationHandlerTest {
       JSONSerializer<Integer> jsonSerializer = new JSONSerializer<>(Integer.class);
 
       return Flux.range(1, 10)
+          .doFinally(s -> System.out.println("done"))
           .map(
               i -> {
+                System.out.println("here -> " + i);
                 ByteBuffer serialize = jsonSerializer.serialize(i);
                 return new PayloadImpl(serialize);
               });
