@@ -22,10 +22,12 @@ import io.rsocket.util.PayloadImpl;
 import org.reactivestreams.Publisher;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 
-import static io.netifi.sdk.serializer.Serializers.getSerializerClass;
 import static io.netifi.sdk.util.HashUtil.hash;
 
 /** */
@@ -81,8 +83,6 @@ class NetifiInvocationHandler implements InvocationHandler {
           Object arg = args != null ? args[0] : null;
           Serializer<?> requestSerializer =
               arg != null ? Serializers.getSerializer(fire_forget.serializer(), arg) : null;
-          Serializer<?> responseSerializer =
-              Serializers.getSerializer(fire_forget.serializer(), returnType);
 
         return rSocketPublishProcessor.flatMap(
             rSocket -> {

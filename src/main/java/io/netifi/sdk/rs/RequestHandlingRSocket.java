@@ -1,6 +1,7 @@
 package io.netifi.sdk.rs;
 
 import io.netifi.nrqp.frames.RoutingFlyweight;
+import io.netifi.sdk.RequestHandlerRegistry;
 import io.netifi.sdk.serializer.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -14,18 +15,16 @@ import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.concurrent.ConcurrentHashMap;
 
 /** */
 public class RequestHandlingRSocket extends AbstractRSocket {
-  private ConcurrentHashMap<String, RequestHandlerMetadata> cachedMethods =
-      new ConcurrentHashMap<>();
-
-  public RequestHandlingRSocket(ConcurrentHashMap<String, RequestHandlerMetadata> cachedMethods) {
-    this.cachedMethods = cachedMethods;
-  }
-
-  @Override
+  private RequestHandlerRegistry registry;
+    
+    public RequestHandlingRSocket(RequestHandlerRegistry registry) {
+        this.registry = registry;
+    }
+    
+    @Override
   public Mono<Void> fireAndForget(Payload payload) {
     try {
       ByteBuf byteBuf = Unpooled.wrappedBuffer(payload.getMetadata());
@@ -35,7 +34,7 @@ public class RequestHandlingRSocket extends AbstractRSocket {
 
       String key = namespaceId + ":" + classId + ":" + methodId;
 
-      RequestHandlerMetadata metadata = cachedMethods.get(key);
+      RequestHandlerMetadata metadata = registry.lookup(key);
 
       if (metadata == null) {
         return Mono.error(new IllegalStateException("no request handle found for " + key));
@@ -67,7 +66,7 @@ public class RequestHandlingRSocket extends AbstractRSocket {
 
       String key = namespaceId + ":" + classId + ":" + methodId;
 
-      RequestHandlerMetadata metadata = cachedMethods.get(key);
+      RequestHandlerMetadata metadata = registry.lookup(key);
 
       if (metadata == null) {
         return Mono.error(new IllegalStateException("no request handle found for " + key));
@@ -106,7 +105,7 @@ public class RequestHandlingRSocket extends AbstractRSocket {
 
       String key = namespaceId + ":" + classId + ":" + methodId;
 
-      RequestHandlerMetadata metadata = cachedMethods.get(key);
+      RequestHandlerMetadata metadata = registry.lookup(key);
 
       if (metadata == null) {
         return Flux.error(new IllegalStateException("no request handle found for " + key));
@@ -147,7 +146,7 @@ public class RequestHandlingRSocket extends AbstractRSocket {
 
               String key = namespaceId + ":" + classId + ":" + methodId;
 
-              RequestHandlerMetadata metadata = cachedMethods.get(key);
+              RequestHandlerMetadata metadata = registry.lookup(key);
 
               if (metadata == null) {
                 throw new IllegalStateException("no request handle found for " + key);

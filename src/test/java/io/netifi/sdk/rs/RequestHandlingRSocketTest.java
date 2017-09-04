@@ -3,6 +3,7 @@ package io.netifi.sdk.rs;
 import io.netifi.nrqp.frames.RouteDestinationFlyweight;
 import io.netifi.nrqp.frames.RouteType;
 import io.netifi.nrqp.frames.RoutingFlyweight;
+import io.netifi.sdk.RequestHandlerRegistry;
 import io.netifi.sdk.serializer.JSONSerializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -23,7 +24,17 @@ public class RequestHandlingRSocketTest {
   public void testRoutingToRequestResponse() throws Exception {
     ConcurrentHashMap<String, RequestHandlerMetadata> handlerMetadataMap =
         new ConcurrentHashMap<>();
-    RequestHandlingRSocket handlingRSocket = new RequestHandlingRSocket(handlerMetadataMap);
+    RequestHandlingRSocket handlingRSocket = new RequestHandlingRSocket(new RequestHandlerRegistry() {
+      @Override
+      public <T> void registerHandler(T t, Class<T> clazz) {
+    
+      }
+  
+      @Override
+      public RequestHandlerMetadata lookup(String name) {
+        return handlerMetadataMap.get(name);
+      }
+    });
     int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_GROUP_ROUTE, 1);
     ByteBuf route = Unpooled.buffer(length);
     RouteDestinationFlyweight.encodeRouteByGroup(route, RouteType.STREAM_GROUP_ROUTE, 123, 1);
@@ -72,7 +83,17 @@ public class RequestHandlingRSocketTest {
   public void testRoutingToRequestResponseNoArgs() throws Exception {
     ConcurrentHashMap<String, RequestHandlerMetadata> handlerMetadataMap =
         new ConcurrentHashMap<>();
-    RequestHandlingRSocket handlingRSocket = new RequestHandlingRSocket(handlerMetadataMap);
+    RequestHandlingRSocket handlingRSocket = new RequestHandlingRSocket(new RequestHandlerRegistry() {
+      @Override
+      public <T> void registerHandler(T t, Class<T> clazz) {
+    
+      }
+  
+      @Override
+      public RequestHandlerMetadata lookup(String name) {
+        return handlerMetadataMap.get(name);
+      }
+    });
     int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_GROUP_ROUTE, 1);
     ByteBuf route = Unpooled.buffer(length);
     RouteDestinationFlyweight.encodeRouteByGroup(route, RouteType.STREAM_GROUP_ROUTE, 123, 1);
@@ -113,7 +134,17 @@ public class RequestHandlingRSocketTest {
   public void testFireAndForgetNoArgs() throws Exception {
     ConcurrentHashMap<String, RequestHandlerMetadata> handlerMetadataMap =
         new ConcurrentHashMap<>();
-    RequestHandlingRSocket handlingRSocket = new RequestHandlingRSocket(handlerMetadataMap);
+    RequestHandlingRSocket handlingRSocket = new RequestHandlingRSocket(new RequestHandlerRegistry() {
+      @Override
+      public <T> void registerHandler(T t, Class<T> clazz) {
+    
+      }
+  
+      @Override
+      public RequestHandlerMetadata lookup(String name) {
+        return handlerMetadataMap.get(name);
+      }
+    });
     int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_GROUP_ROUTE, 1);
     ByteBuf route = Unpooled.buffer(length);
     RouteDestinationFlyweight.encodeRouteByGroup(route, RouteType.STREAM_GROUP_ROUTE, 123, 1);
