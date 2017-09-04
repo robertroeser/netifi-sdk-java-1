@@ -70,35 +70,36 @@ public class Netifi implements AutoCloseable {
     this.accessTokenBytes = accessTokenBytes;
     this.rSocketPublishProcessor = ReplayProcessor.create(1);
     this.idGenerator = new TimebasedIdGenerator((int) destinationId);
-  
-    this.disposable = Mono.defer(
-        () -> {
-          int length = DestinationSetupFlyweight.computeLength(false, groupIds.length);
-          byte[] bytes = new byte[length];
-          ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-          DestinationSetupFlyweight.encode(
-              byteBuf,
-              Unpooled.EMPTY_BUFFER,
-              Unpooled.EMPTY_BUFFER,
-              accountId,
-              destinationId,
-              idGenerator.nextId(),
-              groupIds);
 
-          return RSocketFactory.connect()
-              .errorConsumer(throwable -> logger.error("unhandled error", throwable))
-              .setupPayload(new PayloadImpl(new byte[0], bytes))
-              .acceptor(
-                  rSocket -> {
-                    rSocketPublishProcessor.onNext(rSocket);
-                    return new RequestHandlingRSocket(registry);
-                  })
-              .transport(TcpClientTransport.create(host, port))
-              .start();
-        })
-        .delayElement(Duration.ofSeconds(10))
-        .retry(throwable -> running)
-        .subscribe();
+    this.disposable =
+        Mono.defer(
+                () -> {
+                  int length = DestinationSetupFlyweight.computeLength(false, groupIds.length);
+                  byte[] bytes = new byte[length];
+                  ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+                  DestinationSetupFlyweight.encode(
+                      byteBuf,
+                      Unpooled.EMPTY_BUFFER,
+                      Unpooled.EMPTY_BUFFER,
+                      accountId,
+                      destinationId,
+                      idGenerator.nextId(),
+                      groupIds);
+
+                  return RSocketFactory.connect()
+                      .errorConsumer(throwable -> logger.error("unhandled error", throwable))
+                      .setupPayload(new PayloadImpl(new byte[0], bytes))
+                      .acceptor(
+                          rSocket -> {
+                            rSocketPublishProcessor.onNext(rSocket);
+                            return new RequestHandlingRSocket(registry);
+                          })
+                      .transport(TcpClientTransport.create(host, port))
+                      .start();
+                })
+            .delayElement(Duration.ofSeconds(10))
+            .retry(throwable -> running)
+            .subscribe();
   }
 
   public static Builder builder() {
@@ -124,7 +125,14 @@ public class Netifi implements AutoCloseable {
             Thread.currentThread().getContextClassLoader(),
             new Class<?>[] {service},
             new NetifiInvocationHandler(
-                rSocketPublishProcessor, accountId, group, destination, idGenerator));
+                rSocketPublishProcessor,
+                accountId,
+                group,
+                destination,
+                this.accountId,
+                this.groupIds,
+                this.destinationId,
+                idGenerator));
 
     return (T) o;
   }

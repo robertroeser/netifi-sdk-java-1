@@ -40,6 +40,9 @@ public class NetifiInvocationHandlerTest {
                     accountId,
                     group,
                     destination,
+                    1,
+                    new long[] {2},
+                    3,
                     new TimebasedIdGenerator(1)));
 
     String s = testService.test(1234).blockingFirst();
@@ -64,6 +67,9 @@ public class NetifiInvocationHandlerTest {
                     accountId,
                     group,
                     destination,
+                    1,
+                    new long[] {2},
+                    3,
                     new TimebasedIdGenerator(1)));
 
     String s = testService.noArgs().blockingFirst();
@@ -88,6 +94,9 @@ public class NetifiInvocationHandlerTest {
                     accountId,
                     group,
                     destination,
+                    1,
+                    new long[] {2},
+                    3,
                     new TimebasedIdGenerator(1)));
 
     List<Integer> integers = testService.stream().take(10).toList().blockingGet();

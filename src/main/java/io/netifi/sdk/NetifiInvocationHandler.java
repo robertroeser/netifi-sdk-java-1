@@ -36,6 +36,12 @@ class NetifiInvocationHandler implements InvocationHandler {
 
   private final ReplayProcessor<RSocket> rSocketPublishProcessor;
 
+  private final long fromAccountId;
+
+  private final long[] fromGroupIds;
+
+  private final long fromDestination;
+
   private final long accountId;
 
   private final String group;
@@ -49,15 +55,22 @@ class NetifiInvocationHandler implements InvocationHandler {
       long accountId,
       String group,
       long destination,
+      long fromAccountId,
+      long[] fromGroupIds,
+      long fromDestination,
       TimebasedIdGenerator generator) {
     this.rSocketPublishProcessor = rSocketPublishProcessor;
     this.accountId = accountId;
     this.group = group;
     this.destination = destination;
     this.generator = generator;
+    this.fromAccountId = fromAccountId;
+    this.fromGroupIds = fromGroupIds;
+    this.fromDestination = fromDestination;
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     if (method.getDeclaringClass() == Object.class) {
       return method.invoke(this, args);
@@ -87,22 +100,47 @@ class NetifiInvocationHandler implements InvocationHandler {
 
         return rSocketPublishProcessor.flatMap(
             rSocket -> {
-              int length =
-                  RouteDestinationFlyweight.computeLength(
-                      RouteType.STREAM_ID_ROUTE, groupIds.length);
-              ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(length);
+              ByteBuf route;
+
               if (destination > 0) {
+                int length =
+                    RouteDestinationFlyweight.computeLength(
+                        RouteType.STREAM_ID_ROUTE, groupIds.length);
+                route = PooledByteBufAllocator.DEFAULT.directBuffer(length);
                 RouteDestinationFlyweight.encodeRouteByDestination(
-                    byteBuf, RouteType.STREAM_ID_ROUTE, accountId, destination, groupIds);
+                    route, RouteType.STREAM_ID_ROUTE, accountId, destination, groupIds);
               } else {
+                int length =
+                    RouteDestinationFlyweight.computeLength(
+                        RouteType.STREAM_GROUP_ROUTE, groupIds.length);
+                route = PooledByteBufAllocator.DEFAULT.directBuffer(length);
                 RouteDestinationFlyweight.encodeRouteByGroup(
-                    byteBuf, RouteType.STREAM_GROUP_ROUTE, accountId, groupIds);
+                    route, RouteType.STREAM_GROUP_ROUTE, accountId, groupIds);
               }
 
-              ByteBuffer byteBuffer = ByteBuffer.allocateDirect(byteBuf.capacity());
-              byteBuf.getBytes(0, byteBuffer);
+              int length = RoutingFlyweight.computeLength(true, false, false, route);
 
-              PayloadImpl payload = new PayloadImpl(requestSerializer.serialize(arg), byteBuffer);
+              ByteBuf metadata = PooledByteBufAllocator.DEFAULT.directBuffer(length);
+              RoutingFlyweight.encode(
+                  metadata,
+                  true,
+                  false,
+                  false,
+                  0,
+                  fromAccountId,
+                  fromDestination,
+                  0,
+                  namespaceId,
+                  classId,
+                  methodId,
+                  generator.nextId(),
+                  route);
+
+              ByteBuffer data =
+                  arg != null ? requestSerializer.serialize(arg) : Frame.NULL_BYTEBUFFER;
+              byte[] bytes = new byte[metadata.capacity()];
+              metadata.getBytes(0, bytes);
+              PayloadImpl payload = new PayloadImpl(data, ByteBuffer.wrap(bytes));
 
               return rSocket.fireAndForget(payload);
             });
@@ -127,30 +165,50 @@ class NetifiInvocationHandler implements InvocationHandler {
                   Flowable.fromPublisher((Publisher) arg)
                       .map(
                           o -> {
-                            ByteBuffer data = requestSerializer.serialize(o);
-                            int length =
-                                RouteDestinationFlyweight.computeLength(
-                                    RouteType.STREAM_ID_ROUTE, groupIds.length);
-                            ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(length);
+                            ByteBuf route;
                             if (destination > 0) {
+                              int length =
+                                  RouteDestinationFlyweight.computeLength(
+                                      RouteType.STREAM_ID_ROUTE, groupIds.length);
+                              route = PooledByteBufAllocator.DEFAULT.directBuffer(length);
                               RouteDestinationFlyweight.encodeRouteByDestination(
-                                  byteBuf,
+                                  route,
                                   RouteType.STREAM_ID_ROUTE,
                                   accountId,
                                   destination,
                                   groupIds);
                             } else {
+                              int length =
+                                  RouteDestinationFlyweight.computeLength(
+                                      RouteType.STREAM_GROUP_ROUTE, groupIds.length);
+                              route = PooledByteBufAllocator.DEFAULT.directBuffer(length);
                               RouteDestinationFlyweight.encodeRouteByGroup(
-                                  byteBuf, RouteType.STREAM_GROUP_ROUTE, accountId, groupIds);
+                                  route, RouteType.STREAM_GROUP_ROUTE, accountId, groupIds);
                             }
 
-                            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(byteBuf.capacity());
-                            byteBuf.getBytes(0, byteBuffer);
+                            int length = RoutingFlyweight.computeLength(true, false, false, route);
 
-                            PayloadImpl payload =
-                                new PayloadImpl(requestSerializer.serialize(arg), byteBuffer);
+                            ByteBuf metadata = PooledByteBufAllocator.DEFAULT.directBuffer(length);
+                            RoutingFlyweight.encode(
+                                metadata,
+                                true,
+                                false,
+                                false,
+                                0,
+                                fromAccountId,
+                                fromDestination,
+                                0,
+                                namespaceId,
+                                classId,
+                                methodId,
+                                generator.nextId(),
+                                route);
 
-                            return payload;
+                            ByteBuffer buffer = ByteBuffer.allocateDirect(metadata.capacity());
+                            metadata.getBytes(0, buffer);
+                            ByteBuffer data = requestSerializer.serialize(o);
+
+                            return new PayloadImpl(data, buffer);
                           });
 
               return rSocket
@@ -200,8 +258,8 @@ class NetifiInvocationHandler implements InvocationHandler {
                   false,
                   false,
                   0,
-                  0,
-                  destination,
+                  fromAccountId,
+                  fromDestination,
                   0,
                   namespaceId,
                   classId,
@@ -262,8 +320,8 @@ class NetifiInvocationHandler implements InvocationHandler {
                   false,
                   false,
                   0,
-                  0,
-                  destination,
+                  fromAccountId,
+                  fromDestination,
                   0,
                   namespaceId,
                   classId,
