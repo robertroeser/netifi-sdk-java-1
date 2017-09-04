@@ -91,6 +91,7 @@ public class RequestHandlingRSocket extends AbstractRSocket {
 
       return Mono.from(map);
     } catch (Throwable t) {
+        t.printStackTrace();
       return Mono.error(t);
     }
   }

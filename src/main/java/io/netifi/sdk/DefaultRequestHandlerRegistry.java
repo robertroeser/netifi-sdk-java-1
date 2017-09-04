@@ -27,9 +27,7 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
   public DefaultRequestHandlerRegistry() {
     cachedMethods = new ConcurrentHashMap<>();
   }
-
-  public synchronized <T> void registerHandler(T t) {}
-
+  
   public synchronized <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {
     if (!clazz.isInterface()) {
       throw new IllegalStateException("class must interface");
@@ -53,8 +51,8 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
         if (parameters.length > 1) {
           throw new IllegalStateException("can only have 0 or 1 parameters");
         }
-
-        Class<?> requestType = parameters.length > 0 ? parameters[0].getClass() : null;
+        
+        Class<?> requestType = parameters.length > 0 ? parameters[0] : null;
         long methodId = hash(method.getName());
         Type type = method.getGenericReturnType();
         ParameterizedType parameterizedType = (ParameterizedType) type;

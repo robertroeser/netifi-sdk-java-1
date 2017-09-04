@@ -26,7 +26,7 @@ public class RequestHandlingRSocketTest {
         new ConcurrentHashMap<>();
     RequestHandlingRSocket handlingRSocket = new RequestHandlingRSocket(new RequestHandlerRegistry() {
       @Override
-      public <T> void registerHandler(T t) {
+      public <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {
     
       }
   
@@ -85,7 +85,7 @@ public class RequestHandlingRSocketTest {
         new ConcurrentHashMap<>();
     RequestHandlingRSocket handlingRSocket = new RequestHandlingRSocket(new RequestHandlerRegistry() {
       @Override
-      public <T> void registerHandler(T t) {
+      public <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {
     
       }
   
@@ -136,7 +136,7 @@ public class RequestHandlingRSocketTest {
         new ConcurrentHashMap<>();
     RequestHandlingRSocket handlingRSocket = new RequestHandlingRSocket(new RequestHandlerRegistry() {
       @Override
-      public <T> void registerHandler(T t) {
+      public <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {
     
       }
   

@@ -80,7 +80,7 @@ public class Netifi implements AutoCloseable {
                   DestinationSetupFlyweight.encode(
                       byteBuf,
                       Unpooled.EMPTY_BUFFER,
-                      Unpooled.EMPTY_BUFFER,
+                      Unpooled.wrappedBuffer(new byte[20]),
                       accountId,
                       destinationId,
                       idGenerator.nextId(),
@@ -97,6 +97,7 @@ public class Netifi implements AutoCloseable {
                       .transport(TcpClientTransport.create(host, port))
                       .start();
                 })
+            .doOnError(Throwable::printStackTrace)
             .delayElement(Duration.ofSeconds(10))
             .retry(throwable -> running)
             .subscribe();
@@ -149,7 +150,9 @@ public class Netifi implements AutoCloseable {
     }
   }
 
-  public <T> void registerHandler(T t, Class<T> clazz) {}
+  public <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {
+    registry.registerHandler(clazz, t);
+  }
 
   @Override
   public void close() throws Exception {
@@ -195,7 +198,8 @@ public class Netifi implements AutoCloseable {
     }
 
     public Builder group(String group) {
-      String[] split = group.split(".");
+      this.group = group;
+      String[] split = group.split("\\.");
       this.groupIds = new long[split.length];
 
       for (int i = 0; i < split.length; i++) {
@@ -210,6 +214,11 @@ public class Netifi implements AutoCloseable {
       return this;
     }
 
+    public Builder destinationId(long destinationId) {
+      this.destinationId = destinationId;
+      return this;
+    }
+
     public Netifi build() {
       Objects.requireNonNull(host, "host is required");
       Objects.requireNonNull(port, "port is required");
@@ -220,7 +229,7 @@ public class Netifi implements AutoCloseable {
       return new Netifi(
           host,
           port,
-          accessKey,
+          accessKey == null ? 0 : accessKey,
           accountId,
           groupIds,
           destination,
