@@ -1,14 +1,22 @@
 package io.netifi.sdk.util;
 
-import io.netifi.sdk.annotations.FIRE_FORGET;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
-import java.lang.annotation.Annotation;
-
-/**
- *
- */
+/** */
 public class ClassUtil {
-    public static boolean isNetifiRoutingAnnotation(Annotation annotation) {
-        return true;
+  public static Class<?> getParameterizedClass(Class<?> clazz) throws Exception {
+    Type superclassType = clazz.getGenericSuperclass();
+    if (!ParameterizedType.class.isAssignableFrom(superclassType.getClass())) {
+      return null;
     }
+
+    Type[] actualTypeArguments = ((ParameterizedType) superclassType).getActualTypeArguments();
+    Class<?> aClass =
+        Class.forName(
+            actualTypeArguments[0].getTypeName(),
+            false,
+            Thread.currentThread().getContextClassLoader());
+    return aClass;
+  }
 }

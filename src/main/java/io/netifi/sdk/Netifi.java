@@ -1,7 +1,5 @@
 package io.netifi.sdk;
 
-import io.netifi.nrqp.frames.RouteDestinationFlyweight;
-import io.netifi.nrqp.frames.RouteType;
 import io.netifi.sdk.annotations.FIRE_FORGET;
 import io.netifi.sdk.annotations.REQUEST_CHANNEL;
 import io.netifi.sdk.annotations.REQUEST_RESPONSE;
@@ -9,18 +7,13 @@ import io.netifi.sdk.annotations.REQUEST_STREAM;
 import io.netifi.sdk.rs.RequestHandlerMetadata;
 import io.netifi.sdk.rs.RequestHandlingRSocket;
 import io.netifi.sdk.serializer.Serializer;
-import io.netifi.sdk.util.GroupUtil;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
+import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.reactivex.Flowable;
 import io.reactivex.processors.ReplayProcessor;
-import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
-import io.rsocket.util.PayloadImpl;
 import net.openhft.hashing.LongHashFunction;
-import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
@@ -28,7 +21,6 @@ import reactor.core.Disposable;
 import javax.xml.bind.DatatypeConverter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -50,6 +42,7 @@ public class Netifi implements AutoCloseable {
   private String group;
   private String accessToken;
   private byte[] accessTokenBytes;
+  private final TimebasedIdGenerator idGenerator;
   private volatile boolean running = true;
 
   private ConcurrentHashMap<String, RequestHandlerMetadata> cachedMethods;
@@ -83,6 +76,7 @@ public class Netifi implements AutoCloseable {
     this.accessTokenBytes = accessTokenBytes;
     this.rSocketPublishProcessor = ReplayProcessor.create(1);
     this.serializersMap = new ConcurrentHashMap<>();
+    this.idGenerator = new TimebasedIdGenerator((int) destinationId);
     this.disposable =
         RSocketFactory.connect()
             .errorConsumer(throwable -> logger.error("unhandled error", throwable))
@@ -115,230 +109,7 @@ public class Netifi implements AutoCloseable {
         Proxy.newProxyInstance(
             Thread.currentThread().getContextClassLoader(),
             new Class<?>[] {service},
-            new InvocationHandler() {
-              @Override
-              public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (method.getDeclaringClass() == Object.class) {
-                  return method.invoke(this, args);
-                }
-
-                Class<?> returnType = method.getReturnType();
-                Annotation[] annotations = method.getAnnotations();
-                for (Annotation annotation : annotations) {
-                  if (annotation instanceof FIRE_FORGET) {
-                    long[] groupIds = GroupUtil.toGroupIdArray(group);
-                    validate(method, args);
-                    FIRE_FORGET fire_forget = (FIRE_FORGET) annotation;
-                    Class<? extends Serializer> serializer =
-                        (Class<? extends Serializer>)
-                            Class.forName(
-                                fire_forget.serializer(),
-                                true,
-                                Thread.currentThread().getContextClassLoader());
-                    Constructor<? extends Serializer> serializerConstructor =
-                        serializer.getDeclaredConstructor(Class.class);
-                    Object arg = args[0];
-                    Serializer<?> requestSerializer =
-                        serializerConstructor.newInstance(arg.getClass());
-
-                    return rSocketPublishProcessor.flatMap(
-                        rSocket -> {
-                          int length =
-                              RouteDestinationFlyweight.computeLength(
-                                  RouteType.STREAM_ID_ROUTE, groupIds.length);
-                          ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(length);
-                          if (destination > 0) {
-                            RouteDestinationFlyweight.encodeRouteByDestination(
-                                byteBuf,
-                                RouteType.STREAM_ID_ROUTE,
-                                accountId,
-                                destination,
-                                groupIds);
-                          } else {
-                            RouteDestinationFlyweight.encodeRouteByGroup(
-                                byteBuf, RouteType.STREAM_GROUP_ROUTE, accountId, groupIds);
-                          }
-
-                          ByteBuffer byteBuffer = ByteBuffer.allocateDirect(byteBuf.capacity());
-                          byteBuf.getBytes(0, byteBuffer);
-
-                          PayloadImpl payload =
-                              new PayloadImpl(requestSerializer.serialize(arg), byteBuffer);
-
-                          return rSocket.fireAndForget(payload);
-                        });
-                  } else if (annotation instanceof REQUEST_CHANNEL) {
-                    long[] groupIds = GroupUtil.toGroupIdArray(group);
-                    validate(method, args);
-                    REQUEST_CHANNEL request_channel = (REQUEST_CHANNEL) annotation;
-                    Class<? extends Serializer> serializer =
-                        (Class<? extends Serializer>)
-                            Class.forName(
-                                request_channel.serializer(),
-                                true,
-                                Thread.currentThread().getContextClassLoader());
-                    Constructor<? extends Serializer> serializerConstructor =
-                        serializer.getDeclaredConstructor(Class.class);
-                    Object arg = args[0];
-                    Serializer<?> requestSerializer =
-                        serializerConstructor.newInstance(arg.getClass());
-                    Serializer<?> responseSerializer =
-                        serializerConstructor.newInstance(getParameterizedClass(returnType));
-
-                    rSocketPublishProcessor.flatMap(
-                        rSocket -> {
-                          Flowable<Payload> map =
-                              Flowable.fromPublisher((Publisher) arg)
-                                  .map(
-                                      o -> {
-                                        ByteBuffer data = requestSerializer.serialize(o);
-                                        int length =
-                                            RouteDestinationFlyweight.computeLength(
-                                                RouteType.STREAM_ID_ROUTE, groupIds.length);
-                                        ByteBuf byteBuf =
-                                            PooledByteBufAllocator.DEFAULT.directBuffer(length);
-                                        if (destination > 0) {
-                                          RouteDestinationFlyweight.encodeRouteByDestination(
-                                              byteBuf,
-                                              RouteType.STREAM_ID_ROUTE,
-                                              accountId,
-                                              destination,
-                                              groupIds);
-                                        } else {
-                                          RouteDestinationFlyweight.encodeRouteByGroup(
-                                              byteBuf,
-                                              RouteType.STREAM_GROUP_ROUTE,
-                                              accountId,
-                                              groupIds);
-                                        }
-
-                                        ByteBuffer byteBuffer =
-                                            ByteBuffer.allocateDirect(byteBuf.capacity());
-                                        byteBuf.getBytes(0, byteBuffer);
-
-                                        PayloadImpl payload =
-                                            new PayloadImpl(
-                                                requestSerializer.serialize(arg), byteBuffer);
-
-                                        return payload;
-                                      });
-
-                          return rSocket
-                              .requestChannel(map)
-                              .map(
-                                  payload -> {
-                                    ByteBuffer data = payload.getData();
-                                    return responseSerializer.deserialize(data);
-                                  });
-                        });
-
-                  } else if (annotation instanceof REQUEST_RESPONSE) {
-                    long[] groupIds = GroupUtil.toGroupIdArray(group);
-                    validate(method, args);
-                    REQUEST_RESPONSE request_response = (REQUEST_RESPONSE) annotation;
-                    Class<? extends Serializer> serializer =
-                        (Class<? extends Serializer>)
-                            Class.forName(
-                                request_response.serializer(),
-                                true,
-                                Thread.currentThread().getContextClassLoader());
-                    Constructor<? extends Serializer> serializerConstructor =
-                        serializer.getDeclaredConstructor(Class.class);
-                    Object arg = args[0];
-                    Serializer<?> requestSerializer =
-                        serializerConstructor.newInstance(arg.getClass());
-                    Serializer<?> responseSerializer =
-                        serializerConstructor.newInstance(getParameterizedClass(returnType));
-
-                    rSocketPublishProcessor.flatMap(
-                        rSocket -> {
-                          int length =
-                              RouteDestinationFlyweight.computeLength(
-                                  RouteType.STREAM_ID_ROUTE, groupIds.length);
-                          ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(length);
-                          if (destination > 0) {
-                            RouteDestinationFlyweight.encodeRouteByDestination(
-                                byteBuf,
-                                RouteType.STREAM_ID_ROUTE,
-                                accountId,
-                                destination,
-                                groupIds);
-                          } else {
-                            RouteDestinationFlyweight.encodeRouteByGroup(
-                                byteBuf, RouteType.STREAM_GROUP_ROUTE, accountId, groupIds);
-                          }
-
-                          ByteBuffer byteBuffer = ByteBuffer.allocateDirect(byteBuf.capacity());
-                          byteBuf.getBytes(0, byteBuffer);
-
-                          PayloadImpl payload =
-                              new PayloadImpl(requestSerializer.serialize(arg), byteBuffer);
-
-                          return rSocket
-                              .requestResponse(payload)
-                              .map(
-                                  payload1 -> {
-                                    ByteBuffer data = payload1.getData();
-                                    return responseSerializer.deserialize(data);
-                                  });
-                        });
-
-                  } else if (annotation instanceof REQUEST_STREAM) {
-                    long[] groupIds = GroupUtil.toGroupIdArray(group);
-                    validate(method, args);
-                    REQUEST_STREAM request_stream = (REQUEST_STREAM) annotation;
-                    Class<? extends Serializer> serializer =
-                        (Class<? extends Serializer>)
-                            Class.forName(
-                                request_stream.serializer(),
-                                true,
-                                Thread.currentThread().getContextClassLoader());
-                    Constructor<? extends Serializer> serializerConstructor =
-                        serializer.getDeclaredConstructor(Class.class);
-                    Object arg = args[0];
-                    Serializer<?> requestSerializer =
-                        serializerConstructor.newInstance(arg.getClass());
-                    Serializer<?> responseSerializer =
-                        serializerConstructor.newInstance(getParameterizedClass(returnType));
-
-                    rSocketPublishProcessor.flatMap(
-                        rSocket -> {
-                          int length =
-                              RouteDestinationFlyweight.computeLength(
-                                  RouteType.STREAM_ID_ROUTE, groupIds.length);
-                          ByteBuf byteBuf = PooledByteBufAllocator.DEFAULT.directBuffer(length);
-                          if (destination > 0) {
-                            RouteDestinationFlyweight.encodeRouteByDestination(
-                                byteBuf,
-                                RouteType.STREAM_ID_ROUTE,
-                                accountId,
-                                destination,
-                                groupIds);
-                          } else {
-                            RouteDestinationFlyweight.encodeRouteByGroup(
-                                byteBuf, RouteType.STREAM_GROUP_ROUTE, accountId, groupIds);
-                          }
-
-                          ByteBuffer byteBuffer = ByteBuffer.allocateDirect(byteBuf.capacity());
-                          byteBuf.getBytes(0, byteBuffer);
-
-                          PayloadImpl payload =
-                              new PayloadImpl(requestSerializer.serialize(arg), byteBuffer);
-
-                          return rSocket
-                              .requestStream(payload)
-                              .map(
-                                  payload1 -> {
-                                    ByteBuffer data = payload1.getData();
-                                    return responseSerializer.deserialize(data);
-                                  });
-                        });
-                  }
-                }
-
-                throw new IllegalStateException("no method found with netifi annotation");
-              }
-            });
+            new NetifiInvocationHandler(rSocketPublishProcessor, accountId, group, destination, idGenerator));
 
     return (T) o;
   }
