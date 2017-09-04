@@ -8,15 +8,24 @@ node {
         withCredentials([
             string(credentialsId: 'artifactory-user', variable: 'secret')
         ]) {
-            stage('Checkout') {
-                checkout scm
+            pipeline {
+                agent any
+                triggers {
+                    pollSCM 'H/5 * * * *'
+                }
+
+                stage('Checkout') {
+                    checkout scm
+                }
+                stage('Build') {
+                   sh './gradlew clean build --info'
+                }
+                stage('Publish') {
+                   sh './gradlew publish -P$secret --info'
+                }
             }
-            stage('Build') {
-               sh './gradlew clean build --info'
-            }
-            stage('Publish') {
-               sh './gradlew publish -P$secret --info'
-            }
+
         }
     }
 }
+
