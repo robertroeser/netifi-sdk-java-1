@@ -5,6 +5,7 @@ import io.netifi.nrqp.frames.RouteDestinationFlyweight;
 import io.netifi.nrqp.frames.RoutingFlyweight;
 import io.netifi.sdk.annotations.REQUEST_RESPONSE;
 import io.netifi.sdk.annotations.REQUEST_STREAM;
+import io.netifi.sdk.serializer.Serializers;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.reactivex.Flowable;
@@ -16,6 +17,8 @@ import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -97,24 +100,21 @@ public class IntegrationTest {
     TestService testService = client.create(TestService.class, 100, "test.group", 2);
     TestService testService2 = client.create(TestService.class, 100, "test.group", 3);
 
-    testService
-        .test(1234)
-        .doOnError(Throwable::printStackTrace)
-        .subscribe(
-            c -> {
-              Assert.assertEquals("1234", c);
-              latch.countDown();
-            });
-    latch.await();
+    String s1 = testService.test(1234).doOnError(Throwable::printStackTrace).blockingLast();
+    Assert.assertEquals("1234", s1);
 
-    CountDownLatch latch1 = new CountDownLatch(5);
     Flowable.merge(testService.getTicks(), testService2.getTicks())
         .flatMap(i -> testService.test(i))
         .take(5)
         .doOnNext(s -> System.out.println("got " + s))
-        .subscribe(s -> latch1.countDown());
+        .blockingLast();
 
-    latch1.await();
+    ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+    buffer.putInt(3);
+    buffer.flip();
+
+    List<ByteBuffer> byteBuffers = testService.get(buffer).toList().blockingGet();
+    Assert.assertEquals(3, byteBuffers.size());
   }
 
   public interface TestService {
@@ -123,10 +123,12 @@ public class IntegrationTest {
 
     @REQUEST_STREAM
     Flowable<Integer> getTicks();
+
+    @REQUEST_STREAM(serializer = Serializers.BINARY)
+    Flowable<ByteBuffer> get(ByteBuffer buffer);
   }
 
   public static class DefaultTestService implements TestService {
-
     @Override
     public Flowable<String> test(Integer integer) {
       return Flowable.just(String.valueOf(integer));
@@ -136,6 +138,18 @@ public class IntegrationTest {
     public Flowable<Integer> getTicks() {
       return Flowable.interval(1000, TimeUnit.MILLISECONDS)
           .map(i -> (int) System.currentTimeMillis());
+    }
+
+    @Override
+    public Flowable<ByteBuffer> get(ByteBuffer buffer) {
+      int anInt = buffer.getInt();
+      System.out.println("sending " + 3);
+      return Flowable.range(1, anInt)
+          .map(
+              i -> {
+                byte[] bytes = new byte[1024];
+                return ByteBuffer.wrap(bytes);
+              });
     }
   }
 }

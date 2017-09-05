@@ -1,14 +1,10 @@
 package io.netifi.sdk.serializer;
 
-import io.netifi.sdk.annotations.FIRE_FORGET;
-
 import java.nio.ByteBuffer;
 
 /** */
 public class ByteBufferSerializer implements Serializer<ByteBuffer> {
-  private static final ByteBufferSerializer SERIALIZER = new ByteBufferSerializer();
-  
-  private ByteBufferSerializer() {}
+  public ByteBufferSerializer(Class<?> clazz) {}
 
   @Override
   public Class<ByteBuffer> getType() {
