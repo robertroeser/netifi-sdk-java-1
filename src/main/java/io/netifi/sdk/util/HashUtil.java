@@ -5,8 +5,10 @@ import net.openhft.hashing.LongHashFunction;
 /**
  *
  */
-public class HashUtil {
+public final class HashUtil {
     private static final LongHashFunction xx = LongHashFunction.xx();
+    
+    private HashUtil() {}
     
     public static long hash(String input) {
         return xx.hashChars(input);

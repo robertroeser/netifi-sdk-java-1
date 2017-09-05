@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** */
-public class Serializers {
+public final class Serializers {
   public static final String DEFAULT_SERIALIZER_PROPERTY = "netifi.serializer.default";
   public static final String CBOR = "io.netifi.sdk.serializer.CBORSerializer";
   public static final String BINARY = "io.netifi.sdk.serializer.ByteBufferSerializer";
@@ -23,6 +23,8 @@ public class Serializers {
     SERIALIZERS = new ConcurrentHashMap<>();
   }
 
+  private Serializers() {}
+  
   @SuppressWarnings("unchecked")
   public static Class<? extends Serializer> getSerializerClass(String className) {
     return SERIALIZER_CLASSES.computeIfAbsent(

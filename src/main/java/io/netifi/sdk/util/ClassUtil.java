@@ -4,7 +4,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 /** */
-public class ClassUtil {
+public final class ClassUtil {
+  private ClassUtil() {}
+  
   public static Class<?> getParametrizedClass(Class<?> clazz) throws Exception {
     Type superclassType = clazz.getGenericSuperclass();
     if (!ParameterizedType.class.isAssignableFrom(superclassType.getClass())) {
