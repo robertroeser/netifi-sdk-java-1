@@ -89,6 +89,7 @@ public class Netifi implements AutoCloseable {
 
                   return RSocketFactory.connect()
                       .errorConsumer(throwable -> logger.error("unhandled error", throwable))
+                      .fragment(512)
                       .setupPayload(new PayloadImpl(new byte[0], bytes))
                       .acceptor(
                           rSocket -> {
@@ -214,7 +215,7 @@ public class Netifi implements AutoCloseable {
       this.accountId = accountId;
       return this;
     }
-    
+
     public Builder destination(String destination) {
       this.destination = destination;
       this.destinationId = HashUtil.hash(destination);

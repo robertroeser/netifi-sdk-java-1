@@ -8,12 +8,6 @@ node {
         withCredentials([
             string(credentialsId: 'artifactory-user', variable: 'secret')
         ]) {
-            pipeline {
-                agent any
-                triggers {
-                    pollSCM 'H/5 * * * *'
-                }
-
                 stage('Checkout') {
                     checkout scm
                 }
@@ -25,7 +19,6 @@ node {
                 }
             }
 
-        }
     }
 }
 

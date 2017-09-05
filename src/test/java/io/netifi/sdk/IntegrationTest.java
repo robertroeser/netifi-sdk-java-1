@@ -86,6 +86,7 @@ public class IntegrationTest {
   @Test
   public void test() throws Exception {
     RSocketFactory.receive()
+        .fragment(512)
         .acceptor(
             new SocketAcceptor() {
               ConcurrentHashMap<Long, RSocket> concurrentHashMap = new ConcurrentHashMap<>();
