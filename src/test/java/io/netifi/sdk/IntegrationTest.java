@@ -193,7 +193,7 @@ public class IntegrationTest {
 
     @Override
     public Flowable<Integer> getTicks() {
-      return Flowable.interval(1000, TimeUnit.MILLISECONDS)
+      return Flowable.interval(250, TimeUnit.MILLISECONDS)
           .map(i -> (int) System.currentTimeMillis());
     }
 

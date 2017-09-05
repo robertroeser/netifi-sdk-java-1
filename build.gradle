@@ -1,5 +1,8 @@
-apply plugin: 'java'
-apply plugin: 'maven-publish'
+plugins {
+    id "me.tatarka.retrolambda" version "3.7.0"
+    id "java"
+    id "maven-publish"
+}
 
 group = 'io.netifi.sdk'
 version = '0.1-SNAPSHOT'
@@ -25,6 +28,18 @@ dependencies {
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.9.0'
 
     testCompile 'junit:junit:4.10'
+}
+
+compileJava {
+    options.warnings = true
+    options.deprecation = true
+    options.compilerArgs += ["-Xlint:unchecked"]
+}
+
+retrolambda {
+    javaVersion JavaVersion.VERSION_1_7
+    defaultMethods false
+    incremental true
 }
 
 publishing {

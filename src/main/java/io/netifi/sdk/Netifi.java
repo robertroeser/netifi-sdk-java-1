@@ -2,6 +2,7 @@ package io.netifi.sdk;
 
 import io.netifi.nrqp.frames.DestinationSetupFlyweight;
 import io.netifi.sdk.rs.RequestHandlingRSocket;
+import io.netifi.sdk.util.HashUtil;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -211,6 +212,13 @@ public class Netifi implements AutoCloseable {
 
     public Builder accountId(long accountId) {
       this.accountId = accountId;
+      return this;
+    }
+    
+    public Builder destination(String destination) {
+      this.destination = destination;
+      this.destinationId = HashUtil.hash(destination);
+
       return this;
     }
 
