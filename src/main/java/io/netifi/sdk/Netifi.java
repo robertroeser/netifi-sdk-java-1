@@ -164,8 +164,8 @@ public class Netifi implements AutoCloseable {
   }
 
   public static class Builder {
-    private String host = "edge.netifi.io";
-    private Integer port = 7001;
+    private String host = "netifiedge.trafficmanager.net";
+    private Integer port = 8001;
     private Long accessKey;
     private Long accountId;
     private String group;
