@@ -13,6 +13,7 @@ import io.netifi.sdk.util.ClassUtil;
 import io.netifi.sdk.util.GroupUtil;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.reactivex.Flowable;
 import io.reactivex.processors.ReplayProcessor;
@@ -256,6 +257,8 @@ class NetifiInvocationHandler implements InvocationHandler {
                     RouteDestinationFlyweight.encodeRouteByGroup(
                         route, RouteType.STREAM_GROUP_ROUTE, accountId, groupIds);
                   }
+
+                  System.out.println(ByteBufUtil.prettyHexDump(route, 0, route.capacity()));
 
                   int length = RoutingFlyweight.computeLength(true, false, false, route);
 

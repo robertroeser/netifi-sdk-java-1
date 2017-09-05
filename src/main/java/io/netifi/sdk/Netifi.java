@@ -89,7 +89,6 @@ public class Netifi implements AutoCloseable {
 
                   return RSocketFactory.connect()
                       .errorConsumer(throwable -> logger.error("unhandled error", throwable))
-                      .fragment(512)
                       .setupPayload(new PayloadImpl(new byte[0], bytes))
                       .acceptor(
                           rSocket -> {

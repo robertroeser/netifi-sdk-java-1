@@ -86,7 +86,6 @@ public class IntegrationTest {
   @Test
   public void test() throws Exception {
     RSocketFactory.receive()
-        .fragment(512)
         .acceptor(
             new SocketAcceptor() {
               ConcurrentHashMap<Long, RSocket> concurrentHashMap = new ConcurrentHashMap<>();
@@ -201,7 +200,7 @@ public class IntegrationTest {
     @Override
     public Flowable<ByteBuffer> get(ByteBuffer buffer) {
       int anInt = buffer.getInt();
-      System.out.println("sending " + 3);
+      System.out.println("sending " + anInt);
       return Flowable.range(1, anInt)
           .map(
               i -> {
