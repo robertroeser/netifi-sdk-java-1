@@ -21,11 +21,68 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /** */
 @Ignore
 public class IntegrationTest {
+  @Test
+  public void testReconnect() throws Exception {
+    Netifi server =
+        Netifi.builder()
+            .accountId(100)
+            .destinationId(2)
+            .host("localhost")
+            .port(8801)
+            .group("test.group")
+            .build();
+
+    Thread.sleep(5_000);
+
+    CountDownLatch latch = new CountDownLatch(1);
+
+    RSocketFactory.receive()
+        .acceptor(
+            new SocketAcceptor() {
+              ConcurrentHashMap<Long, RSocket> concurrentHashMap = new ConcurrentHashMap<>();
+
+              @Override
+              public Mono<RSocket> accept(ConnectionSetupPayload setup, RSocket sendingSocket) {
+                ByteBuf byteBuf = Unpooled.wrappedBuffer(setup.getMetadata());
+                long destinationId = DestinationSetupFlyweight.destinationId(byteBuf);
+                System.out.println("destination id " + destinationId + " connecting");
+                concurrentHashMap.put(destinationId, sendingSocket);
+                latch.countDown();
+                return Mono.just(
+                    new AbstractRSocket() {
+                      @Override
+                      public Mono<Payload> requestResponse(Payload payload) {
+                        ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
+                        ByteBuf route = RoutingFlyweight.route(metadata);
+                        long destinationId1 = RouteDestinationFlyweight.destinationId(route);
+                        RSocket rSocket = concurrentHashMap.get(destinationId1);
+                        return rSocket.requestResponse(payload);
+                      }
+
+                      @Override
+                      public Flux<Payload> requestStream(Payload payload) {
+                        ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
+                        ByteBuf route = RoutingFlyweight.route(metadata);
+                        long destinationId1 = RouteDestinationFlyweight.destinationId(route);
+                        RSocket rSocket = concurrentHashMap.get(destinationId1);
+                        return rSocket.requestStream(payload);
+                      }
+                    });
+              }
+            })
+        .transport(TcpServerTransport.create("localhost", 8801))
+        .start()
+        .block();
+
+    latch.await();
+  }
+
   @Test
   public void test() throws Exception {
     RSocketFactory.receive()
@@ -148,6 +205,7 @@ public class IntegrationTest {
           .map(
               i -> {
                 byte[] bytes = new byte[1024];
+                ThreadLocalRandom.current().nextBytes(bytes);
                 return ByteBuffer.wrap(bytes);
               });
     }
