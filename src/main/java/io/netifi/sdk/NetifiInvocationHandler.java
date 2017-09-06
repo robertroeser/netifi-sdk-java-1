@@ -3,10 +3,10 @@ package io.netifi.sdk;
 import io.netifi.nrqp.frames.RouteDestinationFlyweight;
 import io.netifi.nrqp.frames.RouteType;
 import io.netifi.nrqp.frames.RoutingFlyweight;
-import io.netifi.sdk.annotations.FIRE_FORGET;
-import io.netifi.sdk.annotations.REQUEST_CHANNEL;
-import io.netifi.sdk.annotations.REQUEST_RESPONSE;
-import io.netifi.sdk.annotations.REQUEST_STREAM;
+import io.netifi.sdk.annotations.FireForget;
+import io.netifi.sdk.annotations.RequestChannel;
+import io.netifi.sdk.annotations.RequestResponse;
+import io.netifi.sdk.annotations.RequestStream;
 import io.netifi.sdk.serializer.Serializer;
 import io.netifi.sdk.serializer.Serializers;
 import io.netifi.sdk.util.ClassUtil;
@@ -92,12 +92,12 @@ class NetifiInvocationHandler implements InvocationHandler {
 
     Annotation[] annotations = method.getDeclaredAnnotations();
     for (Annotation annotation : annotations) {
-      if (annotation instanceof FIRE_FORGET) {
+      if (annotation instanceof FireForget) {
         long[] groupIds = GroupUtil.toGroupIdArray(group);
-        FIRE_FORGET fire_forget = (FIRE_FORGET) annotation;
+        FireForget fireforget = (FireForget) annotation;
         Object arg = args != null ? args[0] : null;
         Serializer<?> requestSerializer =
-            arg != null ? Serializers.getSerializer(fire_forget.serializer(), arg) : null;
+            arg != null ? Serializers.getSerializer(fireforget.serializer(), arg) : null;
 
         return rSocketPublishProcessor
             .take(1)
@@ -147,9 +147,9 @@ class NetifiInvocationHandler implements InvocationHandler {
 
                   return rSocket.fireAndForget(payload);
                 });
-      } else if (annotation instanceof REQUEST_CHANNEL) {
+      } else if (annotation instanceof RequestChannel) {
         long[] groupIds = GroupUtil.toGroupIdArray(group);
-        REQUEST_CHANNEL request_channel = (REQUEST_CHANNEL) annotation;
+        RequestChannel requestchannel = (RequestChannel) annotation;
         Object arg = args != null ? args[0] : null;
 
         if (args == null) {
@@ -158,9 +158,9 @@ class NetifiInvocationHandler implements InvocationHandler {
 
         Class<?> requestType = ClassUtil.getParametrizedClass(arg.getClass());
         Serializer<?> requestSerializer =
-            Serializers.getSerializer(request_channel.serializer(), requestType);
+            Serializers.getSerializer(requestchannel.serializer(), requestType);
         Serializer<?> responseSerializer =
-            Serializers.getSerializer(request_channel.serializer(), returnType);
+            Serializers.getSerializer(requestchannel.serializer(), returnType);
 
         return rSocketPublishProcessor
             .take(1)
@@ -227,14 +227,14 @@ class NetifiInvocationHandler implements InvocationHandler {
                           });
                 });
 
-      } else if (annotation instanceof REQUEST_RESPONSE) {
+      } else if (annotation instanceof RequestResponse) {
         long[] groupIds = GroupUtil.toGroupIdArray(group);
-        REQUEST_RESPONSE request_response = (REQUEST_RESPONSE) annotation;
+        RequestResponse requestresponse = (RequestResponse) annotation;
         Object arg = args != null ? args[0] : null;
         Serializer<?> requestSerializer =
-            arg != null ? Serializers.getSerializer(request_response.serializer(), arg) : null;
+            arg != null ? Serializers.getSerializer(requestresponse.serializer(), arg) : null;
         Serializer<?> responseSerializer =
-            Serializers.getSerializer(request_response.serializer(), returnType);
+            Serializers.getSerializer(requestresponse.serializer(), returnType);
 
         return rSocketPublishProcessor
             .take(1)
@@ -293,14 +293,14 @@ class NetifiInvocationHandler implements InvocationHandler {
                           });
                 });
 
-      } else if (annotation instanceof REQUEST_STREAM) {
+      } else if (annotation instanceof RequestStream) {
         long[] groupIds = GroupUtil.toGroupIdArray(group);
-        REQUEST_STREAM request_stream = (REQUEST_STREAM) annotation;
+        RequestStream requeststream = (RequestStream) annotation;
         Object arg = args != null ? args[0] : null;
         Serializer<?> requestSerializer =
-            arg != null ? Serializers.getSerializer(request_stream.serializer(), arg) : null;
+            arg != null ? Serializers.getSerializer(requeststream.serializer(), arg) : null;
         Serializer<?> responseSerializer =
-            Serializers.getSerializer(request_stream.serializer(), returnType);
+            Serializers.getSerializer(requeststream.serializer(), returnType);
 
         return rSocketPublishProcessor
             .take(1)
@@ -359,6 +359,6 @@ class NetifiInvocationHandler implements InvocationHandler {
       }
     }
 
-    throw new IllegalStateException("no method found with netifi annotation");
+    throw new IllegalStateException("no method found with Service annotation");
   }
 }

@@ -1,7 +1,7 @@
 package io.netifi.sdk;
 
-import io.netifi.sdk.annotations.REQUEST_RESPONSE;
-import io.netifi.sdk.annotations.REQUEST_STREAM;
+import io.netifi.sdk.annotations.RequestResponse;
+import io.netifi.sdk.annotations.RequestStream;
 import io.netifi.sdk.serializer.JSONSerializer;
 import io.netifi.sdk.serializer.Serializers;
 import io.netifi.sdk.util.TimebasedIdGenerator;
@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 /** */
-public class NetifiInvocationHandlerTest {
+public class ServiceInvocationHandlerTest {
   @Test
   public void testRequestResponseInvocation() throws Exception {
     ReplayProcessor<RSocket> rSocketPublishProcessor = ReplayProcessor.create();
@@ -104,13 +104,13 @@ public class NetifiInvocationHandlerTest {
   }
 
   public interface TestService {
-    @REQUEST_RESPONSE(serializer = Serializers.JSON)
+    @RequestResponse(serializer = Serializers.JSON)
     Flowable<String> test(Integer integer);
 
-    @REQUEST_RESPONSE(serializer = Serializers.JSON)
+    @RequestResponse(serializer = Serializers.JSON)
     Flowable<String> noArgs();
 
-    @REQUEST_STREAM(serializer = Serializers.JSON)
+    @RequestStream(serializer = Serializers.JSON)
     Flowable<Integer> stream();
   }
 

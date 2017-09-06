@@ -2,10 +2,11 @@ package io.netifi.sdk.annotations;
 
 import java.lang.annotation.*;
 
-/** */
 @Documented
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface REQUEST_STREAM {
-  String serializer() default "";
+@NetifiAnnotation
+public @interface Service {
+    long accountId();
+    String group();
 }

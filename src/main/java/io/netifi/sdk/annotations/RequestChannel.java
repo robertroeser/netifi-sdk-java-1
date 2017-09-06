@@ -8,6 +8,7 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FIRE_FORGET {
+@NetifiAnnotation
+public @interface RequestChannel {
     String serializer() default "";
 }

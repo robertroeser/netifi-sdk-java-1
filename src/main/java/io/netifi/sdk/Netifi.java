@@ -1,6 +1,7 @@
 package io.netifi.sdk;
 
 import io.netifi.nrqp.frames.DestinationSetupFlyweight;
+import io.netifi.sdk.annotations.Service;
 import io.netifi.sdk.rs.RequestHandlingRSocket;
 import io.netifi.sdk.util.HashUtil;
 import io.netifi.sdk.util.TimebasedIdGenerator;
@@ -18,11 +19,13 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 
 import javax.xml.bind.DatatypeConverter;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netifi.sdk.util.HashUtil.hash;
 
@@ -69,7 +72,9 @@ public class Netifi implements AutoCloseable {
     this.accessTokenBytes = accessTokenBytes;
     this.rSocketPublishProcessor = ReplayProcessor.create(1);
     this.idGenerator = new TimebasedIdGenerator((int) destinationId);
-
+  
+    AtomicLong delay = new AtomicLong();
+    
     this.disposable =
         Mono.defer(
                 () -> {
@@ -94,10 +99,14 @@ public class Netifi implements AutoCloseable {
                             return new RequestHandlingRSocket(registry);
                           })
                       .transport(TcpClientTransport.create(host, port))
-                      .start();
+                      .start()
+                      .doOnSuccess(s -> delay.set(0));
                 })
             .doOnError(Throwable::printStackTrace)
-            .delayElement(Duration.ofSeconds(10))
+            .onErrorResume(t -> {
+              long d = Math.min(10_000, delay.addAndGet(500));
+              return Mono.delay(Duration.ofMillis(d)).then(Mono.error(t));
+            })
             .retry(throwable -> running)
             .subscribe();
   }
@@ -108,10 +117,8 @@ public class Netifi implements AutoCloseable {
 
   @Override
   public String toString() {
-    return "Netifi{"
-        + "idGenerator="
-        + idGenerator
-        + ", host='"
+    return "Service{"
+        + "host='"
         + host
         + '\''
         + ", port="
@@ -137,13 +144,35 @@ public class Netifi implements AutoCloseable {
         + Arrays.toString(accessTokenBytes)
         + ", running="
         + running
-        + ", registry="
-        + registry
-        + ", rSocketPublishProcessor="
-        + rSocketPublishProcessor
-        + ", disposable="
-        + disposable
         + '}';
+  }
+
+  public <T> T create(Class<T> service) {
+    return create(service, -1);
+  }
+
+  public <T> T create(Class<T> service, long destination) {
+    Objects.requireNonNull(service, "service must be non-null");
+    Annotation[] annotations = service.getDeclaredAnnotations();
+
+    if (annotations == null || annotations.length == 0) {
+      throw new IllegalStateException("the class " + service.getName() + " has no annotations");
+    }
+
+    Service Service = null;
+    for (Annotation annotation : annotations) {
+      if (annotation instanceof Service) {
+        Service = (Service) annotation;
+        break;
+      }
+    }
+
+    Objects.requireNonNull(Service, "no Service annotation found on " + service.getName());
+
+    long accountId = Service.accountId();
+    String group = Service.group();
+
+    return create(service, accountId, group, destination);
   }
 
   public <T> T create(Class<T> service, long accountId, String group) {
@@ -160,6 +189,7 @@ public class Netifi implements AutoCloseable {
    * @return
    */
   public <T> T create(Class<T> service, long accountId, String group, long destination) {
+    Objects.requireNonNull(service, "service must be non-null");
     Object o =
         Proxy.newProxyInstance(
             Thread.currentThread().getContextClassLoader(),

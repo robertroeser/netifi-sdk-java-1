@@ -1,7 +1,7 @@
 package io.netifi.sdk;
 
-import io.netifi.sdk.annotations.REQUEST_RESPONSE;
-import io.netifi.sdk.annotations.REQUEST_STREAM;
+import io.netifi.sdk.annotations.RequestResponse;
+import io.netifi.sdk.annotations.RequestStream;
 import io.netifi.sdk.rs.RequestHandlerMetadata;
 import io.netifi.sdk.serializer.Serializer;
 import io.netifi.sdk.util.HashUtil;
@@ -58,13 +58,13 @@ public class DefaultRequestHandlerRegistryTest {
   }
 
   public interface TestService {
-    @REQUEST_RESPONSE
+    @RequestResponse
     Flowable<String> test(Integer integer);
 
-    @REQUEST_RESPONSE
+    @RequestResponse
     Flowable<String> noArgs();
 
-    @REQUEST_STREAM
+    @RequestStream
     Flowable<Integer> stream();
   }
 

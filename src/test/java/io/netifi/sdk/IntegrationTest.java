@@ -3,8 +3,9 @@ package io.netifi.sdk;
 import io.netifi.nrqp.frames.DestinationSetupFlyweight;
 import io.netifi.nrqp.frames.RouteDestinationFlyweight;
 import io.netifi.nrqp.frames.RoutingFlyweight;
-import io.netifi.sdk.annotations.REQUEST_RESPONSE;
-import io.netifi.sdk.annotations.REQUEST_STREAM;
+import io.netifi.sdk.annotations.RequestResponse;
+import io.netifi.sdk.annotations.RequestStream;
+import io.netifi.sdk.annotations.Service;
 import io.netifi.sdk.serializer.Serializers;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -29,8 +30,8 @@ import java.util.concurrent.TimeUnit;
 public class IntegrationTest {
   @Test
   public void testReconnect() throws Exception {
-    Netifi server =
-        Netifi.builder()
+    io.netifi.sdk.Netifi server =
+        io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(2)
             .host("localhost")
@@ -85,7 +86,7 @@ public class IntegrationTest {
 
   @Test
   public void test() throws Exception {
-    RSocketFactory.receive()
+    /*RSocketFactory.receive()
         .acceptor(
             new SocketAcceptor() {
               ConcurrentHashMap<Long, RSocket> concurrentHashMap = new ConcurrentHashMap<>();
@@ -120,42 +121,42 @@ public class IntegrationTest {
             })
         .transport(TcpServerTransport.create("localhost", 8801))
         .start()
-        .block();
+        .block();*/
 
-    Netifi server =
-        Netifi.builder()
+    io.netifi.sdk.Netifi server =
+        io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(2)
-            .host("localhost")
-            .port(8801)
+            //.host("localhost")
+            //.port(8801)
             .group("test.group")
             .build();
 
     server.registerHandler(TestService.class, new DefaultTestService());
 
-    Netifi server2 =
-        Netifi.builder()
+    io.netifi.sdk.Netifi server2 =
+        io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(3)
-            .host("localhost")
-            .port(8801)
+            //.host("localhost")
+            //.port(8801)
             .group("test.group")
             .build();
 
     server2.registerHandler(TestService.class, new DefaultTestService());
 
-    Netifi client =
-        Netifi.builder()
+    io.netifi.sdk.Netifi client =
+        io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(1)
-            .host("localhost")
-            .port(8801)
+            //.host("localhost")
+            //.port(8801)
             .group("test.group")
             .build();
 
     CountDownLatch latch = new CountDownLatch(1);
-    TestService testService = client.create(TestService.class, 100, "test.group", 2);
-    TestService testService2 = client.create(TestService.class, 100, "test.group", 3);
+    TestService testService = client.create(TestService.class);
+    TestService testService2 = client.create(TestService.class);
 
     String s1 = testService.test(1234).doOnError(Throwable::printStackTrace).blockingLast();
     Assert.assertEquals("1234", s1);
@@ -174,14 +175,15 @@ public class IntegrationTest {
     Assert.assertEquals(3, byteBuffers.size());
   }
 
+  @Service(accountId = 100, group = "test.group")
   public interface TestService {
-    @REQUEST_RESPONSE
+    @RequestResponse
     Flowable<String> test(Integer integer);
 
-    @REQUEST_STREAM
+    @RequestStream
     Flowable<Integer> getTicks();
 
-    @REQUEST_STREAM(serializer = Serializers.BINARY)
+    @RequestStream(serializer = Serializers.BINARY)
     Flowable<ByteBuffer> get(ByteBuffer buffer);
   }
 

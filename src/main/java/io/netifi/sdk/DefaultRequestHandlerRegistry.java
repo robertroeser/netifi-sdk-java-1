@@ -1,9 +1,9 @@
 package io.netifi.sdk;
 
-import io.netifi.sdk.annotations.FIRE_FORGET;
-import io.netifi.sdk.annotations.REQUEST_CHANNEL;
-import io.netifi.sdk.annotations.REQUEST_RESPONSE;
-import io.netifi.sdk.annotations.REQUEST_STREAM;
+import io.netifi.sdk.annotations.FireForget;
+import io.netifi.sdk.annotations.RequestChannel;
+import io.netifi.sdk.annotations.RequestResponse;
+import io.netifi.sdk.annotations.RequestStream;
 import io.netifi.sdk.rs.RequestHandlerMetadata;
 import io.netifi.sdk.serializer.Serializer;
 import io.netifi.sdk.serializer.Serializers;
@@ -60,11 +60,11 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
         Class<?> returnType = (Class<?>) typeArguments[0];
         Annotation[] annotations = method.getDeclaredAnnotations();
         for (Annotation annotation : annotations) {
-          if (annotation instanceof FIRE_FORGET) {
-            FIRE_FORGET fire_forget = (FIRE_FORGET) annotation;
+          if (annotation instanceof FireForget) {
+            FireForget fireforget = (FireForget) annotation;
             Serializer<?> requestSerializer =
                 requestType != null
-                    ? Serializers.getSerializer(fire_forget.serializer(), requestType)
+                    ? Serializers.getSerializer(fireforget.serializer(), requestType)
                     : null;
             Serializer<?> responseSerializer = null;
 
@@ -82,15 +82,15 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
             list.add(handlerMetadata);
             break;
 
-          } else if (annotation instanceof REQUEST_CHANNEL) {
-            REQUEST_CHANNEL request_channel = (REQUEST_CHANNEL) annotation;
+          } else if (annotation instanceof RequestChannel) {
+            RequestChannel requestchannel = (RequestChannel) annotation;
             Serializer<?> requestSerializer =
                 requestType != null
                     ? Serializers.getSerializer(
-                        request_channel.serializer(), ClassUtil.getParametrizedClass(requestType))
+                        requestchannel.serializer(), ClassUtil.getParametrizedClass(requestType))
                     : null;
             Serializer<?> responseSerializer =
-                Serializers.getSerializer(request_channel.serializer(), returnType);
+                Serializers.getSerializer(requestchannel.serializer(), returnType);
 
             RequestHandlerMetadata handlerMetadata =
                 new RequestHandlerMetadata(
@@ -105,14 +105,14 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
 
             list.add(handlerMetadata);
             break;
-          } else if (annotation instanceof REQUEST_RESPONSE) {
-            REQUEST_RESPONSE request_response = (REQUEST_RESPONSE) annotation;
+          } else if (annotation instanceof RequestResponse) {
+            RequestResponse requestresponse = (RequestResponse) annotation;
             Serializer<?> requestSerializer =
                 requestType != null
-                    ? Serializers.getSerializer(request_response.serializer(), requestType)
+                    ? Serializers.getSerializer(requestresponse.serializer(), requestType)
                     : null;
             Serializer<?> responseSerializer =
-                Serializers.getSerializer(request_response.serializer(), returnType);
+                Serializers.getSerializer(requestresponse.serializer(), returnType);
 
             RequestHandlerMetadata handlerMetadata =
                 new RequestHandlerMetadata(
@@ -127,14 +127,14 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
 
             list.add(handlerMetadata);
             break;
-          } else if (annotation instanceof REQUEST_STREAM) {
-            REQUEST_STREAM request_stream = (REQUEST_STREAM) annotation;
+          } else if (annotation instanceof RequestStream) {
+            RequestStream requeststream = (RequestStream) annotation;
             Serializer<?> requestSerializer =
                 requestType != null
-                    ? Serializers.getSerializer(request_stream.serializer(), requestType)
+                    ? Serializers.getSerializer(requeststream.serializer(), requestType)
                     : null;
             Serializer<?> responseSerializer =
-                Serializers.getSerializer(request_stream.serializer(), returnType);
+                Serializers.getSerializer(requeststream.serializer(), returnType);
 
             RequestHandlerMetadata handlerMetadata =
                 new RequestHandlerMetadata(
@@ -153,11 +153,12 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
         }
       }
     } catch (Exception e) {
+      e.printStackTrace();
       throw new RuntimeException(e);
     }
 
     if (list.isEmpty()) {
-      throw new IllegalArgumentException("no methods annotated with Netifi annotations found");
+      throw new IllegalArgumentException("no methods annotated with Service annotations found");
     }
 
     list.forEach(metadata -> cachedMethods.putIfAbsent(metadata.getStringKey(), metadata));
