@@ -21,6 +21,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Objects;
 
 import static io.netifi.sdk.util.HashUtil.hash;
@@ -40,11 +41,8 @@ public class Netifi implements AutoCloseable {
   private String accessToken;
   private byte[] accessTokenBytes;
   private volatile boolean running = true;
-
   private RequestHandlerRegistry registry;
-
   private ReplayProcessor<RSocket> rSocketPublishProcessor;
-
   private volatile Disposable disposable;
 
   private Netifi(
@@ -106,6 +104,46 @@ public class Netifi implements AutoCloseable {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  @Override
+  public String toString() {
+    return "Netifi{"
+        + "idGenerator="
+        + idGenerator
+        + ", host='"
+        + host
+        + '\''
+        + ", port="
+        + port
+        + ", accessKey="
+        + accessKey
+        + ", accountId="
+        + accountId
+        + ", groupIds="
+        + Arrays.toString(groupIds)
+        + ", destination='"
+        + destination
+        + '\''
+        + ", destinationId="
+        + destinationId
+        + ", group='"
+        + group
+        + '\''
+        + ", accessToken='"
+        + accessToken
+        + '\''
+        + ", accessTokenBytes="
+        + Arrays.toString(accessTokenBytes)
+        + ", running="
+        + running
+        + ", registry="
+        + registry
+        + ", rSocketPublishProcessor="
+        + rSocketPublishProcessor
+        + ", disposable="
+        + disposable
+        + '}';
   }
 
   public <T> T create(Class<T> service, long accountId, String group) {
