@@ -7,6 +7,7 @@ import io.netifi.sdk.util.HashUtil;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.reactivex.Flowable;
 import io.reactivex.processors.ReplayProcessor;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
@@ -30,6 +31,7 @@ import static io.netifi.sdk.util.HashUtil.hash;
 /** This is where the magic happens */
 public class Netifi implements AutoCloseable {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
+  private static final Throwable CONNECTION_CLOSED = new Throwable("connection is closed");
   private final TimebasedIdGenerator idGenerator;
   private String host;
   private int port;
@@ -70,44 +72,55 @@ public class Netifi implements AutoCloseable {
     this.accessTokenBytes = accessTokenBytes;
     this.rSocketPublishProcessor = ReplayProcessor.create(1);
     this.idGenerator = new TimebasedIdGenerator((int) destinationId);
-
+  
+  
     AtomicLong delay = new AtomicLong();
+    Mono.create(
+            sink -> {
+              int length = DestinationSetupFlyweight.computeLength(false, groupIds.length);
+              byte[] bytes = new byte[length];
+              ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+              DestinationSetupFlyweight.encode(
+                  byteBuf,
+                  Unpooled.EMPTY_BUFFER,
+                  Unpooled.wrappedBuffer(new byte[20]),
+                  accountId,
+                  destinationId,
+                  idGenerator.nextId(),
+                  groupIds);
 
-    this.disposable =
-        Mono.defer(
-                () -> {
-                  int length = DestinationSetupFlyweight.computeLength(false, groupIds.length);
-                  byte[] bytes = new byte[length];
-                  ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-                  DestinationSetupFlyweight.encode(
-                      byteBuf,
-                      Unpooled.EMPTY_BUFFER,
-                      Unpooled.wrappedBuffer(new byte[20]),
-                      accountId,
-                      destinationId,
-                      idGenerator.nextId(),
-                      groupIds);
-
-                  return RSocketFactory.connect()
-                      .errorConsumer(throwable -> logger.error("unhandled error", throwable))
-                      .setupPayload(new PayloadImpl(new byte[0], bytes))
-                      .acceptor(
-                          rSocket -> {
-                            rSocketPublishProcessor.onNext(rSocket);
-                            return new RequestHandlingRSocket(registry);
-                          })
-                      .transport(TcpClientTransport.create(host, port))
-                      .start()
-                      .doOnSuccess(s -> delay.set(0));
-                })
-            .doOnError(Throwable::printStackTrace)
-            .onErrorResume(
-                t -> {
-                  long d = Math.min(10_000, delay.addAndGet(500));
-                  return Mono.delay(Duration.ofMillis(d)).then(Mono.error(t));
-                })
-            .retry(throwable -> running)
-            .subscribe();
+              RSocketFactory.connect()
+                  .keepAlive(Duration.ofSeconds(1), Duration.ofSeconds(5), 3)
+                  .errorConsumer(throwable -> logger.error("unhandled error", throwable))
+                  .setupPayload(new PayloadImpl(new byte[0], bytes))
+                  .acceptor(
+                      rSocket -> {
+                        rSocket
+                            .onClose()
+                            .doFinally(s -> {
+                              if (running) {
+                                sink.error(CONNECTION_CLOSED);
+                              }
+                            })
+                            .subscribe();
+                          logger.info("destination with id " + destinationId + " connected to " + host + ":" + port);
+                        rSocketPublishProcessor.onNext(rSocket);
+                        return new RequestHandlingRSocket(registry);
+                      })
+                  .transport(TcpClientTransport.create(host, port))
+                  .start()
+                  .doOnSuccess(s -> delay.set(0))
+                  .doOnError(sink::error)
+                  .subscribe();
+            })
+        .doOnError(Throwable::printStackTrace)
+        .onErrorResume(
+            t -> {
+              long d = Math.min(10_000, delay.addAndGet(500));
+              return Mono.delay(Duration.ofMillis(d)).then(Mono.error(t));
+            })
+        .retry(throwable -> running)
+        .subscribe();
   }
 
   public static Builder builder() {
@@ -277,7 +290,7 @@ public class Netifi implements AutoCloseable {
     public Builder destination(String destination) {
       this.destination = destination;
       this.destinationId = HashUtil.hash(destination);
-      
+
       return this;
     }
 
@@ -300,8 +313,6 @@ public class Netifi implements AutoCloseable {
           groupIds,
           destination,
           destinationId);
-      
-      
 
       return new Netifi(
           host,
