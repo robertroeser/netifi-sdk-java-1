@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn">
+<Appenders>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+        <PatternLayout pattern="%d %p %c{1.} [%t] %m%n"/>
+    </Console>
+    <Async name="Async">
+        <AppenderRef ref="STDOUT"/>
+    </Async>
+</Appenders>
+<Loggers>
+    <Root level="INFO" additivity="false">
+        <AppenderRef ref="Async"/>
+    </Root>
+    <logger name="io.netifi" level="DEBUG" additivity="false">
+        <AppenderRef ref="Async"/>
+    </logger>
+    <logger name="io.reactivesocket.FrameLogger" level="DEBUG" additivity="false">
+        <AppenderRef ref="Async"/>
+    </logger>
+</Loggers>
+</Configuration>

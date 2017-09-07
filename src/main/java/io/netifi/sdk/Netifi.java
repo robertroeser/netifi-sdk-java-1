@@ -7,7 +7,6 @@ import io.netifi.sdk.util.HashUtil;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.reactivex.Flowable;
 import io.reactivex.processors.ReplayProcessor;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
@@ -20,7 +19,6 @@ import reactor.core.publisher.Mono;
 
 import javax.xml.bind.DatatypeConverter;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.time.Duration;
 import java.util.Arrays;
@@ -72,9 +70,9 @@ public class Netifi implements AutoCloseable {
     this.accessTokenBytes = accessTokenBytes;
     this.rSocketPublishProcessor = ReplayProcessor.create(1);
     this.idGenerator = new TimebasedIdGenerator((int) destinationId);
-  
+
     AtomicLong delay = new AtomicLong();
-    
+
     this.disposable =
         Mono.defer(
                 () -> {
@@ -103,10 +101,11 @@ public class Netifi implements AutoCloseable {
                       .doOnSuccess(s -> delay.set(0));
                 })
             .doOnError(Throwable::printStackTrace)
-            .onErrorResume(t -> {
-              long d = Math.min(10_000, delay.addAndGet(500));
-              return Mono.delay(Duration.ofMillis(d)).then(Mono.error(t));
-            })
+            .onErrorResume(
+                t -> {
+                  long d = Math.min(10_000, delay.addAndGet(500));
+                  return Mono.delay(Duration.ofMillis(d)).then(Mono.error(t));
+                })
             .retry(throwable -> running)
             .subscribe();
   }
@@ -151,7 +150,11 @@ public class Netifi implements AutoCloseable {
     return create(service, -1);
   }
 
-  public <T> T create(Class<T> service, long destination) {
+  public <T> T create(Class<T> service, String destination) {
+    return create(service, HashUtil.hash(destination));
+  }
+
+  public <T> T create(Class<T> service, long destinationId) {
     Objects.requireNonNull(service, "service must be non-null");
     Annotation[] annotations = service.getDeclaredAnnotations();
 
@@ -172,24 +175,22 @@ public class Netifi implements AutoCloseable {
     long accountId = Service.accountId();
     String group = Service.group();
 
-    return create(service, accountId, group, destination);
+    return create(service, accountId, group, destinationId);
   }
 
   public <T> T create(Class<T> service, long accountId, String group) {
     return create(service, accountId, group, -1);
   }
 
-  /**
-   * Routes to a group
-   *
-   * @param service
-   * @param accountId
-   * @param group
-   * @param <T>
-   * @return
-   */
-  public <T> T create(Class<T> service, long accountId, String group, long destination) {
+  public <T> T create(Class<T> service, long accountId, String group, String destination) {
+    return create(service, accountId, group, HashUtil.hash(destination));
+  }
+
+  public <T> T create(Class<T> service, long accountId, String group, long destinationId) {
     Objects.requireNonNull(service, "service must be non-null");
+
+    logger.info("creating service {}, {}, {}, {}", service, accountId, group, destinationId);
+
     Object o =
         Proxy.newProxyInstance(
             Thread.currentThread().getContextClassLoader(),
@@ -198,7 +199,7 @@ public class Netifi implements AutoCloseable {
                 rSocketPublishProcessor,
                 accountId,
                 group,
-                destination,
+                destinationId,
                 this.accountId,
                 this.groupIds,
                 this.destinationId,
@@ -207,19 +208,9 @@ public class Netifi implements AutoCloseable {
     return (T) o;
   }
 
-  private void validate(Method method, Object[] args) {
-    if (args.length != 1) {
-      throw new IllegalStateException("methods can only have one argument");
-    }
-
-    Class<?> returnType = method.getReturnType();
-
-    if (!returnType.isAssignableFrom(Flowable.class)) {
-      throw new IllegalStateException("methods must return " + Flowable.class.getCanonicalName());
-    }
-  }
-
   public <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {
+    logger.info(
+        "registering class {}, with interface {}", t.getClass().toString(), clazz.toString());
     registry.registerHandler(clazz, t);
   }
 
@@ -286,7 +277,7 @@ public class Netifi implements AutoCloseable {
     public Builder destination(String destination) {
       this.destination = destination;
       this.destinationId = HashUtil.hash(destination);
-
+      
       return this;
     }
 
@@ -301,6 +292,16 @@ public class Netifi implements AutoCloseable {
       Objects.requireNonNull(accountId, "account Id is required");
       Objects.requireNonNull(group, "group is required");
       Objects.requireNonNull(destinationId, "destination id is required");
+
+      logger.info(
+          "registering with netifi with account id {}, group {}, groupIds {}, destination {}, and destination id {}",
+          accountId,
+          group,
+          groupIds,
+          destination,
+          destinationId);
+      
+      
 
       return new Netifi(
           host,
