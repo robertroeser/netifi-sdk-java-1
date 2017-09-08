@@ -73,7 +73,6 @@ public class Netifi implements AutoCloseable {
     this.rSocketPublishProcessor = ReplayProcessor.create(1);
     this.idGenerator = new TimebasedIdGenerator((int) destinationId);
   
-  
     AtomicLong delay = new AtomicLong();
     Mono.create(
             sink -> {
@@ -109,6 +108,7 @@ public class Netifi implements AutoCloseable {
                       })
                   .transport(TcpClientTransport.create(host, port))
                   .start()
+                  .timeout(Duration.ofSeconds(5))
                   .doOnSuccess(s -> delay.set(0))
                   .doOnError(sink::error)
                   .subscribe();
