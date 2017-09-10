@@ -35,7 +35,7 @@ import static io.netifi.sdk.util.HashUtil.hash;
 
 /** */
 class NetifiInvocationHandler implements InvocationHandler {
-  private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
+  private static final Logger logger = LoggerFactory.getLogger(NetifiInvocationHandler.class);
 
   private final RSocketBarrier barrier;
 
@@ -88,6 +88,16 @@ class NetifiInvocationHandler implements InvocationHandler {
       ParameterizedType parameterizedType = (ParameterizedType) type;
       Type[] typeArguments = parameterizedType.getActualTypeArguments();
       Class<?> returnType = (Class<?>) typeArguments[0];
+
+      if (logger.isTraceEnabled()) {
+        logger.trace(
+            "invoking \nnamespaceId -> {},\nclassId -> {},\nmethodId -> {}\nfor method {}, and class {}",
+            namespaceId,
+            classId,
+            methodId,
+            method,
+            method.getDeclaringClass().getName());
+      }
 
       if (!method.getReturnType().isAssignableFrom(Flowable.class)) {
         throw new IllegalStateException("method must return " + Flowable.class.getCanonicalName());

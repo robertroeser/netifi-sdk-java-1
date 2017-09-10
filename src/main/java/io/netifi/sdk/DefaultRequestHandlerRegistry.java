@@ -8,6 +8,8 @@ import io.netifi.sdk.rs.RequestHandlerMetadata;
 import io.netifi.sdk.serializer.Serializer;
 import io.netifi.sdk.serializer.Serializers;
 import io.netifi.sdk.util.ClassUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -22,6 +24,8 @@ import static io.netifi.sdk.util.HashUtil.hash;
 
 /** */
 public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
+  private static final Logger logger = LoggerFactory.getLogger(DefaultRequestHandlerRegistry.class);
+  
   Map<String, RequestHandlerMetadata> cachedMethods;
 
   public DefaultRequestHandlerRegistry() {
@@ -161,7 +165,11 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
       throw new IllegalArgumentException("no methods annotated with Service annotations found");
     }
 
-    list.forEach(metadata -> cachedMethods.putIfAbsent(metadata.getStringKey(), metadata));
+    for (RequestHandlerMetadata metadata : list) {
+      logger.debug("Registering {}", metadata);
+      cachedMethods.putIfAbsent(metadata.getStringKey(), metadata);
+    }
+    
   }
 
   @Override

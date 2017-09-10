@@ -89,4 +89,20 @@ public class RequestHandlerMetadata {
     result = 31 * result + (int) (methodId ^ (methodId >>> 32));
     return result;
   }
+
+  @Override
+  public String toString() {
+    return "\nRequestHandlerMetadata{\n"
+        + "\trequestSerializer=" + requestSerializer
+        + ",\n\tresponseSerializer=" + responseSerializer
+        + ",\n\tmethod=" + method
+        + ",\n\targument=" + (method.getParameters().length > 0 ? method.getParameters()[0] : "null")
+        + ",\n\treturnType=" + (method.getGenericReturnType())
+        + ",\n\tregisteredType=" + registeredType
+        + ",\n\tobject=" + object
+        + ",\n\tnamespaceId=" + namespaceId
+        + ",\n\tclassId=" + classId
+        + ",\n\tmethodId=" + methodId
+        + "\n}";
+  }
 }
