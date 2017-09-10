@@ -136,8 +136,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(2)
-            //.host("localhost")
-            //.port(8801)
+            .host("10.1.0.4")
+            .port(8001)
             .group("test.server")
             .build();
 
@@ -145,8 +145,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(3)
-            //.host("localhost")
-            //.port(8801)
+            .host("10.1.0.5")
+            .port(8001)
             .group("test.server")
             .build();
 
@@ -157,8 +157,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(1)
-            //.host("localhost")
-            //.port(8801)
+            .host("10.1.0.6")
+            .port(8001)
             .group("test.client")
             .build();
 
@@ -166,8 +166,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(4)
-            //.host("localhost")
-            //.port(8801)
+            .host("10.1.0.6")
+            .port(8001)
             .group("test.client")
             .build();
 

@@ -88,7 +88,7 @@ public class Netifi implements AutoCloseable {
                       groupIds);
 
                   RSocketFactory.connect()
-                      //.keepAlive(Duration.ofSeconds(1), Duration.ofSeconds(5), 3)
+                      .keepAlive(Duration.ofSeconds(1), Duration.ofSeconds(5), 3)
                       .errorConsumer(throwable -> logger.error("unhandled error", throwable))
                       .setupPayload(new PayloadImpl(new byte[0], bytes))
                       .acceptor(
@@ -117,7 +117,7 @@ public class Netifi implements AutoCloseable {
                           })
                       .transport(TcpClientTransport.create(host, port))
                       .start()
-                      .timeout(Duration.ofSeconds(30))
+                      .timeout(Duration.ofSeconds(5))
                       .doOnSuccess(s -> delay.set(0))
                       .doOnError(sink::error)
                       .subscribe();
