@@ -4,12 +4,11 @@ import io.netifi.sdk.annotations.RequestResponse;
 import io.netifi.sdk.annotations.RequestStream;
 import io.netifi.sdk.serializer.JSONSerializer;
 import io.netifi.sdk.serializer.Serializers;
+import io.netifi.sdk.util.RSocketBarrier;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.reactivex.Flowable;
-import io.reactivex.processors.ReplayProcessor;
 import io.rsocket.AbstractRSocket;
 import io.rsocket.Payload;
-import io.rsocket.RSocket;
 import io.rsocket.util.PayloadImpl;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,8 +23,8 @@ import java.util.List;
 public class ServiceInvocationHandlerTest {
   @Test
   public void testRequestResponseInvocation() throws Exception {
-    ReplayProcessor<RSocket> rSocketPublishProcessor = ReplayProcessor.create();
-    rSocketPublishProcessor.onNext(new TestSocket());
+    RSocketBarrier barrier = new RSocketBarrier();
+    barrier.setRSocket(new TestSocket());
     long accountId = 1;
     String group = "foo.bar.baz";
     long destination = -1;
@@ -36,7 +35,7 @@ public class ServiceInvocationHandlerTest {
                 Thread.currentThread().getContextClassLoader(),
                 new Class<?>[] {TestService.class},
                 new NetifiInvocationHandler(
-                    rSocketPublishProcessor,
+                    barrier,
                     accountId,
                     group,
                     destination,
@@ -51,8 +50,8 @@ public class ServiceInvocationHandlerTest {
 
   @Test
   public void testRequestResponseInvocationNoArgs() throws Exception {
-    ReplayProcessor<RSocket> rSocketPublishProcessor = ReplayProcessor.create();
-    rSocketPublishProcessor.onNext(new TestSocket());
+    RSocketBarrier barrier = new RSocketBarrier();
+    barrier.setRSocket(new TestSocket());
     long accountId = 1;
     String group = "foo.bar.baz";
     long destination = -1;
@@ -63,7 +62,7 @@ public class ServiceInvocationHandlerTest {
                 Thread.currentThread().getContextClassLoader(),
                 new Class<?>[] {TestService.class},
                 new NetifiInvocationHandler(
-                    rSocketPublishProcessor,
+                    barrier,
                     accountId,
                     group,
                     destination,
@@ -78,8 +77,8 @@ public class ServiceInvocationHandlerTest {
 
   @Test
   public void testStream() throws Exception {
-    ReplayProcessor<RSocket> rSocketPublishProcessor = ReplayProcessor.create();
-    rSocketPublishProcessor.onNext(new TestSocket());
+    RSocketBarrier barrier = new RSocketBarrier();
+    barrier.setRSocket(new TestSocket());
     long accountId = 1;
     String group = "foo.bar.baz";
     long destination = -1;
@@ -90,7 +89,7 @@ public class ServiceInvocationHandlerTest {
                 Thread.currentThread().getContextClassLoader(),
                 new Class<?>[] {TestService.class},
                 new NetifiInvocationHandler(
-                    rSocketPublishProcessor,
+                    barrier,
                     accountId,
                     group,
                     destination,

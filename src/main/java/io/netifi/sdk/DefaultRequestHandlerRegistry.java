@@ -165,7 +165,7 @@ public class DefaultRequestHandlerRegistry implements RequestHandlerRegistry {
   }
 
   @Override
-  public RequestHandlerMetadata lookup(String name) {
+  public synchronized RequestHandlerMetadata lookup(String name) {
     return cachedMethods.get(name);
   }
 

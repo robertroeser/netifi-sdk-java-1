@@ -88,18 +88,14 @@ public class IntegrationTest {
   @Test
   public void testReconnectWithKeepAlive() throws Exception {
     io.netifi.sdk.Netifi server =
-        io.netifi.sdk.Netifi.builder()
-            .accountId(100)
-            .destinationId(2)
-            .group("test.group")
-            .build();
-  
+        io.netifi.sdk.Netifi.builder().accountId(100).destinationId(2).group("test.group").build();
+
     LockSupport.park();
   }
 
   @Test
   public void test() throws Exception {
-    /*RSocketFactory.receive()
+    /*RSocketBarrier.receive()
     .acceptor(
         new SocketAcceptor() {
           ConcurrentHashMap<Long, RSocket> concurrentHashMap = new ConcurrentHashMap<>();
@@ -142,10 +138,8 @@ public class IntegrationTest {
             .destinationId(2)
             //.host("localhost")
             //.port(8801)
-            .group("test.group")
+            .group("test.server")
             .build();
-
-    server.registerHandler(TestService.class, new DefaultTestService());
 
     io.netifi.sdk.Netifi server2 =
         io.netifi.sdk.Netifi.builder()
@@ -153,9 +147,10 @@ public class IntegrationTest {
             .destinationId(3)
             //.host("localhost")
             //.port(8801)
-            .group("test.group")
+            .group("test.server")
             .build();
 
+    server.registerHandler(TestService.class, new DefaultTestService());
     server2.registerHandler(TestService.class, new DefaultTestService());
 
     io.netifi.sdk.Netifi client =
@@ -164,12 +159,20 @@ public class IntegrationTest {
             .destinationId(1)
             //.host("localhost")
             //.port(8801)
-            .group("test.group")
+            .group("test.client")
             .build();
 
-    CountDownLatch latch = new CountDownLatch(1);
+    io.netifi.sdk.Netifi client2 =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destinationId(4)
+            //.host("localhost")
+            //.port(8801)
+            .group("test.client")
+            .build();
+
     TestService testService = client.create(TestService.class);
-    TestService testService2 = client.create(TestService.class);
+    TestService testService2 = client2.create(TestService.class);
 
     String s1 = testService.test(1234).doOnError(Throwable::printStackTrace).blockingLast();
     Assert.assertEquals("1234", s1);
@@ -188,7 +191,7 @@ public class IntegrationTest {
     Assert.assertEquals(3, byteBuffers.size());
   }
 
-  @Service(accountId = 100, group = "test.group")
+  @Service(accountId = 100, group = "test.server")
   public interface TestService {
     @RequestResponse
     Flowable<String> test(Integer integer);

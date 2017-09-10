@@ -11,15 +11,14 @@ import io.netifi.sdk.serializer.Serializer;
 import io.netifi.sdk.serializer.Serializers;
 import io.netifi.sdk.util.ClassUtil;
 import io.netifi.sdk.util.GroupUtil;
+import io.netifi.sdk.util.RSocketBarrier;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.reactivex.Flowable;
-import io.reactivex.processors.ReplayProcessor;
 import io.rsocket.Frame;
 import io.rsocket.Payload;
-import io.rsocket.RSocket;
 import io.rsocket.util.PayloadImpl;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -36,9 +35,9 @@ import static io.netifi.sdk.util.HashUtil.hash;
 
 /** */
 class NetifiInvocationHandler implements InvocationHandler {
-    private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
+  private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
 
-  private final ReplayProcessor<RSocket> rSocketPublishProcessor;
+  private final RSocketBarrier barrier;
 
   private final long fromAccountId;
 
@@ -55,7 +54,7 @@ class NetifiInvocationHandler implements InvocationHandler {
   private TimebasedIdGenerator generator;
 
   public NetifiInvocationHandler(
-      ReplayProcessor<RSocket> rSocketPublishProcessor,
+      RSocketBarrier barrier,
       long accountId,
       String group,
       long destination,
@@ -63,7 +62,7 @@ class NetifiInvocationHandler implements InvocationHandler {
       long[] fromGroupIds,
       long fromDestination,
       TimebasedIdGenerator generator) {
-    this.rSocketPublishProcessor = rSocketPublishProcessor;
+    this.barrier = barrier;
     this.accountId = accountId;
     this.group = group;
     this.destination = destination;
@@ -103,8 +102,8 @@ class NetifiInvocationHandler implements InvocationHandler {
           Serializer<?> requestSerializer =
               arg != null ? Serializers.getSerializer(fireforget.serializer(), arg) : null;
 
-          return rSocketPublishProcessor
-              .take(1)
+          return barrier
+              .getRSocket()
               .flatMap(
                   rSocket -> {
                     ByteBuf route;
@@ -166,8 +165,8 @@ class NetifiInvocationHandler implements InvocationHandler {
           Serializer<?> responseSerializer =
               Serializers.getSerializer(requestchannel.serializer(), returnType);
 
-          return rSocketPublishProcessor
-              .take(1)
+          return barrier
+              .getRSocket()
               .flatMap(
                   rSocket -> {
                     Flowable<Payload> map =
@@ -241,8 +240,8 @@ class NetifiInvocationHandler implements InvocationHandler {
           Serializer<?> responseSerializer =
               Serializers.getSerializer(requestresponse.serializer(), returnType);
 
-          return rSocketPublishProcessor
-              .take(1)
+          return barrier
+              .getRSocket()
               .flatMap(
                   rSocket -> {
                     ByteBuf route;
@@ -307,8 +306,8 @@ class NetifiInvocationHandler implements InvocationHandler {
           Serializer<?> responseSerializer =
               Serializers.getSerializer(requeststream.serializer(), returnType);
 
-          return rSocketPublishProcessor
-              .take(1)
+          return barrier
+              .getRSocket()
               .flatMap(
                   rSocket -> {
                     ByteBuf route;

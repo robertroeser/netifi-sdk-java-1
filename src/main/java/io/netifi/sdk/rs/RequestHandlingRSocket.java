@@ -1,5 +1,6 @@
 package io.netifi.sdk.rs;
 
+import io.netifi.nrqp.frames.FrameHeaderFlyweight;
 import io.netifi.nrqp.frames.RoutingFlyweight;
 import io.netifi.sdk.RequestHandlerRegistry;
 import io.netifi.sdk.serializer.Serializer;
@@ -19,15 +20,16 @@ import java.nio.ByteBuffer;
 /** */
 public class RequestHandlingRSocket extends AbstractRSocket {
   private RequestHandlerRegistry registry;
-    
-    public RequestHandlingRSocket(RequestHandlerRegistry registry) {
-        this.registry = registry;
-    }
-    
-    @Override
+
+  public RequestHandlingRSocket(RequestHandlerRegistry registry) {
+    this.registry = registry;
+  }
+
+  @Override
   public Mono<Void> fireAndForget(Payload payload) {
     try {
       ByteBuf byteBuf = Unpooled.wrappedBuffer(payload.getMetadata());
+      long seqId = FrameHeaderFlyweight.seqId(byteBuf);
       long namespaceId = RoutingFlyweight.namespaceId(byteBuf);
       long classId = RoutingFlyweight.classId(byteBuf);
       long methodId = RoutingFlyweight.methodId(byteBuf);
@@ -37,7 +39,9 @@ public class RequestHandlingRSocket extends AbstractRSocket {
       RequestHandlerMetadata metadata = registry.lookup(key);
 
       if (metadata == null) {
-        return Mono.error(new IllegalStateException("no request handle found for " + key));
+        return Mono.error(
+            new IllegalStateException(
+                seqId + " - fireAndForget - no request handler found for " + key));
       }
 
       Method method = metadata.getMethod();
@@ -60,6 +64,7 @@ public class RequestHandlingRSocket extends AbstractRSocket {
   public Mono<Payload> requestResponse(Payload payload) {
     try {
       ByteBuf byteBuf = Unpooled.wrappedBuffer(payload.getMetadata());
+      long seqId = FrameHeaderFlyweight.seqId(byteBuf);
       long namespaceId = RoutingFlyweight.namespaceId(byteBuf);
       long classId = RoutingFlyweight.classId(byteBuf);
       long methodId = RoutingFlyweight.methodId(byteBuf);
@@ -69,7 +74,9 @@ public class RequestHandlingRSocket extends AbstractRSocket {
       RequestHandlerMetadata metadata = registry.lookup(key);
 
       if (metadata == null) {
-        return Mono.error(new IllegalStateException("no request handle found for " + key));
+        return Mono.error(
+            new IllegalStateException(
+                seqId + " - requestResponse - no request handler found for " + key));
       }
 
       Method method = metadata.getMethod();
@@ -91,7 +98,7 @@ public class RequestHandlingRSocket extends AbstractRSocket {
 
       return Mono.from(map);
     } catch (Throwable t) {
-        t.printStackTrace();
+      t.printStackTrace();
       return Mono.error(t);
     }
   }
@@ -100,6 +107,7 @@ public class RequestHandlingRSocket extends AbstractRSocket {
   public Flux<Payload> requestStream(Payload payload) {
     try {
       ByteBuf byteBuf = Unpooled.wrappedBuffer(payload.getMetadata());
+      long seqId = FrameHeaderFlyweight.seqId(byteBuf);
       long namespaceId = RoutingFlyweight.namespaceId(byteBuf);
       long classId = RoutingFlyweight.classId(byteBuf);
       long methodId = RoutingFlyweight.methodId(byteBuf);
@@ -109,7 +117,9 @@ public class RequestHandlingRSocket extends AbstractRSocket {
       RequestHandlerMetadata metadata = registry.lookup(key);
 
       if (metadata == null) {
-        return Flux.error(new IllegalStateException("no request handle found for " + key));
+        return Flux.error(
+            new IllegalStateException(
+                seqId + " - requestStream - no request handler found for " + key));
       }
 
       Method method = metadata.getMethod();
@@ -141,6 +151,7 @@ public class RequestHandlingRSocket extends AbstractRSocket {
         .groupBy(
             payload -> {
               ByteBuf byteBuf = Unpooled.wrappedBuffer(payload.getMetadata());
+              long seqId = FrameHeaderFlyweight.seqId(byteBuf);
               long namespaceId = RoutingFlyweight.namespaceId(byteBuf);
               long classId = RoutingFlyweight.classId(byteBuf);
               long methodId = RoutingFlyweight.methodId(byteBuf);
@@ -150,7 +161,8 @@ public class RequestHandlingRSocket extends AbstractRSocket {
               RequestHandlerMetadata metadata = registry.lookup(key);
 
               if (metadata == null) {
-                throw new IllegalStateException("no request handle found for " + key);
+                throw new IllegalStateException(
+                    seqId + " - requestChannel - no request handler found for " + key);
               }
 
               return metadata;
