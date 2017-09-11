@@ -14,7 +14,7 @@ public class JSONSerializer<T> implements Serializer<T> {
 
   static {
     MAPPER = new ObjectMapper();
-    MAPPER.registerModule(new AfterburnerModule());
+    //MAPPER.registerModule(new AfterburnerModule());
   }
 
   private final Class<T> clazz;

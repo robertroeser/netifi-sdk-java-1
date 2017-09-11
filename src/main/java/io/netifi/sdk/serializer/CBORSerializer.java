@@ -16,7 +16,7 @@ public class CBORSerializer<T> implements Serializer<T> {
   static {
     CBORFactory f = new CBORFactory();
     MAPPER = new ObjectMapper(f);
-    MAPPER.registerModule(new AfterburnerModule());
+    //MAPPER.registerModule(new AfterburnerModule());
   }
 
   private final Class<T> clazz;
