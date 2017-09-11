@@ -94,6 +94,84 @@ public class IntegrationTest {
   }
 
   @Test
+  public void testRequestBetweenRoutersLocal() throws Exception {
+    io.netifi.sdk.Netifi server =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destinationId(8001)
+            .host("localhost")
+            .port(8001)
+            .group("test.server")
+            .build();
+
+    server.registerHandler(TestService.class, new DefaultTestService());
+
+    io.netifi.sdk.Netifi server2 =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destinationId(8002)
+            .host("localhost")
+            .port(8002)
+            .group("test.server2")
+            .build();
+
+    TestService testService = server2.create(TestService.class);
+    server2.registerHandler(TestService2.class, new DefaultTestService2(testService));
+
+    io.netifi.sdk.Netifi client =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destinationId(8003)
+            .host("localhost")
+            .port(8003)
+            .group("test.client")
+            .build();
+
+    TestService2 testService2 = client.create(TestService2.class);
+    String s = testService2.test2(1234).singleOrError().blockingGet();
+    System.out.println(s);
+  }
+
+  @Test
+  public void testRequestBetweenRoutersRemote() throws Exception {
+    io.netifi.sdk.Netifi server =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destinationId(8001)
+            .host("10.1.0.4")
+            .port(8001)
+            .group("test.server")
+            .build();
+
+    server.registerHandler(TestService.class, new DefaultTestService());
+
+    io.netifi.sdk.Netifi server2 =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destinationId(8002)
+            .host("10.1.0.5")
+            .port(8001)
+            .group("test.server2")
+            .build();
+
+    TestService testService = server2.create(TestService.class);
+    server2.registerHandler(TestService2.class, new DefaultTestService2(testService));
+
+    io.netifi.sdk.Netifi client =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destinationId(8003)
+            .host("10.1.0.6")
+            .port(8001)
+            .group("test.client")
+            .build();
+
+    TestService2 testService2 = client.create(TestService2.class);
+    String s = testService2.test2(1234).singleOrError().blockingGet();
+    System.out.println(s);
+  }
+
+  @Test
   public void test() throws Exception {
     /*RSocketBarrier.receive()
     .acceptor(
@@ -114,7 +192,7 @@ public class IntegrationTest {
                     ByteBuf route = RoutingFlyweight.route(metadata);
                     long destinationId1 = RouteDestinationFlyweight.destinationId(route);
                     RSocket rSocket = concurrentHashMap.get(destinationId1);
-                    return rSocket.requestResponse(payload);
+        `            return rSocket.requestResponse(payload);
                   }
 
                   @Override
@@ -135,18 +213,18 @@ public class IntegrationTest {
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(2)
-            .host("10.1.0.4")
-            .port(8001)
+            .destinationId(200)
+            //.host("localhost")
+            //.port(8001)
             .group("test.server")
             .build();
 
     io.netifi.sdk.Netifi server2 =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(3)
-            .host("10.1.0.5")
-            .port(8001)
+            .destinationId(300)
+            //.host("localhost")
+            //.port(8002)
             .group("test.server")
             .build();
 
@@ -157,8 +235,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(1)
-            .host("10.1.0.6")
-            .port(8001)
+            //.host("localhost")
+            //.port(8003)
             .group("test.client")
             .build();
 
@@ -166,8 +244,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(4)
-            .host("10.1.0.6")
-            .port(8001)
+           // .host("localhost")
+            //.port(8004)
             .group("test.client")
             .build();
 
@@ -191,6 +269,28 @@ public class IntegrationTest {
     Assert.assertEquals(3, byteBuffers.size());
   }
 
+  @Test
+  @Ignore
+  public void justConnectAndHang() {
+    int[] ports = new int[] {8001, 8002, 8003};
+
+    for (int k = 0; k < 20; k++) {
+      long id = System.nanoTime();
+      int i = ThreadLocalRandom.current().nextInt(3);
+      System.out.println("connecting as id -> " + id + " on port " + ports[i]);
+      io.netifi.sdk.Netifi client2 =
+          io.netifi.sdk.Netifi.builder()
+              .accountId(100)
+              .destinationId(id)
+              .host("localhost")
+              .port(ports[i])
+              .group("test.client")
+              .build();
+    }
+
+    LockSupport.park();
+  }
+
   @Service(accountId = 100, group = "test.server")
   public interface TestService {
     @RequestResponse
@@ -201,6 +301,12 @@ public class IntegrationTest {
 
     @RequestStream(serializer = Serializers.BINARY)
     Flowable<ByteBuffer> get(ByteBuffer buffer);
+  }
+
+  @Service(accountId = 100, group = "test.server2")
+  public interface TestService2 {
+    @RequestResponse
+    Flowable<String> test2(Integer integer);
   }
 
   public static class DefaultTestService implements TestService {
@@ -226,6 +332,19 @@ public class IntegrationTest {
                 ThreadLocalRandom.current().nextBytes(bytes);
                 return ByteBuffer.wrap(bytes);
               });
+    }
+  }
+
+  public static class DefaultTestService2 implements TestService2 {
+    private TestService testService;
+
+    public DefaultTestService2(TestService testService) {
+      this.testService = testService;
+    }
+
+    @Override
+    public Flowable<String> test2(Integer integer) {
+      return testService.test(integer);
     }
   }
 }

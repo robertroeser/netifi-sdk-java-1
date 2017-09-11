@@ -30,6 +30,12 @@ import static io.netifi.sdk.util.HashUtil.hash;
 public class Netifi implements AutoCloseable {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
   private static final Throwable CONNECTION_CLOSED = new Throwable("connection is closed");
+
+  static {
+    // Set the Java DNS cache to 60 seconds
+    java.security.Security.setProperty("networkaddress.cache.ttl", "60");
+  }
+
   private final TimebasedIdGenerator idGenerator;
   private final String host;
   private final int port;
@@ -245,7 +251,7 @@ public class Netifi implements AutoCloseable {
   }
 
   public static class Builder {
-    private String host = "netifiedge.trafficmanager.net";
+    private String host = "edge.netifi.io";
     private Integer port = 8001;
     private Long accessKey;
     private Long accountId;

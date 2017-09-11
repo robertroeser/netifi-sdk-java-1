@@ -12,7 +12,7 @@ node {
                     checkout scm
                 }
                 stage('Build') {
-                   sh './gradlew clean build --info'
+                   sh './gradlew clean build --info  --refresh-dependencies'
                 }
                 stage('Publish') {
                    sh './gradlew publish -P$secret --info'
