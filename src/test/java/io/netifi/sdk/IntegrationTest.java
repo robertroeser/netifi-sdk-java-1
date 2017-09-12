@@ -138,8 +138,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(8001)
-            .host("10.1.0.4")
-            .port(8001)
+            //.host("10.1.0.4")
+            //.port(8001)
             .group("test.server")
             .build();
 
@@ -149,8 +149,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(8002)
-            .host("10.1.0.5")
-            .port(8001)
+            //.host("10.1.0.5")
+            //.port(8001)
             .group("test.server2")
             .build();
 
@@ -161,8 +161,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(8003)
-            .host("10.1.0.6")
-            .port(8001)
+            //.host("10.1.0.6")
+            //.port(8001)
             .group("test.client")
             .build();
 
@@ -272,8 +272,7 @@ public class IntegrationTest {
   @Test
   @Ignore
   public void justConnectAndHang() {
-    //int[] ports = new int[] {8001, 8002, 8003};
-    int[] ports = new int[] {8001, 8001, 8001};
+    int[] ports = new int[] {8001, 8002, 8003};
 
     for (int k = 0; k < 20; k++) {
       long id = System.nanoTime();

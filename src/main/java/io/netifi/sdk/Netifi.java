@@ -57,6 +57,10 @@ public class Netifi implements AutoCloseable {
   private final RequestHandlerRegistry registry;
   private final RSocketBarrier barrier;
   private final Disposable disposable;
+  private final boolean keepalive;
+  private final long tickPeriodSeconds;
+  private final long ackTimeoutSeconds;
+  private final int missedAcks;
   private volatile boolean running = true;
 
   private Netifi(
@@ -69,7 +73,11 @@ public class Netifi implements AutoCloseable {
       long destinationId,
       String group,
       String accessToken,
-      byte[] accessTokenBytes) {
+      byte[] accessTokenBytes,
+      boolean keepalive,
+      long tickPeriodSeconds,
+      long ackTimeoutSeconds,
+      int missedAcks) {
     this.barrier = new RSocketBarrier();
     this.registry = new DefaultRequestHandlerRegistry();
     this.host = host;
@@ -83,6 +91,10 @@ public class Netifi implements AutoCloseable {
     this.accessToken = accessToken;
     this.accessTokenBytes = accessTokenBytes;
     this.idGenerator = new TimebasedIdGenerator((int) destinationId);
+    this.keepalive = keepalive;
+    this.tickPeriodSeconds = tickPeriodSeconds;
+    this.ackTimeoutSeconds = ackTimeoutSeconds;
+    this.missedAcks = missedAcks;
 
     AtomicLong delay = new AtomicLong();
     this.disposable =
@@ -100,8 +112,17 @@ public class Netifi implements AutoCloseable {
                       idGenerator.nextId(),
                       groupIds);
 
-                  RSocketFactory.connect()
-                      // .keepAlive(Duration.ofSeconds(1), Duration.ofSeconds(5), 3)
+                  RSocketFactory.ClientRSocketFactory connect = RSocketFactory.connect();
+
+                  if (keepalive) {
+                    connect =
+                        connect.keepAlive(
+                            Duration.ofSeconds(tickPeriodSeconds),
+                            Duration.ofSeconds(ackTimeoutSeconds),
+                            missedAcks);
+                  }
+
+                  connect
                       .errorConsumer(throwable -> logger.error("unhandled error", throwable))
                       .setupPayload(new PayloadImpl(new byte[0], bytes))
                       .acceptor(
@@ -415,8 +436,32 @@ public class Netifi implements AutoCloseable {
     private Long destinationId;
     private String accessToken = null;
     private byte[] accessTokenBytes = new byte[20];
+    private boolean keepalive = true;
+    private long tickPeriodSeconds = 5;
+    private long ackTimeoutSeconds = 10;
+    private int missedAcks = 3;
 
     private Builder() {}
+
+    public Builder keepalive(boolean useKeepAlive) {
+      this.keepalive = keepalive;
+      return this;
+    }
+
+    public Builder tickPeriodSeconds(long tickPeriodSeconds) {
+      this.tickPeriodSeconds = tickPeriodSeconds;
+      return this;
+    }
+
+    public Builder ackTimeoutSeconds(long ackTimeoutSeconds) {
+      this.ackTimeoutSeconds = ackTimeoutSeconds;
+      return this;
+    }
+
+    public Builder missedAcks(int missedAcks) {
+      this.missedAcks = missedAcks;
+      return this;
+    }
 
     public Builder host(String host) {
       this.host = host;
@@ -496,7 +541,11 @@ public class Netifi implements AutoCloseable {
           destinationId,
           group,
           accessToken,
-          accessTokenBytes);
+          accessTokenBytes,
+          keepalive,
+          tickPeriodSeconds,
+          ackTimeoutSeconds,
+          missedAcks);
     }
   }
 }
