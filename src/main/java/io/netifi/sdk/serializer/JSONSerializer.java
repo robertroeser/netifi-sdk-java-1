@@ -14,7 +14,10 @@ public class JSONSerializer<T> implements Serializer<T> {
 
   static {
     MAPPER = new ObjectMapper();
-    //MAPPER.registerModule(new AfterburnerModule());
+    if (System.getProperty("java.vm.name").toLowerCase().contains("hotspot")) {
+      System.out.println("loading JSON with afterburner");
+      MAPPER.registerModule(new AfterburnerModule());
+    }
   }
 
   private final Class<T> clazz;

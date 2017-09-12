@@ -1,13 +1,17 @@
 package io.netifi.sdk;
 
-import io.netifi.nrqp.frames.DestinationSetupFlyweight;
+import io.netifi.nrqp.frames.*;
 import io.netifi.sdk.annotations.Service;
 import io.netifi.sdk.rs.RequestHandlingRSocket;
+import io.netifi.sdk.util.GroupUtil;
 import io.netifi.sdk.util.HashUtil;
 import io.netifi.sdk.util.RSocketBarrier;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.rsocket.Payload;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.PayloadImpl;
@@ -21,7 +25,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Proxy;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static io.netifi.sdk.util.HashUtil.hash;
@@ -94,7 +101,7 @@ public class Netifi implements AutoCloseable {
                       groupIds);
 
                   RSocketFactory.connect()
-                      .keepAlive(Duration.ofSeconds(1), Duration.ofSeconds(5), 3)
+                      // .keepAlive(Duration.ofSeconds(1), Duration.ofSeconds(5), 3)
                       .errorConsumer(throwable -> logger.error("unhandled error", throwable))
                       .setupPayload(new PayloadImpl(new byte[0], bytes))
                       .acceptor(
@@ -103,7 +110,7 @@ public class Netifi implements AutoCloseable {
                                 .onClose()
                                 .doFinally(
                                     s -> {
-                                      if (running) {
+                                      if (!running) {
                                         sink.success();
                                       } else {
                                         sink.error(CONNECTION_CLOSED);
@@ -134,7 +141,14 @@ public class Netifi implements AutoCloseable {
                   long d = Math.min(10_000, delay.addAndGet(500));
                   return Mono.delay(Duration.ofMillis(d)).then(Mono.error(t));
                 })
-            .retry(throwable -> running)
+            .retry(
+                throwable -> {
+                  if (running) {
+                    logger.debug("Netifi is running, retrying connection");
+                  }
+
+                  return running;
+                })
             .subscribe();
   }
 
@@ -242,6 +256,146 @@ public class Netifi implements AutoCloseable {
     registry.registerHandler(clazz, t);
   }
 
+  public Flowable<Collection<Long>> presence(long accountId, String group) {
+    return presence(accountId, group, -1);
+  }
+
+  public Flowable<Collection<Long>> presence(long accountId, String group, String destination) {
+    return presence(accountId, group, getDestinationId(destination));
+  }
+
+  public Flowable<Collection<Long>> presence(long accountId, String group, long destinationId) {
+    try {
+      ConcurrentSkipListSet<Long> present = new ConcurrentSkipListSet<>();
+      long[] groupIds = GroupUtil.toGroupIdArray(group);
+
+      return Flowable.<Collection<Long>>create(
+              source -> {
+                io.reactivex.disposables.Disposable d =
+                    barrier
+                        .getRSocket()
+                        .doOnSubscribe(
+                            s -> {
+                              if (logger.isDebugEnabled()) {
+                                logger.debug(
+                                    "streaming presence notification accountId {}, group {}, groupIds {}, destinationId {}",
+                                    accountId,
+                                    group,
+                                    Arrays.toString(groupIds),
+                                    destinationId);
+                              }
+
+                              if (!present.isEmpty()) {
+                                present.clear();
+                              }
+                            })
+                        .flatMap(
+                            rSocket -> {
+                              rSocket
+                                  .onClose()
+                                  .doFinally(s -> source.onError(CONNECTION_CLOSED))
+                                  .subscribe();
+
+                              Payload payload;
+
+                              if (destinationId > -1) {
+                                int length =
+                                    RouteDestinationFlyweight.computeLength(
+                                        RouteType.PRESENCE_ID_QUERY, groupIds.length);
+                                byte[] routeBytes = new byte[length];
+                                ByteBuf route = Unpooled.wrappedBuffer(routeBytes);
+                                RouteDestinationFlyweight.encodeRouteByDestination(
+                                    route,
+                                    RouteType.PRESENCE_ID_QUERY,
+                                    accountId,
+                                    destinationId,
+                                    groupIds);
+
+                                length = RoutingFlyweight.computeLength(false, false, false, route);
+                                byte[] metadataBytes = new byte[length];
+                                ByteBuf metadata = Unpooled.wrappedBuffer(metadataBytes);
+                                RoutingFlyweight.encode(
+                                    metadata,
+                                    false,
+                                    false,
+                                    false,
+                                    0,
+                                    this.accountId,
+                                    this.destinationId,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    idGenerator.nextId(),
+                                    route);
+                                payload = new PayloadImpl(new byte[0], metadataBytes);
+                              } else {
+                                int length =
+                                    RouteDestinationFlyweight.computeLength(
+                                        RouteType.PRESENCE_GROUP_QUERY, groupIds.length);
+                                byte[] routeBytes = new byte[length];
+                                ByteBuf route = Unpooled.wrappedBuffer(routeBytes);
+                                RouteDestinationFlyweight.encodeRouteByGroup(
+                                    route, RouteType.PRESENCE_GROUP_QUERY, accountId, groupIds);
+
+                                length = RoutingFlyweight.computeLength(false, false, false, route);
+                                byte[] metadataBytes = new byte[length];
+                                ByteBuf metadata = Unpooled.wrappedBuffer(metadataBytes);
+                                RoutingFlyweight.encode(
+                                    metadata,
+                                    false,
+                                    false,
+                                    false,
+                                    0,
+                                    this.accountId,
+                                    this.destinationId,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    idGenerator.nextId(),
+                                    route);
+                                payload = new PayloadImpl(new byte[0], metadataBytes);
+                              }
+
+                              return rSocket.requestStream(payload);
+                            })
+                        .doOnNext(
+                            payload -> {
+                              ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
+                              boolean found = DestinationAvailResult.found(metadata);
+                              long destinationIdFromStream =
+                                  DestinationAvailResult.destinationId(metadata);
+                              if (found) {
+                                present.add(destinationIdFromStream);
+                              } else {
+                                present.remove(destinationIdFromStream);
+                              }
+
+                              source.onNext(present);
+                            })
+                        .subscribe();
+
+                source.setDisposable(d);
+              },
+              BackpressureStrategy.BUFFER)
+          .debounce(200, TimeUnit.MILLISECONDS)
+          .doOnError(t -> logger.debug("error getting notification events", t))
+          .retry(
+              throwable -> {
+                logger.debug("Netifi is still running, retrying presence notification");
+                return running;
+              });
+    } catch (Throwable t) {
+      logger.error("error stream presence events", t);
+      return Flowable.error(t);
+    }
+  }
+
+  public long getDestinationId(String destination) {
+    return HashUtil.hash(destination);
+  }
+
   @Override
   public void close() throws Exception {
     if (disposable != null) {
@@ -310,6 +464,9 @@ public class Netifi implements AutoCloseable {
     }
 
     public Builder destinationId(long destinationId) {
+      if (destinationId == -1) {
+        throw new IllegalStateException("-1 is an invalid destination id");
+      }
       this.destinationId = destinationId;
       return this;
     }

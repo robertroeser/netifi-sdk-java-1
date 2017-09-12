@@ -16,7 +16,10 @@ public class CBORSerializer<T> implements Serializer<T> {
   static {
     CBORFactory f = new CBORFactory();
     MAPPER = new ObjectMapper(f);
-    //MAPPER.registerModule(new AfterburnerModule());
+    if (System.getProperty("java.vm.name").toLowerCase().contains("hotspot")) {
+      System.out.println("loading CBOR with afterburner");
+      MAPPER.registerModule(new AfterburnerModule());
+    }
   }
 
   private final Class<T> clazz;

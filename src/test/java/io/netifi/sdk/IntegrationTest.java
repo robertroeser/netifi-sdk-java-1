@@ -214,8 +214,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(200)
-            //.host("localhost")
-            //.port(8001)
+            // .host("localhost")
+            // .port(8001)
             .group("test.server")
             .build();
 
@@ -223,8 +223,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(300)
-            //.host("localhost")
-            //.port(8002)
+            // .host("localhost")
+            // .port(8002)
             .group("test.server")
             .build();
 
@@ -235,8 +235,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(1)
-            //.host("localhost")
-            //.port(8003)
+            // .host("localhost")
+            // .port(8003)
             .group("test.client")
             .build();
 
@@ -244,8 +244,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destinationId(4)
-           // .host("localhost")
-            //.port(8004)
+            // .host("localhost")
+            // .port(8004)
             .group("test.client")
             .build();
 
@@ -272,7 +272,8 @@ public class IntegrationTest {
   @Test
   @Ignore
   public void justConnectAndHang() {
-    int[] ports = new int[] {8001, 8002, 8003};
+    //int[] ports = new int[] {8001, 8002, 8003};
+    int[] ports = new int[] {8001, 8001, 8001};
 
     for (int k = 0; k < 20; k++) {
       long id = System.nanoTime();
@@ -289,6 +290,50 @@ public class IntegrationTest {
     }
 
     LockSupport.park();
+  }
+  
+  @Test
+  @Ignore
+  public void justConnectAndHang2() {
+    //int[] ports = new int[] {8001, 8002, 8003};
+    int[] ports = new int[] {8001, 8001, 8001};
+
+    for (int k = 0; k < 1; k++) {
+      long id = System.nanoTime();
+      int i = ThreadLocalRandom.current().nextInt(3);
+      System.out.println("connecting as id -> " + id + " on port " + ports[i]);
+      io.netifi.sdk.Netifi client2 =
+          io.netifi.sdk.Netifi.builder()
+              .accountId(100)
+              .destinationId(id)
+              .host("localhost")
+              .port(ports[i])
+              .group("test.client")
+              .build();
+    }
+
+    LockSupport.park();
+  }
+
+  @Test
+  @Ignore
+  public void presenceNotification() {
+    io.netifi.sdk.Netifi client =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destination("presence tester")
+            .host("localhost")
+            .port(8001)
+            .group("test.client2")
+            .build();
+
+    client
+        .presence(100, "test.client")
+        .doOnNext(
+            c -> {
+              System.out.println("found " + c.size() + " items -> " + c.toString());
+            })
+        .blockingLast();
   }
 
   @Service(accountId = 100, group = "test.server")
