@@ -4,9 +4,9 @@ import io.netifi.sdk.annotations.RequestResponse;
 import io.netifi.sdk.annotations.RequestStream;
 import io.netifi.sdk.serializer.JSONSerializer;
 import io.netifi.sdk.serializer.Serializers;
-import io.netifi.sdk.util.RSocketBarrier;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.reactivex.Flowable;
+import io.reactivex.processors.RSocketBarrier;
 import io.rsocket.AbstractRSocket;
 import io.rsocket.Payload;
 import io.rsocket.util.PayloadImpl;
@@ -27,7 +27,6 @@ public class ServiceInvocationHandlerTest {
     barrier.setRSocket(new TestSocket());
     long accountId = 1;
     String group = "foo.bar.baz";
-    long destination = -1;
 
     TestService testService =
         (TestService)
@@ -38,10 +37,10 @@ public class ServiceInvocationHandlerTest {
                     barrier,
                     accountId,
                     group,
-                    destination,
+                    null,
                     1,
-                    new long[] {2},
-                    3,
+                    "from group",
+                    "3",
                     new TimebasedIdGenerator(1)));
 
     String s = testService.test(1234).blockingFirst();
@@ -54,7 +53,6 @@ public class ServiceInvocationHandlerTest {
     barrier.setRSocket(new TestSocket());
     long accountId = 1;
     String group = "foo.bar.baz";
-    long destination = -1;
 
     TestService testService =
         (TestService)
@@ -65,10 +63,10 @@ public class ServiceInvocationHandlerTest {
                     barrier,
                     accountId,
                     group,
-                    destination,
+                    null,
                     1,
-                    new long[] {2},
-                    3,
+                    "from group",
+                    "3",
                     new TimebasedIdGenerator(1)));
 
     String s = testService.noArgs().blockingFirst();
@@ -81,7 +79,6 @@ public class ServiceInvocationHandlerTest {
     barrier.setRSocket(new TestSocket());
     long accountId = 1;
     String group = "foo.bar.baz";
-    long destination = -1;
 
     TestService testService =
         (TestService)
@@ -92,10 +89,10 @@ public class ServiceInvocationHandlerTest {
                     barrier,
                     accountId,
                     group,
-                    destination,
+                    null,
                     1,
-                    new long[] {2},
-                    3,
+                    "from group",
+                    "3",
                     new TimebasedIdGenerator(1)));
 
     List<Integer> integers = testService.stream().take(10).toList().blockingGet();

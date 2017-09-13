@@ -3,14 +3,13 @@ package io.netifi.sdk;
 import io.netifi.nrqp.frames.*;
 import io.netifi.sdk.annotations.Service;
 import io.netifi.sdk.rs.RequestHandlingRSocket;
-import io.netifi.sdk.util.GroupUtil;
 import io.netifi.sdk.util.HashUtil;
-import io.netifi.sdk.util.RSocketBarrier;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.processors.RSocketBarrier;
 import io.rsocket.Payload;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
@@ -31,8 +30,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static io.netifi.sdk.util.HashUtil.hash;
-
 /** This is where the magic happens */
 public class Netifi implements AutoCloseable {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
@@ -48,9 +45,7 @@ public class Netifi implements AutoCloseable {
   private final int port;
   private final long accessKey;
   private final long accountId;
-  private final long[] groupIds;
   private final String destination;
-  private final long destinationId;
   private final String group;
   private final String accessToken;
   private final byte[] accessTokenBytes;
@@ -68,9 +63,7 @@ public class Netifi implements AutoCloseable {
       int port,
       long accessKey,
       long accountId,
-      long[] groupIds,
       String destination,
-      long destinationId,
       String group,
       String accessToken,
       byte[] accessTokenBytes,
@@ -84,13 +77,11 @@ public class Netifi implements AutoCloseable {
     this.port = port;
     this.accessKey = accessKey;
     this.accountId = accountId;
-    this.groupIds = groupIds;
     this.destination = destination;
-    this.destinationId = destinationId;
     this.group = group;
     this.accessToken = accessToken;
     this.accessTokenBytes = accessTokenBytes;
-    this.idGenerator = new TimebasedIdGenerator((int) destinationId);
+    this.idGenerator = new TimebasedIdGenerator(destination.hashCode());
     this.keepalive = keepalive;
     this.tickPeriodSeconds = tickPeriodSeconds;
     this.ackTimeoutSeconds = ackTimeoutSeconds;
@@ -100,17 +91,17 @@ public class Netifi implements AutoCloseable {
     this.disposable =
         Mono.create(
                 sink -> {
-                  int length = DestinationSetupFlyweight.computeLength(false, groupIds.length);
+                  int length = DestinationSetupFlyweight.computeLength(false, destination, group);
                   byte[] bytes = new byte[length];
                   ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
                   DestinationSetupFlyweight.encode(
                       byteBuf,
                       Unpooled.EMPTY_BUFFER,
                       Unpooled.wrappedBuffer(new byte[20]),
-                      accountId,
-                      destinationId,
                       idGenerator.nextId(),
-                      groupIds);
+                      accountId,
+                      destination,
+                      group);
 
                   RSocketFactory.ClientRSocketFactory connect = RSocketFactory.connect();
 
@@ -141,7 +132,7 @@ public class Netifi implements AutoCloseable {
                             barrier.setRSocket(rSocket);
                             logger.info(
                                 "destination with id "
-                                    + destinationId
+                                    + destination
                                     + " connected to "
                                     + host
                                     + ":"
@@ -179,8 +170,10 @@ public class Netifi implements AutoCloseable {
 
   @Override
   public String toString() {
-    return "Service{"
-        + "host='"
+    return "Netifi{"
+        + "idGenerator="
+        + idGenerator
+        + ", host='"
         + host
         + '\''
         + ", port="
@@ -189,13 +182,9 @@ public class Netifi implements AutoCloseable {
         + accessKey
         + ", accountId="
         + accountId
-        + ", groupIds="
-        + Arrays.toString(groupIds)
         + ", destination='"
         + destination
         + '\''
-        + ", destinationId="
-        + destinationId
         + ", group='"
         + group
         + '\''
@@ -204,6 +193,20 @@ public class Netifi implements AutoCloseable {
         + '\''
         + ", accessTokenBytes="
         + Arrays.toString(accessTokenBytes)
+        + ", registry="
+        + registry
+        + ", barrier="
+        + barrier
+        + ", disposable="
+        + disposable
+        + ", keepalive="
+        + keepalive
+        + ", tickPeriodSeconds="
+        + tickPeriodSeconds
+        + ", ackTimeoutSeconds="
+        + ackTimeoutSeconds
+        + ", missedAcks="
+        + missedAcks
         + ", running="
         + running
         + '}';
@@ -238,21 +241,17 @@ public class Netifi implements AutoCloseable {
     long accountId = Service.accountId();
     String group = Service.group();
 
-    return create(service, accountId, group, destinationId);
+    return create(service, accountId, group, destination);
   }
 
   public <T> T create(Class<T> service, long accountId, String group) {
-    return create(service, accountId, group, -1);
+    return create(service, accountId, group, "");
   }
 
   public <T> T create(Class<T> service, long accountId, String group, String destination) {
-    return create(service, accountId, group, HashUtil.hash(destination));
-  }
-
-  public <T> T create(Class<T> service, long accountId, String group, long destinationId) {
     Objects.requireNonNull(service, "service must be non-null");
 
-    logger.info("creating service {}, {}, {}, {}", service, accountId, group, destinationId);
+    logger.info("creating service {}, {}, {}, {}", service, accountId, group, destination);
 
     Object o =
         Proxy.newProxyInstance(
@@ -262,11 +261,11 @@ public class Netifi implements AutoCloseable {
                 barrier,
                 accountId,
                 group,
-                destinationId,
+                destination,
                 this.accountId,
-                this.groupIds,
-                this.destinationId,
-                idGenerator));
+                this.group,
+                this.destination,
+                this.idGenerator));
 
     return (T) o;
   }
@@ -277,20 +276,14 @@ public class Netifi implements AutoCloseable {
     registry.registerHandler(clazz, t);
   }
 
-  public Flowable<Collection<Long>> presence(long accountId, String group) {
-    return presence(accountId, group, -1);
+  public Flowable<Collection<String>> presence(long accountId, String group) {
+    return presence(accountId, group, "");
   }
 
-  public Flowable<Collection<Long>> presence(long accountId, String group, String destination) {
-    return presence(accountId, group, getDestinationId(destination));
-  }
-
-  public Flowable<Collection<Long>> presence(long accountId, String group, long destinationId) {
+  public Flowable<Collection<String>> presence(long accountId, String group, String destination) {
     try {
-      ConcurrentSkipListSet<Long> present = new ConcurrentSkipListSet<>();
-      long[] groupIds = GroupUtil.toGroupIdArray(group);
-
-      return Flowable.<Collection<Long>>create(
+      ConcurrentSkipListSet<String> present = new ConcurrentSkipListSet<>();
+      return Flowable.<Collection<String>>create(
               source -> {
                 io.reactivex.disposables.Disposable d =
                     barrier
@@ -299,11 +292,10 @@ public class Netifi implements AutoCloseable {
                             s -> {
                               if (logger.isDebugEnabled()) {
                                 logger.debug(
-                                    "streaming presence notification accountId {}, group {}, groupIds {}, destinationId {}",
+                                    "streaming presence notification accountId {}, group {}, destination {}",
                                     accountId,
                                     group,
-                                    Arrays.toString(groupIds),
-                                    destinationId);
+                                    destination);
                               }
 
                               if (!present.isEmpty()) {
@@ -319,20 +311,22 @@ public class Netifi implements AutoCloseable {
 
                               Payload payload;
 
-                              if (destinationId > -1) {
+                              if (destination != null && !destination.equals("")) {
                                 int length =
                                     RouteDestinationFlyweight.computeLength(
-                                        RouteType.PRESENCE_ID_QUERY, groupIds.length);
+                                        RouteType.PRESENCE_ID_QUERY, destination, group);
                                 byte[] routeBytes = new byte[length];
                                 ByteBuf route = Unpooled.wrappedBuffer(routeBytes);
                                 RouteDestinationFlyweight.encodeRouteByDestination(
                                     route,
                                     RouteType.PRESENCE_ID_QUERY,
                                     accountId,
-                                    destinationId,
-                                    groupIds);
+                                    destination,
+                                    group);
 
-                                length = RoutingFlyweight.computeLength(false, false, false, route);
+                                length =
+                                    RoutingFlyweight.computeLength(
+                                        false, false, false, this.destination, route);
                                 byte[] metadataBytes = new byte[length];
                                 ByteBuf metadata = Unpooled.wrappedBuffer(metadataBytes);
                                 RoutingFlyweight.encode(
@@ -342,7 +336,7 @@ public class Netifi implements AutoCloseable {
                                     false,
                                     0,
                                     this.accountId,
-                                    this.destinationId,
+                                    this.destination,
                                     0,
                                     0,
                                     0,
@@ -353,13 +347,15 @@ public class Netifi implements AutoCloseable {
                               } else {
                                 int length =
                                     RouteDestinationFlyweight.computeLength(
-                                        RouteType.PRESENCE_GROUP_QUERY, groupIds.length);
+                                        RouteType.PRESENCE_GROUP_QUERY, group);
                                 byte[] routeBytes = new byte[length];
                                 ByteBuf route = Unpooled.wrappedBuffer(routeBytes);
                                 RouteDestinationFlyweight.encodeRouteByGroup(
-                                    route, RouteType.PRESENCE_GROUP_QUERY, accountId, groupIds);
+                                    route, RouteType.PRESENCE_GROUP_QUERY, accountId, group);
 
-                                length = RoutingFlyweight.computeLength(false, false, false, route);
+                                length =
+                                    RoutingFlyweight.computeLength(
+                                        false, false, false, destination, route);
                                 byte[] metadataBytes = new byte[length];
                                 ByteBuf metadata = Unpooled.wrappedBuffer(metadataBytes);
                                 RoutingFlyweight.encode(
@@ -369,7 +365,7 @@ public class Netifi implements AutoCloseable {
                                     false,
                                     0,
                                     this.accountId,
-                                    this.destinationId,
+                                    this.destination,
                                     0,
                                     0,
                                     0,
@@ -385,12 +381,12 @@ public class Netifi implements AutoCloseable {
                             payload -> {
                               ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
                               boolean found = DestinationAvailResult.found(metadata);
-                              long destinationIdFromStream =
-                                  DestinationAvailResult.destinationId(metadata);
+                              String destinationFromStream =
+                                  DestinationAvailResult.destination(metadata);
                               if (found) {
-                                present.add(destinationIdFromStream);
+                                present.add(destinationFromStream);
                               } else {
-                                present.remove(destinationIdFromStream);
+                                present.remove(destinationFromStream);
                               }
 
                               source.onNext(present);
@@ -413,10 +409,6 @@ public class Netifi implements AutoCloseable {
     }
   }
 
-  public long getDestinationId(String destination) {
-    return HashUtil.hash(destination);
-  }
-
   @Override
   public void close() throws Exception {
     if (disposable != null) {
@@ -431,9 +423,7 @@ public class Netifi implements AutoCloseable {
     private Long accessKey;
     private Long accountId;
     private String group;
-    private long[] groupIds;
     private String destination;
-    private Long destinationId;
     private String accessToken = null;
     private byte[] accessTokenBytes = new byte[20];
     private boolean keepalive = true;
@@ -486,13 +476,6 @@ public class Netifi implements AutoCloseable {
 
     public Builder group(String group) {
       this.group = group;
-      String[] split = group.split("\\.");
-      this.groupIds = new long[split.length];
-
-      for (int i = 0; i < split.length; i++) {
-        groupIds[i] = Math.abs(hash(split[i]));
-      }
-
       return this;
     }
 
@@ -503,16 +486,7 @@ public class Netifi implements AutoCloseable {
 
     public Builder destination(String destination) {
       this.destination = destination;
-      this.destinationId = HashUtil.hash(destination);
 
-      return this;
-    }
-
-    public Builder destinationId(long destinationId) {
-      if (destinationId == -1) {
-        throw new IllegalStateException("-1 is an invalid destination id");
-      }
-      this.destinationId = destinationId;
       return this;
     }
 
@@ -521,24 +495,20 @@ public class Netifi implements AutoCloseable {
       Objects.requireNonNull(port, "port is required");
       Objects.requireNonNull(accountId, "account Id is required");
       Objects.requireNonNull(group, "group is required");
-      Objects.requireNonNull(destinationId, "destination id is required");
+      Objects.requireNonNull(destination, "destination id is required");
 
       logger.info(
-          "registering with netifi with account id {}, group {}, groupIds {}, destination {}, and destination id {}",
+          "registering with netifi with account id {}, group {}, and destination {}",
           accountId,
           group,
-          groupIds,
-          destination,
-          destinationId);
+          destination);
 
       return new Netifi(
           host,
           port,
           accessKey == null ? 0 : accessKey,
           accountId,
-          groupIds,
           destination,
-          destinationId,
           group,
           accessToken,
           accessTokenBytes,

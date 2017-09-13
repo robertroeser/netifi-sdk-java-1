@@ -24,23 +24,24 @@ public class RequestHandlingRSocketTest {
   public void testRoutingToRequestResponse() throws Exception {
     ConcurrentHashMap<String, RequestHandlerMetadata> handlerMetadataMap =
         new ConcurrentHashMap<>();
-    RequestHandlingRSocket handlingRSocket = new RequestHandlingRSocket(new RequestHandlerRegistry() {
-      @Override
-      public <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {
-    
-      }
-  
-      @Override
-      public RequestHandlerMetadata lookup(String name) {
-        return handlerMetadataMap.get(name);
-      }
-    });
-    int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_GROUP_ROUTE, 1);
+    RequestHandlingRSocket handlingRSocket =
+        new RequestHandlingRSocket(
+            new RequestHandlerRegistry() {
+              @Override
+              public <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {}
+
+              @Override
+              public RequestHandlerMetadata lookup(String name) {
+                return handlerMetadataMap.get(name);
+              }
+            });
+    int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_GROUP_ROUTE, "group");
     ByteBuf route = Unpooled.buffer(length);
-    RouteDestinationFlyweight.encodeRouteByGroup(route, RouteType.STREAM_GROUP_ROUTE, 123, 1);
-    int metadataLength = RoutingFlyweight.computeLength(true, false, false, route);
+    RouteDestinationFlyweight.encodeRouteByGroup(route, RouteType.STREAM_GROUP_ROUTE, 123, "group");
+    int metadataLength = RoutingFlyweight.computeLength(true, false, false, "from", route);
     ByteBuf metadata = Unpooled.buffer(metadataLength);
-    RoutingFlyweight.encode(metadata, true, false, false, 0, 1, 12, 0, 123, 1234, 12345, 1, route);
+    RoutingFlyweight.encode(
+        metadata, true, false, false, 0, 1, "from", 0, 123, 1234, 12345, 1, route);
 
     JSONSerializer<User> requestSerializer = new JSONSerializer<>(User.class);
     JSONSerializer<Integer> responseSerializer = new JSONSerializer<>(Integer.class);
@@ -78,119 +79,105 @@ public class RequestHandlingRSocketTest {
     System.out.println(deserialize);
     Assert.assertEquals(deserialize.intValue(), 1);
   }
-  
+
   @Test
   public void testRoutingToRequestResponseNoArgs() throws Exception {
     ConcurrentHashMap<String, RequestHandlerMetadata> handlerMetadataMap =
         new ConcurrentHashMap<>();
-    RequestHandlingRSocket handlingRSocket = new RequestHandlingRSocket(new RequestHandlerRegistry() {
-      @Override
-      public <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {
-    
-      }
-  
-      @Override
-      public RequestHandlerMetadata lookup(String name) {
-        return handlerMetadataMap.get(name);
-      }
-    });
-    int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_GROUP_ROUTE, 1);
+    RequestHandlingRSocket handlingRSocket =
+        new RequestHandlingRSocket(
+            new RequestHandlerRegistry() {
+              @Override
+              public <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {}
+
+              @Override
+              public RequestHandlerMetadata lookup(String name) {
+                return handlerMetadataMap.get(name);
+              }
+            });
+    int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_GROUP_ROUTE, "group");
     ByteBuf route = Unpooled.buffer(length);
-    RouteDestinationFlyweight.encodeRouteByGroup(route, RouteType.STREAM_GROUP_ROUTE, 123, 1);
-    int metadataLength = RoutingFlyweight.computeLength(true, false, false, route);
+    RouteDestinationFlyweight.encodeRouteByGroup(route, RouteType.STREAM_GROUP_ROUTE, 123, "group");
+    int metadataLength = RoutingFlyweight.computeLength(true, false, false, "from", route);
     ByteBuf metadata = Unpooled.buffer(metadataLength);
-    RoutingFlyweight.encode(metadata, true, false, false, 0, 1, 12, 0, 123, 1234, 12346, 1, route);
-    
+    RoutingFlyweight.encode(metadata, true, false, false, 0, 1, "from", 0, 123, 1234, 12346, 1, route);
+
     JSONSerializer<Integer> responseSerializer = new JSONSerializer<>(Integer.class);
-    
+
     UserService userService = new UserService();
     Method method = UserService.class.getDeclaredMethod("handleNoArgs");
-    
+
     RequestHandlerMetadata handlerMetadata =
         new RequestHandlerMetadata(
-                                      null,
-                                      responseSerializer,
-                                      method,
-                                      UserService.class,
-                                      userService,
-                                      123,
-                                      1234,
-                                      12346);
-    
+            null, responseSerializer, method, UserService.class, userService, 123, 1234, 12346);
+
     handlerMetadataMap.put("123:1234:12346", handlerMetadata);
-    
+
     byte[] bytes = new byte[metadata.capacity()];
     metadata.getBytes(0, bytes);
     PayloadImpl payload = new PayloadImpl(Frame.NULL_BYTEBUFFER, ByteBuffer.wrap(bytes));
-    
+
     Payload block = handlingRSocket.requestResponse(payload).block();
-    
+
     Integer deserialize = responseSerializer.deserialize(block.getData());
     System.out.println(deserialize);
     Assert.assertNotNull(deserialize);
   }
-  
+
   @Test
   public void testFireAndForgetNoArgs() throws Exception {
     ConcurrentHashMap<String, RequestHandlerMetadata> handlerMetadataMap =
         new ConcurrentHashMap<>();
-    RequestHandlingRSocket handlingRSocket = new RequestHandlingRSocket(new RequestHandlerRegistry() {
-      @Override
-      public <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {
-    
-      }
-  
-      @Override
-      public RequestHandlerMetadata lookup(String name) {
-        return handlerMetadataMap.get(name);
-      }
-    });
-    int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_GROUP_ROUTE, 1);
+    RequestHandlingRSocket handlingRSocket =
+        new RequestHandlingRSocket(
+            new RequestHandlerRegistry() {
+              @Override
+              public <T1, T2> void registerHandler(Class<T1> clazz, T2 t) {}
+
+              @Override
+              public RequestHandlerMetadata lookup(String name) {
+                return handlerMetadataMap.get(name);
+              }
+            });
+    int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_GROUP_ROUTE, "group");
     ByteBuf route = Unpooled.buffer(length);
-    RouteDestinationFlyweight.encodeRouteByGroup(route, RouteType.STREAM_GROUP_ROUTE, 123, 1);
-    int metadataLength = RoutingFlyweight.computeLength(true, false, false, route);
+    RouteDestinationFlyweight.encodeRouteByGroup(route, RouteType.STREAM_GROUP_ROUTE, 123, "group");
+    int metadataLength = RoutingFlyweight.computeLength(true, false, false, "from", route);
     ByteBuf metadata = Unpooled.buffer(metadataLength);
-    RoutingFlyweight.encode(metadata, true, false, false, 0, 1, 12, 0, 123, 1234, 12346, 1, route);
-    
+    RoutingFlyweight.encode(metadata, true, false, false, 0, 1, "from", 0, 123, 1234, 12346, 1, route);
+
     JSONSerializer<Integer> responseSerializer = new JSONSerializer<>(Integer.class);
-    
+
     UserService userService = new UserService();
     Method method = UserService.class.getDeclaredMethod("ffNoArgs");
-    
+
     RequestHandlerMetadata handlerMetadata =
         new RequestHandlerMetadata(
-                                      null,
-                                      responseSerializer,
-                                      method,
-                                      UserService.class,
-                                      userService,
-                                      123,
-                                      1234,
-                                      12346);
-    
+            null, responseSerializer, method, UserService.class, userService, 123, 1234, 12346);
+
     handlerMetadataMap.put("123:1234:12346", handlerMetadata);
-    
+
     byte[] bytes = new byte[metadata.capacity()];
     metadata.getBytes(0, bytes);
     PayloadImpl payload = new PayloadImpl(Frame.NULL_BYTEBUFFER, ByteBuffer.wrap(bytes));
-    
+
     handlingRSocket.fireAndForget(payload).block();
   }
-  
+
   private static class UserService {
     Flowable<Integer> handle(User user) {
       long ts = user.getTs();
       return Flowable.just((int) ts);
     }
-    
+
     Flowable<Integer> handleNoArgs() {
       return Flowable.just((int) System.currentTimeMillis());
     }
-  
+
     Flowable<Integer> stream() {
       return Flowable.range(1, 10);
     }
-    
+
     Flowable<Void> ffNoArgs() {
       return Flowable.empty();
     }

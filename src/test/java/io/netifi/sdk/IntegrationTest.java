@@ -34,7 +34,7 @@ public class IntegrationTest {
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(2)
+            .destination("testReconnect")
             .host("localhost")
             .port(8801)
             .group("test.group")
@@ -47,14 +47,14 @@ public class IntegrationTest {
     RSocketFactory.receive()
         .acceptor(
             new SocketAcceptor() {
-              ConcurrentHashMap<Long, RSocket> concurrentHashMap = new ConcurrentHashMap<>();
+              ConcurrentHashMap<String, RSocket> concurrentHashMap = new ConcurrentHashMap<>();
 
               @Override
               public Mono<RSocket> accept(ConnectionSetupPayload setup, RSocket sendingSocket) {
                 ByteBuf byteBuf = Unpooled.wrappedBuffer(setup.getMetadata());
-                long destinationId = DestinationSetupFlyweight.destinationId(byteBuf);
-                System.out.println("destination id " + destinationId + " connecting");
-                concurrentHashMap.put(destinationId, sendingSocket);
+                String destination = DestinationSetupFlyweight.destination(byteBuf);
+                System.out.println("destination id " + destination + " connecting");
+                concurrentHashMap.put(destination, sendingSocket);
                 latch.countDown();
                 return Mono.just(
                     new AbstractRSocket() {
@@ -62,7 +62,7 @@ public class IntegrationTest {
                       public Mono<Payload> requestResponse(Payload payload) {
                         ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
                         ByteBuf route = RoutingFlyweight.route(metadata);
-                        long destinationId1 = RouteDestinationFlyweight.destinationId(route);
+                        String destinationId1 = RouteDestinationFlyweight.destination(route);
                         RSocket rSocket = concurrentHashMap.get(destinationId1);
                         return rSocket.requestResponse(payload);
                       }
@@ -71,7 +71,7 @@ public class IntegrationTest {
                       public Flux<Payload> requestStream(Payload payload) {
                         ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
                         ByteBuf route = RoutingFlyweight.route(metadata);
-                        long destinationId1 = RouteDestinationFlyweight.destinationId(route);
+                        String destinationId1 = RouteDestinationFlyweight.destination(route);
                         RSocket rSocket = concurrentHashMap.get(destinationId1);
                         return rSocket.requestStream(payload);
                       }
@@ -88,7 +88,7 @@ public class IntegrationTest {
   @Test
   public void testReconnectWithKeepAlive() throws Exception {
     io.netifi.sdk.Netifi server =
-        io.netifi.sdk.Netifi.builder().accountId(100).destinationId(2).group("test.group").build();
+        io.netifi.sdk.Netifi.builder().accountId(100).destination("testReconnectWithKeepAlive").group("test.group").build();
 
     LockSupport.park();
   }
@@ -98,7 +98,7 @@ public class IntegrationTest {
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(8001)
+            .destination("8001")
             .host("localhost")
             .port(8001)
             .group("test.server")
@@ -109,7 +109,7 @@ public class IntegrationTest {
     io.netifi.sdk.Netifi server2 =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(8002)
+            .destination("8002")
             .host("localhost")
             .port(8002)
             .group("test.server2")
@@ -121,7 +121,7 @@ public class IntegrationTest {
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(8003)
+            .destination("8003")
             .host("localhost")
             .port(8003)
             .group("test.client")
@@ -137,7 +137,7 @@ public class IntegrationTest {
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(8001)
+            .destination("8001")
             //.host("10.1.0.4")
             //.port(8001)
             .group("test.server")
@@ -148,7 +148,7 @@ public class IntegrationTest {
     io.netifi.sdk.Netifi server2 =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(8002)
+            .destination("8002")
             //.host("10.1.0.5")
             //.port(8001)
             .group("test.server2")
@@ -160,7 +160,7 @@ public class IntegrationTest {
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(8003)
+            .destination("8003")
             //.host("10.1.0.6")
             //.port(8001)
             .group("test.client")
@@ -213,7 +213,7 @@ public class IntegrationTest {
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(200)
+            .destination("200")
             // .host("localhost")
             // .port(8001)
             .group("test.server")
@@ -222,7 +222,7 @@ public class IntegrationTest {
     io.netifi.sdk.Netifi server2 =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(300)
+            .destination("300")
             // .host("localhost")
             // .port(8002)
             .group("test.server")
@@ -234,7 +234,7 @@ public class IntegrationTest {
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(1)
+            .destination("1")
             // .host("localhost")
             // .port(8003)
             .group("test.client")
@@ -243,7 +243,7 @@ public class IntegrationTest {
     io.netifi.sdk.Netifi client2 =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
-            .destinationId(4)
+            .destination("4")
             // .host("localhost")
             // .port(8004)
             .group("test.client")
@@ -281,7 +281,6 @@ public class IntegrationTest {
       io.netifi.sdk.Netifi client2 =
           io.netifi.sdk.Netifi.builder()
               .accountId(100)
-              .destinationId(id)
               .host("localhost")
               .port(ports[i])
               .group("test.client")
@@ -304,7 +303,7 @@ public class IntegrationTest {
       io.netifi.sdk.Netifi client2 =
           io.netifi.sdk.Netifi.builder()
               .accountId(100)
-              .destinationId(id)
+              .destination("justConnectAndHang2-" + id)
               .host("localhost")
               .port(ports[i])
               .group("test.client")
