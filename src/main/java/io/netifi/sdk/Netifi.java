@@ -3,7 +3,6 @@ package io.netifi.sdk;
 import io.netifi.nrqp.frames.*;
 import io.netifi.sdk.annotations.Service;
 import io.netifi.sdk.rs.RequestHandlingRSocket;
-import io.netifi.sdk.util.HashUtil;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -213,14 +212,10 @@ public class Netifi implements AutoCloseable {
   }
 
   public <T> T create(Class<T> service) {
-    return create(service, -1);
+    return create(service, null);
   }
 
   public <T> T create(Class<T> service, String destination) {
-    return create(service, HashUtil.hash(destination));
-  }
-
-  public <T> T create(Class<T> service, long destinationId) {
     Objects.requireNonNull(service, "service must be non-null");
     Annotation[] annotations = service.getDeclaredAnnotations();
 
@@ -245,13 +240,13 @@ public class Netifi implements AutoCloseable {
   }
 
   public <T> T create(Class<T> service, long accountId, String group) {
-    return create(service, accountId, group, "");
+    return create(service, accountId, group, null);
   }
 
   public <T> T create(Class<T> service, long accountId, String group, String destination) {
     Objects.requireNonNull(service, "service must be non-null");
 
-    logger.info("creating service {}, {}, {}, {}", service, accountId, group, destination);
+    logger.info("creating service {}, accountId {}, group {}, destination {}", service, accountId, group, destination);
 
     Object o =
         Proxy.newProxyInstance(

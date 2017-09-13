@@ -14,7 +14,7 @@ public class TimebasedIdGenerator implements LongSupplier {
     private volatile int counter = 0;
     
     public TimebasedIdGenerator(int id) {
-        this.id = id << 16;
+        this.id = Math.abs(id) << 16;
         
         LocalTime now = LocalTime.now(ZoneOffset.UTC);
         counter = now.getHour();

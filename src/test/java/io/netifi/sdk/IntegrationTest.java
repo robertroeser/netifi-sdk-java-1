@@ -173,43 +173,6 @@ public class IntegrationTest {
 
   @Test
   public void test() throws Exception {
-    /*RSocketBarrier.receive()
-    .acceptor(
-        new SocketAcceptor() {
-          ConcurrentHashMap<Long, RSocket> concurrentHashMap = new ConcurrentHashMap<>();
-
-          @Override
-          public Mono<RSocket> accept(ConnectionSetupPayload setup, RSocket sendingSocket) {
-            ByteBuf byteBuf = Unpooled.wrappedBuffer(setup.getMetadata());
-            long destinationId = DestinationSetupFlyweight.destinationId(byteBuf);
-            System.out.println("destination id " + destinationId + " connecting");
-            concurrentHashMap.put(destinationId, sendingSocket);
-            return Mono.just(
-                new AbstractRSocket() {
-                  @Override
-                  public Mono<Payload> requestResponse(Payload payload) {
-                    ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
-                    ByteBuf route = RoutingFlyweight.route(metadata);
-                    long destinationId1 = RouteDestinationFlyweight.destinationId(route);
-                    RSocket rSocket = concurrentHashMap.get(destinationId1);
-        `            return rSocket.requestResponse(payload);
-                  }
-
-                  @Override
-                  public Flux<Payload> requestStream(Payload payload) {
-                    ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
-                    ByteBuf route = RoutingFlyweight.route(metadata);
-                    long destinationId1 = RouteDestinationFlyweight.destinationId(route);
-                    RSocket rSocket = concurrentHashMap.get(destinationId1);
-                    return rSocket.requestStream(payload);
-                  }
-                });
-          }
-        })
-    .transport(TcpServerTransport.create("localhost", 8801))
-    .start()
-    .block();*/
-
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
@@ -267,6 +230,33 @@ public class IntegrationTest {
 
     List<ByteBuffer> byteBuffers = testService.get(buffer).toList().blockingGet();
     Assert.assertEquals(3, byteBuffers.size());
+  }
+  
+  @Test
+  public void testLocalOneRouter() throws Exception {
+    io.netifi.sdk.Netifi server =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destination("testServerLocal")
+            .host("localhost")
+            .port(8001)
+            .group("test.server")
+            .build();
+    server.registerHandler(TestService.class, new DefaultTestService());
+  
+    io.netifi.sdk.Netifi client =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destination("testDestLocal")
+            .host("localhost")
+            .port(8001)
+            .group("test.client")
+            .build();
+  
+    TestService testService = client.create(TestService.class);
+  
+    String s1 = testService.test(1234).doOnError(Throwable::printStackTrace).blockingLast();
+    Assert.assertEquals("1234", s1);
   }
 
   @Test
