@@ -295,7 +295,7 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
   }
 
   public static class Builder {
-    private String host = "edge.netifi.io";
+    private String host = "edge.prd.netifi.io";
     private Integer port = 8001;
     private Long accessKey;
     private Long accountId;
