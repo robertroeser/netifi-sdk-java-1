@@ -231,17 +231,17 @@ public class IntegrationTest {
 
   @Test
   public void test() throws Exception {
-    io.netifi.sdk.Netifi server =
-        io.netifi.sdk.Netifi.builder()
+    io.netifi.sdk.NetifiServer server =
+        io.netifi.sdk.NetifiServer.builder()
             .accountId(100)
             .destination("200")
             .host("localhost")
             .port(8001)
             .group("test.server")
             .build();
-
-    io.netifi.sdk.Netifi server2 =
-        io.netifi.sdk.Netifi.builder()
+  
+    io.netifi.sdk.NetifiServer server2 =
+        io.netifi.sdk.NetifiServer.builder()
             .accountId(100)
             .destination("300")
             .host("localhost")
@@ -339,8 +339,8 @@ public class IntegrationTest {
   
   @Test
   public void testLocalOneRouter() throws Exception {
-    io.netifi.sdk.Netifi server =
-        io.netifi.sdk.Netifi.builder()
+    io.netifi.sdk.NetifiServer server =
+        io.netifi.sdk.NetifiServer.builder()
             .accountId(100)
             .destination("testServerLocal")
             .host("localhost")
@@ -366,8 +366,8 @@ public class IntegrationTest {
   
   @Test
   public void testLocalOneRouterMultipleServers() throws Exception {
-    io.netifi.sdk.Netifi server =
-        io.netifi.sdk.Netifi.builder()
+    io.netifi.sdk.NetifiServer server =
+        io.netifi.sdk.NetifiServer.builder()
             .accountId(100)
             .destination("testServerLocal1")
             .host("localhost")
@@ -376,8 +376,8 @@ public class IntegrationTest {
             .build();
     server.registerHandler(TestService.class, new DefaultTestService());
   
-    io.netifi.sdk.Netifi server2 =
-        io.netifi.sdk.Netifi.builder()
+    io.netifi.sdk.NetifiServer server2 =
+        io.netifi.sdk.NetifiServer.builder()
             .accountId(100)
             .destination("testServerLocal2")
             .host("localhost")
@@ -386,8 +386,8 @@ public class IntegrationTest {
             .build();
     server2.registerHandler(TestService.class, new DefaultTestService());
   
-    io.netifi.sdk.Netifi server3 =
-        io.netifi.sdk.Netifi.builder()
+    io.netifi.sdk.NetifiServer server3 =
+        io.netifi.sdk.NetifiServer.builder()
             .accountId(100)
             .destination("testServerLocal3")
             .host("localhost")

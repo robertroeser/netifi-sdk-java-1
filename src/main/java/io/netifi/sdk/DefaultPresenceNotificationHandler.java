@@ -10,7 +10,7 @@ import io.netty.buffer.Unpooled;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.functions.BooleanSupplier;
-import io.reactivex.processors.RSocketBarrier;
+import io.netifi.sdk.rs.RSocketBarrier;
 import io.rsocket.Payload;
 import io.rsocket.util.PayloadImpl;
 import org.slf4j.Logger;

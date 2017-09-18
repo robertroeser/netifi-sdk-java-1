@@ -6,7 +6,7 @@ import io.netifi.sdk.serializer.JSONSerializer;
 import io.netifi.sdk.serializer.Serializers;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.reactivex.Flowable;
-import io.reactivex.processors.RSocketBarrier;
+import io.reactivex.processors.DefaultRSocketBarrier;
 import io.rsocket.AbstractRSocket;
 import io.rsocket.Payload;
 import io.rsocket.util.PayloadImpl;
@@ -23,7 +23,7 @@ import java.util.List;
 public class ServiceInvocationHandlerTest {
   @Test
   public void testRequestResponseInvocation() throws Exception {
-    RSocketBarrier barrier = new RSocketBarrier();
+    DefaultRSocketBarrier barrier = new DefaultRSocketBarrier();
     barrier.setRSocket(new TestSocket());
     long accountId = 1;
     String group = "foo.bar.baz";
@@ -49,7 +49,7 @@ public class ServiceInvocationHandlerTest {
 
   @Test
   public void testRequestResponseInvocationNoArgs() throws Exception {
-    RSocketBarrier barrier = new RSocketBarrier();
+    DefaultRSocketBarrier barrier = new DefaultRSocketBarrier();
     barrier.setRSocket(new TestSocket());
     long accountId = 1;
     String group = "foo.bar.baz";
@@ -75,7 +75,7 @@ public class ServiceInvocationHandlerTest {
 
   @Test
   public void testStream() throws Exception {
-    RSocketBarrier barrier = new RSocketBarrier();
+    DefaultRSocketBarrier barrier = new DefaultRSocketBarrier();
     barrier.setRSocket(new TestSocket());
     long accountId = 1;
     String group = "foo.bar.baz";

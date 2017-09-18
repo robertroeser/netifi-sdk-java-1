@@ -15,7 +15,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.reactivex.Flowable;
-import io.reactivex.processors.RSocketBarrier;
+import io.netifi.sdk.rs.RSocketBarrier;
 import io.rsocket.Frame;
 import io.rsocket.Payload;
 import io.rsocket.util.PayloadImpl;

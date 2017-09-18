@@ -1,34 +1,24 @@
 package io.netifi.sdk;
 
-import io.netifi.nrqp.frames.DestinationSetupFlyweight;
 import io.netifi.sdk.annotations.Service;
-import io.netifi.sdk.rs.RequestHandlingRSocket;
+import io.netifi.sdk.rs.LoadBalancedRSocketBarrier;
+import io.netifi.sdk.rs.RSocketBarrier;
 import io.netifi.sdk.util.TimebasedIdGenerator;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.reactivex.Flowable;
-import io.reactivex.processors.DefaultRSocketBarrier;
-import io.rsocket.RSocketFactory;
-import io.rsocket.transport.netty.client.TcpClientTransport;
-import io.rsocket.util.PayloadImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.Disposable;
-import reactor.core.publisher.Mono;
 
 import javax.xml.bind.DatatypeConverter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Proxy;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 
 /** This is where the magic happens */
-public class Netifi implements AutoCloseable, PresenceNotificationHandler {
+public class NetifiServer implements AutoCloseable, PresenceNotificationHandler {
   static final Throwable CONNECTION_CLOSED = new Throwable("connection is closed");
-  private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
+  private static final Logger logger = LoggerFactory.getLogger(NetifiServer.class);
 
   static {
     // Set the Java DNS cache to 60 seconds
@@ -46,15 +36,15 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
   private final String accessToken;
   private final byte[] accessTokenBytes;
   private final RequestHandlerRegistry registry;
-  private final DefaultRSocketBarrier barrier;
-  private final Disposable disposable;
+  private final RSocketBarrier barrier;
   private final boolean keepalive;
   private final long tickPeriodSeconds;
   private final long ackTimeoutSeconds;
   private final int missedAcks;
+  private final int connectionPool = Runtime.getRuntime().availableProcessors();
   private volatile boolean running = true;
 
-  private Netifi(
+  private NetifiServer(
       String host,
       int port,
       long accessKey,
@@ -67,7 +57,6 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
       long tickPeriodSeconds,
       long ackTimeoutSeconds,
       int missedAcks) {
-    this.barrier = new DefaultRSocketBarrier();
     this.registry = new DefaultRequestHandlerRegistry();
     this.host = host;
     this.port = port;
@@ -82,101 +71,36 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
     this.tickPeriodSeconds = tickPeriodSeconds;
     this.ackTimeoutSeconds = ackTimeoutSeconds;
     this.missedAcks = missedAcks;
+    this.barrier =
+        new LoadBalancedRSocketBarrier(
+            host,
+            port,
+            Runtime.getRuntime().availableProcessors(),
+            idGenerator,
+            destination,
+            group,
+            accountId,
+            registry);
+
     this.presenceNotificationHandler =
         new DefaultPresenceNotificationHandler(
             barrier, () -> running, idGenerator, accountId, destination);
-
-    AtomicLong delay = new AtomicLong();
-    this.disposable =
-        Mono.create(
-                sink -> {
-                  int length = DestinationSetupFlyweight.computeLength(false, destination, group);
-                  byte[] bytes = new byte[length];
-                  ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
-                  DestinationSetupFlyweight.encode(
-                      byteBuf,
-                      Unpooled.EMPTY_BUFFER,
-                      Unpooled.wrappedBuffer(new byte[20]),
-                      idGenerator.nextId(),
-                      accountId,
-                      destination,
-                      group);
-
-                  RSocketFactory.ClientRSocketFactory connect = RSocketFactory.connect();
-
-                  if (keepalive) {
-                    connect =
-                        connect.keepAlive(
-                            Duration.ofSeconds(tickPeriodSeconds),
-                            Duration.ofSeconds(ackTimeoutSeconds),
-                            missedAcks);
-                  }
-
-                  connect
-                      .errorConsumer(throwable -> logger.error("unhandled error", throwable))
-                      .setupPayload(new PayloadImpl(new byte[0], bytes))
-                      .acceptor(
-                          rSocket -> {
-                            rSocket
-                                .onClose()
-                                .doFinally(
-                                    s -> {
-                                      if (!running) {
-                                        sink.success();
-                                      } else {
-                                        sink.error(CONNECTION_CLOSED);
-                                      }
-                                    })
-                                .subscribe();
-                            barrier.setRSocket(rSocket);
-                            logger.info(
-                                "destination with id "
-                                    + destination
-                                    + " connected to "
-                                    + host
-                                    + ":"
-                                    + port);
-
-                            return new RequestHandlingRSocket(registry);
-                          })
-                      .transport(TcpClientTransport.create(host, port))
-                      .start()
-                      .timeout(Duration.ofSeconds(5))
-                      .doOnSuccess(s -> delay.set(0))
-                      .doOnError(sink::error)
-                      .subscribe();
-                })
-            .doOnError(Throwable::printStackTrace)
-            .onErrorResume(
-                t -> {
-                  long d = Math.min(10_000, delay.addAndGet(500));
-                  return Mono.delay(Duration.ofMillis(d)).then(Mono.error(t));
-                })
-            .retry(
-                throwable -> {
-                  if (running) {
-                    logger.debug("Netifi is running, retrying connection");
-                  }
-
-                  return running;
-                })
-            .subscribe();
   }
 
   public static Builder builder() {
     return new Builder();
   }
-  
+
   @Override
   public Flowable<Collection<String>> presence(long accountId, String group) {
     return presenceNotificationHandler.presence(accountId, group);
   }
-  
+
   @Override
   public Flowable<Collection<String>> presence(long accountId, String group, String destination) {
     return presenceNotificationHandler.presence(accountId, group, destination);
   }
-  
+
   @Override
   public String toString() {
     return "Netifi{"
@@ -206,8 +130,6 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
         + registry
         + ", barrier="
         + barrier
-        + ", disposable="
-        + disposable
         + ", keepalive="
         + keepalive
         + ", tickPeriodSeconds="
@@ -288,9 +210,6 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
 
   @Override
   public void close() throws Exception {
-    if (disposable != null) {
-      disposable.dispose();
-    }
     running = false;
   }
 
@@ -367,7 +286,7 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
       return this;
     }
 
-    public Netifi build() {
+    public NetifiServer build() {
       Objects.requireNonNull(host, "host is required");
       Objects.requireNonNull(port, "port is required");
       Objects.requireNonNull(accountId, "account Id is required");
@@ -380,7 +299,7 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
           group,
           destination);
 
-      return new Netifi(
+      return new NetifiServer(
           host,
           port,
           accessKey == null ? 0 : accessKey,

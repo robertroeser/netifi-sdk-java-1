@@ -15,7 +15,7 @@ import java.util.concurrent.CountDownLatch;
 public class RSocketBarrierTest {
   @Test
   public void testEmitValidRSocket() {
-    RSocketBarrier barrier = new RSocketBarrier();
+    DefaultRSocketBarrier barrier = new DefaultRSocketBarrier();
     barrier.setRSocket(new AbstractRSocket() {});
     RSocket rSocket = barrier.getRSocket().singleOrError().blockingGet();
     Assert.assertNotNull(rSocket);
@@ -23,7 +23,7 @@ public class RSocketBarrierTest {
 
   @Test
   public void testEmitWhenSubscriberBeforeValidRSocketPresent() throws Exception {
-    RSocketBarrier barrier = new RSocketBarrier();
+    DefaultRSocketBarrier barrier = new DefaultRSocketBarrier();
     CountDownLatch latch = new CountDownLatch(1);
     barrier.getRSocket().singleOrError().doOnSuccess(r -> latch.countDown()).subscribe();
     barrier.setRSocket(new AbstractRSocket() {});
@@ -34,7 +34,7 @@ public class RSocketBarrierTest {
   public void testMultipleThreadsUsingBarrierToGetRSocket() throws Exception {
     int count = 5000;
     CountDownLatch latch = new CountDownLatch(count);
-    RSocketBarrier barrier = new RSocketBarrier();
+    DefaultRSocketBarrier barrier = new DefaultRSocketBarrier();
     List<Flowable<RSocket>> list = new ArrayList<>();
     for (int i = 0; i < count; i++) {
       Flowable<RSocket> rSocketFlowable =
@@ -53,7 +53,7 @@ public class RSocketBarrierTest {
   public void testMultipleThreadsUsingBarrierWhenBothStatesHadGetCalled() throws Exception {
     int count = 5000;
     CountDownLatch latch = new CountDownLatch(count);
-    RSocketBarrier barrier = new RSocketBarrier();
+    DefaultRSocketBarrier barrier = new DefaultRSocketBarrier();
     List<Flowable<RSocket>> list = new ArrayList<>();
     boolean added = false;
     for (int i = 0; i < count; i++) {

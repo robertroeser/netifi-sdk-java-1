@@ -1,19 +1,21 @@
 package io.reactivex.processors;
 
+import io.netifi.sdk.rs.RSocketBarrier;
 import io.reactivex.Flowable;
 import io.rsocket.RSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** */
-public class RSocketBarrier {
-  private static final Logger logger = LoggerFactory.getLogger(RSocketBarrier.class);
+public class DefaultRSocketBarrier implements RSocketBarrier {
+  private static final Logger logger = LoggerFactory.getLogger(DefaultRSocketBarrier.class);
   private BehaviorProcessor<RSocket> behaviorProcessor;
 
-  public RSocketBarrier() {
+  public DefaultRSocketBarrier() {
     behaviorProcessor = BehaviorProcessor.create();
   }
 
+  @Override
   public Flowable<RSocket> getRSocket() {
     return behaviorProcessor.take(1);
   }
