@@ -147,8 +147,11 @@ public class IntegrationTest {
   public void testRequestBetweenRoutersRemote() throws Exception {
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
+            
             .accountId(100)
             .destination("8001")
+            .host("172.16.1.21")
+    
             // .host("10.1.0.4")
             // .port(8001)
             .group("test.server")
@@ -160,6 +163,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destination("8002")
+            .host("172.16.1.21")
+    
             // .host("10.1.0.5")
             //  .port(8001)
             .group("test.server2")
@@ -172,10 +177,14 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destination("8003")
+            .host("172.16.1.21")
+    
             // .host("10.1.0.6")
             // .port(8001)
             .group("test.client")
             .build();
+    
+    Thread.sleep(250);
 
     TestService2 testService2 = client.create(TestService2.class);
     String s = testService2.test2(1234).singleOrError().blockingGet();

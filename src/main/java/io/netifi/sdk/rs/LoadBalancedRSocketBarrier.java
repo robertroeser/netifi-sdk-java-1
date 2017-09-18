@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /** */
 public class LoadBalancedRSocketBarrier implements RSocketBarrier {
@@ -59,7 +60,17 @@ public class LoadBalancedRSocketBarrier implements RSocketBarrier {
     this.accountId = accountId;
     this.registry = registry;
 
-    this.balancedRSocketMono = LoadBalancedRSocketMono.create(Flux.just(suppliers));
+    this.balancedRSocketMono =
+        LoadBalancedRSocketMono.create(
+            Flux.just(suppliers),
+            4.0D,
+            0.2D,
+            0.8D,
+            1.0D,
+            2.0D,
+            Runtime.getRuntime().availableProcessors(),
+            Runtime.getRuntime().availableProcessors(),
+            TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES));
   }
 
   private Mono<RSocket> getRSocketMono(int i) {

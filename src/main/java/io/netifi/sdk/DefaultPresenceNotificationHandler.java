@@ -170,7 +170,7 @@ public class DefaultPresenceNotificationHandler implements PresenceNotificationH
 
                 source.setDisposable(d);
               },
-              BackpressureStrategy.BUFFER)
+              BackpressureStrategy.LATEST)
           .debounce(200, TimeUnit.MILLISECONDS)
           .onErrorResumeNext(
               t -> {
