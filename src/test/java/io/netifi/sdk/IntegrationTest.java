@@ -149,8 +149,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destination("8001")
-           // .host("10.1.0.4")
-           // .port(8001)
+            // .host("10.1.0.4")
+            // .port(8001)
             .group("test.server")
             .build();
 
@@ -160,8 +160,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destination("8002")
-           // .host("10.1.0.5")
-          //  .port(8001)
+            // .host("10.1.0.5")
+            //  .port(8001)
             .group("test.server2")
             .build();
 
@@ -172,8 +172,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destination("8003")
-           // .host("10.1.0.6")
-           // .port(8001)
+            // .host("10.1.0.6")
+            // .port(8001)
             .group("test.client")
             .build();
 
@@ -188,8 +188,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destination("8001")
-            //.host("10.1.0.4")
-            //.port(8001)
+            // .host("10.1.0.4")
+            // .port(8001)
             .group("test.server")
             .build();
 
@@ -199,8 +199,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destination("8002")
-            //.host("10.1.0.5")
-           // .port(8001)
+            // .host("10.1.0.5")
+            // .port(8001)
             .group("test.server2")
             .build();
 
@@ -211,8 +211,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destination("8003")
-            //.host("10.1.0.6")
-            //.port(8001)
+            // .host("10.1.0.6")
+            // .port(8001)
             .group("test.client")
             .build();
 
@@ -221,11 +221,11 @@ public class IntegrationTest {
     String s1 = testService2.test2(1234).singleOrError().blockingGet();
     String s2 = testService2.test2(1234).singleOrError().blockingGet();
     String s3 = testService2.test2(1234).singleOrError().blockingGet();
-  
+
     Integer integer = testService.getTicks().take(10).blockingLast();
     Integer integer2 = testService.getTicks().take(10).blockingLast();
     Integer integer3 = testService.getTicks().take(10).blockingLast();
-  
+
     System.out.println(s3);
   }
 
@@ -235,8 +235,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destination("200")
-            .destination("8001")
-            .host("10.1.0.4")
+            .host("localhost")
+            .port(8001)
             .group("test.server")
             .build();
 
@@ -244,8 +244,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destination("300")
-            .destination("8001")
-            .host("10.1.0.5")
+            .host("localhost")
+            .port(8002)
             .group("test.server")
             .build();
 
@@ -256,8 +256,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destination("1")
-            // .host("localhost")
-            // .port(8003)
+            .host("localhost")
+            .port(8003)
             .group("test.client")
             .build();
 
@@ -265,8 +265,8 @@ public class IntegrationTest {
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
             .destination("4")
-            // .host("localhost")
-            // .port(8004)
+            .host("localhost")
+            .port(8003)
             .group("test.client")
             .build();
 
@@ -289,10 +289,10 @@ public class IntegrationTest {
     List<ByteBuffer> byteBuffers = testService.get(buffer).toList().blockingGet();
     Assert.assertEquals(3, byteBuffers.size());
   }
-  
+
   @Test
   public void testRemoteDispose() throws Exception {
-  
+
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
@@ -317,11 +317,11 @@ public class IntegrationTest {
             // .port(8001)
             .group("test.server")
             .build();
-  
+
     server.registerHandler(TestService.class, new DefaultTestService());
     server2.registerHandler(TestService.class, new DefaultTestService());
     server3.registerHandler(TestService.class, new DefaultTestService());
-  
+
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
@@ -330,13 +330,13 @@ public class IntegrationTest {
             // .port(8003)
             .group("test.client")
             .build();
-  
-    TestService testService = client.create(TestService.class);
-  
-  // testService.getTicks().subscribe().dispose();
-   testService.getTicks().take(10).blockingLast();
-  }
 
+    TestService testService = client.create(TestService.class);
+
+    // testService.getTicks().subscribe().dispose();
+    testService.getTicks().take(10).blockingLast();
+  }
+  
   @Test
   public void testLocalOneRouter() throws Exception {
     io.netifi.sdk.Netifi server =
@@ -348,7 +348,7 @@ public class IntegrationTest {
             .group("test.server")
             .build();
     server.registerHandler(TestService.class, new DefaultTestService());
-
+    
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
             .accountId(100)
@@ -357,9 +357,58 @@ public class IntegrationTest {
             .port(8001)
             .group("test.client")
             .build();
-
+    
     TestService testService = client.create(TestService.class);
-
+    
+    String s1 = testService.test(1234).doOnError(Throwable::printStackTrace).blockingLast();
+    Assert.assertEquals("1234", s1);
+  }
+  
+  @Test
+  public void testLocalOneRouterMultipleServers() throws Exception {
+    io.netifi.sdk.Netifi server =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destination("testServerLocal1")
+            .host("localhost")
+            .port(8001)
+            .group("test.server")
+            .build();
+    server.registerHandler(TestService.class, new DefaultTestService());
+  
+    io.netifi.sdk.Netifi server2 =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destination("testServerLocal2")
+            .host("localhost")
+            .port(8001)
+            .group("test.server")
+            .build();
+    server2.registerHandler(TestService.class, new DefaultTestService());
+  
+    io.netifi.sdk.Netifi server3 =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destination("testServerLocal3")
+            .host("localhost")
+            .port(8001)
+            .group("test.server")
+            .build();
+    server3.registerHandler(TestService.class, new DefaultTestService());
+    
+    Thread.sleep(500);
+    
+    io.netifi.sdk.Netifi client =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(100)
+            .destination("testDestLocal")
+            .host("localhost")
+            .port(8001)
+            .group("test.client")
+            .build();
+    
+    TestService testService = client.create(TestService.class);
+    
     String s1 = testService.test(1234).doOnError(Throwable::printStackTrace).blockingLast();
     Assert.assertEquals("1234", s1);
   }

@@ -88,16 +88,6 @@ class NetifiInvocationHandler implements InvocationHandler {
       Type[] typeArguments = parameterizedType.getActualTypeArguments();
       Class<?> returnType = (Class<?>) typeArguments[0];
 
-      if (logger.isTraceEnabled()) {
-        logger.trace(
-            "invoking \nnamespaceId -> {},\nclassId -> {},\nmethodId -> {}\nfor method {}, and class {}",
-            namespaceId,
-            classId,
-            methodId,
-            method,
-            method.getDeclaringClass().getName());
-      }
-
       if (!method.getReturnType().isAssignableFrom(Flowable.class)) {
         throw new IllegalStateException("method must return " + Flowable.class.getCanonicalName());
       }
@@ -114,6 +104,19 @@ class NetifiInvocationHandler implements InvocationHandler {
               .getRSocket()
               .flatMap(
                   rSocket -> {
+                    long seqId = generator.nextId();
+
+                    if (logger.isTraceEnabled()) {
+                      logger.trace(
+                          "{} - invoking \nnamespaceId -> {},\nclassId -> {},\nmethodId -> {}\nfor method {}, and class {}",
+                          seqId,
+                          namespaceId,
+                          classId,
+                          methodId,
+                          method,
+                          method.getDeclaringClass().getName());
+                    }
+
                     ByteBuf route;
 
                     if (destination != null && !destination.equals("")) {
@@ -148,7 +151,7 @@ class NetifiInvocationHandler implements InvocationHandler {
                         namespaceId,
                         classId,
                         methodId,
-                        generator.nextId(),
+                        seqId,
                         route);
 
                     ByteBuffer data =
@@ -181,6 +184,19 @@ class NetifiInvocationHandler implements InvocationHandler {
                         Flowable.fromPublisher((Publisher) arg)
                             .map(
                                 o -> {
+                                  long seqId = generator.nextId();
+
+                                  if (logger.isTraceEnabled()) {
+                                    logger.trace(
+                                        "{} - invoking \nnamespaceId -> {},\nclassId -> {},\nmethodId -> {}\nfor method {}, and class {}",
+                                        seqId,
+                                        namespaceId,
+                                        classId,
+                                        methodId,
+                                        method,
+                                        method.getDeclaringClass().getName());
+                                  }
+
                                   ByteBuf route;
                                   if (destination != null && !destination.equals("")) {
                                     int length =
@@ -220,7 +236,7 @@ class NetifiInvocationHandler implements InvocationHandler {
                                       namespaceId,
                                       classId,
                                       methodId,
-                                      generator.nextId(),
+                                      seqId,
                                       route);
 
                                   ByteBuffer buffer =
@@ -253,6 +269,18 @@ class NetifiInvocationHandler implements InvocationHandler {
               .flatMap(
                   rSocket -> {
                     ByteBuf route;
+                    long seqId = generator.nextId();
+
+                    if (logger.isTraceEnabled()) {
+                      logger.trace(
+                          "{} - invoking \nnamespaceId -> {},\nclassId -> {},\nmethodId -> {}\nfor method {}, and class {}",
+                          seqId,
+                          namespaceId,
+                          classId,
+                          methodId,
+                          method,
+                          method.getDeclaringClass().getName());
+                    }
 
                     if (destination != null && !destination.equals("")) {
                       int length =
@@ -288,7 +316,7 @@ class NetifiInvocationHandler implements InvocationHandler {
                         namespaceId,
                         classId,
                         methodId,
-                        generator.nextId(),
+                        seqId,
                         route);
 
                     ByteBuffer data =
@@ -318,6 +346,19 @@ class NetifiInvocationHandler implements InvocationHandler {
               .getRSocket()
               .flatMap(
                   rSocket -> {
+                    long seqId = generator.nextId();
+
+                    if (logger.isTraceEnabled()) {
+                      logger.trace(
+                          "{} - invoking \nnamespaceId -> {},\nclassId -> {},\nmethodId -> {}\nfor method {}, and class {}",
+                          seqId,
+                          namespaceId,
+                          classId,
+                          methodId,
+                          method,
+                          method.getDeclaringClass().getName());
+                    }
+
                     ByteBuf route;
 
                     if (destination != null && !destination.equals("")) {
@@ -352,7 +393,7 @@ class NetifiInvocationHandler implements InvocationHandler {
                         namespaceId,
                         classId,
                         methodId,
-                        generator.nextId(),
+                        seqId,
                         route);
 
                     ByteBuffer data =
