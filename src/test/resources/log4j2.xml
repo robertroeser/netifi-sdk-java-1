@@ -12,10 +12,13 @@
     <Root level="INFO" additivity="false">
         <AppenderRef ref="Async"/>
     </Root>
-    <logger name="io.netifi" level="TRACE" additivity="false">
+    <logger name="io.netifi" level="INFO" additivity="false">
         <AppenderRef ref="Async"/>
     </logger>
-    <logger name="io.reactivesocket.FrameLogger" level="DEBUG" additivity="false">
+    <logger name="io.reactivesocket.FrameLogger" level="TRACE" additivity="false">
+        <AppenderRef ref="Async"/>
+    </logger>
+    <logger name="io.rsocket.Frame.Error" level="TRACE" additivity="false">
         <AppenderRef ref="Async"/>
     </logger>
 </Loggers>

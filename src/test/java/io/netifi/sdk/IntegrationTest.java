@@ -29,11 +29,16 @@ import java.util.concurrent.locks.LockSupport;
 /** */
 @Ignore
 public class IntegrationTest {
+  private long accessKey = 3855261330795754807L;
+  private String accessToken = "n9R9042eE1KaLtE56rbWjBIGymo=";
+
   @Test
   public void testReconnect() throws Exception {
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("testReconnect")
             .host("localhost")
             .port(8801)
@@ -89,7 +94,9 @@ public class IntegrationTest {
   public void testReconnectWithKeepAlive() throws Exception {
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("testReconnectWithKeepAlive")
             .group("test.group")
             .build();
@@ -98,10 +105,43 @@ public class IntegrationTest {
   }
 
   @Test
+  public void testBetweenTwoRouter() throws Exception {
+    io.netifi.sdk.Netifi server =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
+            .destination("serverDestination")
+            .host("localhost")
+            .port(8001)
+            .group("test.server")
+            .build();
+
+    server.registerHandler(TestService.class, new DefaultTestService());
+    
+    io.netifi.sdk.Netifi client =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
+            .destination("clientDestination")
+            .host("localhost")
+            .port(8002)
+            .group("test.client")
+            .build();
+    
+    TestService testService = client.create(TestService.class);
+    String s = testService.test(1234).blockingLast();
+    System.out.println(s);
+  }
+
+  @Test
   public void testRequestBetweenRoutersLocal() throws Exception {
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("8001")
             .host("localhost")
             .port(8001)
@@ -112,7 +152,9 @@ public class IntegrationTest {
 
     io.netifi.sdk.Netifi server2 =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("8002")
             .host("localhost")
             .port(8002)
@@ -124,7 +166,9 @@ public class IntegrationTest {
 
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("8003")
             .host("localhost")
             .port(8003)
@@ -147,11 +191,12 @@ public class IntegrationTest {
   public void testRequestBetweenRoutersRemote() throws Exception {
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
-            
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("8001")
-            .host("172.16.1.21")
-    
+            // .host("172.16.1.21")
+
             // .host("10.1.0.4")
             // .port(8001)
             .group("test.server")
@@ -161,10 +206,12 @@ public class IntegrationTest {
 
     io.netifi.sdk.Netifi server2 =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("8002")
-            .host("172.16.1.21")
-    
+            // .host("172.16.1.21")
+
             // .host("10.1.0.5")
             //  .port(8001)
             .group("test.server2")
@@ -175,15 +222,17 @@ public class IntegrationTest {
 
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("8003")
-            .host("172.16.1.21")
-    
+            // .host("172.16.1.21")
+
             // .host("10.1.0.6")
             // .port(8001)
             .group("test.client")
             .build();
-    
+
     Thread.sleep(250);
 
     TestService2 testService2 = client.create(TestService2.class);
@@ -195,7 +244,9 @@ public class IntegrationTest {
   public void testRequestBetweenRoutersRemote_nTimes_SameSDK() throws Exception {
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("8001")
             // .host("10.1.0.4")
             // .port(8001)
@@ -206,7 +257,9 @@ public class IntegrationTest {
 
     io.netifi.sdk.Netifi server2 =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("8002")
             // .host("10.1.0.5")
             // .port(8001)
@@ -218,7 +271,9 @@ public class IntegrationTest {
 
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("8003")
             // .host("10.1.0.6")
             // .port(8001)
@@ -240,18 +295,22 @@ public class IntegrationTest {
 
   @Test
   public void test() throws Exception {
-    io.netifi.sdk.NetifiServer server =
-        io.netifi.sdk.NetifiServer.builder()
-            .accountId(100)
+    io.netifi.sdk.Netifi server =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("200")
             .host("localhost")
             .port(8001)
             .group("test.server")
             .build();
-  
-    io.netifi.sdk.NetifiServer server2 =
-        io.netifi.sdk.NetifiServer.builder()
-            .accountId(100)
+
+    io.netifi.sdk.Netifi server2 =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("300")
             .host("localhost")
             .port(8002)
@@ -263,7 +322,9 @@ public class IntegrationTest {
 
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("1")
             .host("localhost")
             .port(8003)
@@ -272,7 +333,9 @@ public class IntegrationTest {
 
     io.netifi.sdk.Netifi client2 =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("4")
             .host("localhost")
             .port(8003)
@@ -304,7 +367,9 @@ public class IntegrationTest {
 
     io.netifi.sdk.Netifi server =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("200")
             // .host("localhost")
             // .port(8001)
@@ -312,7 +377,9 @@ public class IntegrationTest {
             .build();
     io.netifi.sdk.Netifi server2 =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("200")
             // .host("localhost")
             // .port(8001)
@@ -320,7 +387,9 @@ public class IntegrationTest {
             .build();
     io.netifi.sdk.Netifi server3 =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("200")
             // .host("localhost")
             // .port(8001)
@@ -333,7 +402,9 @@ public class IntegrationTest {
 
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("1")
             // .host("localhost")
             // .port(8003)
@@ -345,22 +416,59 @@ public class IntegrationTest {
     // testService.getTicks().subscribe().dispose();
     testService.getTicks().take(10).blockingLast();
   }
-  
+
   @Test
   public void testLocalOneRouter() throws Exception {
-    io.netifi.sdk.NetifiServer server =
-        io.netifi.sdk.NetifiServer.builder()
-            .accountId(100)
+    io.netifi.sdk.Netifi server =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("testServerLocal")
             .host("localhost")
             .port(8001)
             .group("test.server")
             .build();
     server.registerHandler(TestService.class, new DefaultTestService());
-    
+
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
+            .destination("testDestLocal")
+            .host("localhost")
+            .port(8001)
+            .group("test.client")
+            .build();
+
+    Thread.sleep(500);
+
+    TestService testService = client.create(TestService.class);
+
+    String s1 = testService.test(1234).doOnError(Throwable::printStackTrace).blockingLast();
+    Assert.assertEquals("1234", s1);
+  }
+
+  @Test
+  public void testLocalOneRouterMultipleRequests() throws Exception {
+    io.netifi.sdk.Netifi server =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
+            .destination("testServerLocal")
+            .host("localhost")
+            .port(8001)
+            .group("test.server")
+            .build();
+    server.registerHandler(TestService.class, new DefaultTestService());
+
+    io.netifi.sdk.Netifi client =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("testDestLocal")
             .host("localhost")
             .port(8001)
@@ -368,56 +476,68 @@ public class IntegrationTest {
             .build();
     
     TestService testService = client.create(TestService.class);
-    
-    String s1 = testService.test(1234).doOnError(Throwable::printStackTrace).blockingLast();
-    Assert.assertEquals("1234", s1);
+
+    Flowable.range(1, 10_000)
+        .flatMap(
+            i -> {
+              return testService.test(i).doOnError(Throwable::printStackTrace);
+            })
+        .blockingLast();
   }
-  
+
   @Test
   public void testLocalOneRouterMultipleServers() throws Exception {
-    io.netifi.sdk.NetifiServer server =
-        io.netifi.sdk.NetifiServer.builder()
-            .accountId(100)
+    io.netifi.sdk.Netifi server =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("testServerLocal1")
             .host("localhost")
             .port(8001)
             .group("test.server")
             .build();
     server.registerHandler(TestService.class, new DefaultTestService());
-  
-    io.netifi.sdk.NetifiServer server2 =
-        io.netifi.sdk.NetifiServer.builder()
-            .accountId(100)
+
+    io.netifi.sdk.Netifi server2 =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("testServerLocal2")
             .host("localhost")
             .port(8001)
             .group("test.server")
             .build();
     server2.registerHandler(TestService.class, new DefaultTestService());
-  
-    io.netifi.sdk.NetifiServer server3 =
-        io.netifi.sdk.NetifiServer.builder()
-            .accountId(100)
+
+    io.netifi.sdk.Netifi server3 =
+        io.netifi.sdk.Netifi.builder()
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("testServerLocal3")
             .host("localhost")
             .port(8001)
             .group("test.server")
             .build();
     server3.registerHandler(TestService.class, new DefaultTestService());
-    
+
     Thread.sleep(500);
-    
+
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("testDestLocal")
             .host("localhost")
             .port(8001)
             .group("test.client")
             .build();
-    
+
     TestService testService = client.create(TestService.class);
-    
+
     String s1 = testService.test(1234).doOnError(Throwable::printStackTrace).blockingLast();
     Assert.assertEquals("1234", s1);
   }
@@ -433,7 +553,9 @@ public class IntegrationTest {
       System.out.println("connecting as id -> " + id + " on port " + ports[i]);
       io.netifi.sdk.Netifi client2 =
           io.netifi.sdk.Netifi.builder()
-              .accountId(100)
+              .accountId(Long.MAX_VALUE)
+              .accessKey(accessKey)
+              .accessToken(accessToken)
               .destination("hanging-" + k + "-" + ports[i])
               .host("localhost")
               .port(ports[i])
@@ -456,7 +578,9 @@ public class IntegrationTest {
       System.out.println("connecting as id -> " + id + " on port " + ports[i]);
       io.netifi.sdk.Netifi client2 =
           io.netifi.sdk.Netifi.builder()
-              .accountId(100)
+              .accountId(Long.MAX_VALUE)
+              .accessKey(accessKey)
+              .accessToken(accessToken)
               .destination("justConnectAndHang2-" + id)
               .host("localhost")
               .port(ports[i])
@@ -472,7 +596,9 @@ public class IntegrationTest {
   public void presenceNotification() {
     io.netifi.sdk.Netifi client =
         io.netifi.sdk.Netifi.builder()
-            .accountId(100)
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
             .destination("presence tester")
             .host("localhost")
             .port(8001)
@@ -488,7 +614,7 @@ public class IntegrationTest {
         .blockingLast();
   }
 
-  @Service(accountId = 100, group = "test.server")
+  @Service(accountId = Long.MAX_VALUE, group = "test.server")
   public interface TestService {
     @RequestResponse
     Flowable<String> test(Integer integer);
@@ -500,7 +626,7 @@ public class IntegrationTest {
     Flowable<ByteBuffer> get(ByteBuffer buffer);
   }
 
-  @Service(accountId = 100, group = "test.server2")
+  @Service(accountId = Long.MAX_VALUE, group = "test.server2")
   public interface TestService2 {
     @RequestResponse
     Flowable<String> test2(Integer integer);

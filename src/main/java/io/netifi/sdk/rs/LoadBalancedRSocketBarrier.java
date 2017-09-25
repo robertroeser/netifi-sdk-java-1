@@ -1,7 +1,6 @@
 package io.netifi.sdk.rs;
 
 import io.netifi.nrqp.frames.DestinationSetupFlyweight;
-import io.netifi.sdk.NetifiServer;
 import io.netifi.sdk.RequestHandlerRegistry;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
@@ -26,12 +25,13 @@ import java.util.concurrent.TimeUnit;
 public class LoadBalancedRSocketBarrier implements RSocketBarrier {
 
   static final Throwable CONNECTION_CLOSED = new Throwable("connection is closed");
-  private static final Logger logger = LoggerFactory.getLogger(NetifiServer.class);
+  private static final Logger logger = LoggerFactory.getLogger(LoadBalancedRSocketBarrier.class);
   private final LoadBalancedRSocketMono balancedRSocketMono;
   private final TimebasedIdGenerator idGenerator;
   private final String destination;
   private final String group;
-  private final long accountId;
+  private final byte[] accessToken;
+  private final long accessKey;
   private final RequestHandlerRegistry registry;
 
   private final String host;
@@ -44,7 +44,8 @@ public class LoadBalancedRSocketBarrier implements RSocketBarrier {
       TimebasedIdGenerator idGenerator,
       String destination,
       String group,
-      long accountId,
+      long accessKey,
+      byte[] accessToken,
       RequestHandlerRegistry registry) {
     List<RSocketSupplier> suppliers = new ArrayList<>();
     for (int i = 0; i < numConnections; i++) {
@@ -57,8 +58,9 @@ public class LoadBalancedRSocketBarrier implements RSocketBarrier {
     this.idGenerator = idGenerator;
     this.destination = destination;
     this.group = group;
-    this.accountId = accountId;
     this.registry = registry;
+    this.accessToken = accessToken;
+    this.accessKey = accessKey;
 
     this.balancedRSocketMono =
         LoadBalancedRSocketMono.create(
@@ -81,9 +83,9 @@ public class LoadBalancedRSocketBarrier implements RSocketBarrier {
     DestinationSetupFlyweight.encode(
         byteBuf,
         Unpooled.EMPTY_BUFFER,
-        Unpooled.wrappedBuffer(new byte[20]),
+        Unpooled.wrappedBuffer(accessToken),
         idGenerator.nextId(),
-        accountId,
+        accessKey,
         _destination,
         group);
 
