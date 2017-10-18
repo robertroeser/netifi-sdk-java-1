@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package io.netifi.testing;
+
+option java_package = "io.netifi.testing.protobuf";
+option java_outer_classname = "SimpleServiceProto";
+option java_multiple_files = true;
+
+// A simple service for test.
+service SimpleService {
+  // Simple unary RPC.
+  rpc UnaryRpc (SimpleRequest) returns (SimpleResponse) {}
+
+  // Simple client-to-server streaming RPC.
+  rpc ClientStreamingRpc (stream SimpleRequest) returns (SimpleResponse) {}
+
+  // Simple server-to-client streaming RPC.
+  rpc ServerStreamingRpc (SimpleRequest) returns (stream SimpleResponse) {}
+
+  // Simple bidirectional streaming RPC.
+  rpc BidiStreamingRpc (stream SimpleRequest) returns (stream SimpleResponse) {}
+}
+
+// A simple request message type for test.
+message SimpleRequest {
+  // An optional string message for test.
+  string requestMessage = 1;
+}
+
+// A simple response message type for test.
+message SimpleResponse {
+  // An optional string message for test.
+  string responseMessage = 1;
+}

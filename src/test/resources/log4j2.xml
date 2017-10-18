@@ -1,25 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="warn">
-<Appenders>
-    <Console name="STDOUT" target="SYSTEM_OUT">
-        <PatternLayout pattern="%d %p %c{1.} [%t] %m%n"/>
-    </Console>
-    <Async name="Async">
-        <AppenderRef ref="STDOUT"/>
-    </Async>
-</Appenders>
-<Loggers>
-    <Root level="INFO" additivity="false">
-        <AppenderRef ref="Async"/>
-    </Root>
-    <logger name="io.netifi" level="INFO" additivity="false">
-        <AppenderRef ref="Async"/>
-    </logger>
-    <logger name="io.reactivesocket.FrameLogger" level="TRACE" additivity="false">
-        <AppenderRef ref="Async"/>
-    </logger>
-    <logger name="io.rsocket.Frame.Error" level="TRACE" additivity="false">
-        <AppenderRef ref="Async"/>
-    </logger>
-</Loggers>
+    <Appenders>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d %p %c{1.} [%t] %m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="error" additivity="false">
+            <AppenderRef ref="STDOUT"/>
+        </Root>
+        <logger name="io.netifi" level="DEBUG" additivity="false">
+            <AppenderRef ref="STDOUT"/>
+        </logger>
+        <logger name="io.rsocket.FrameLogger" level="DEBUG" additivity="false">
+            <AppenderRef ref="STDOUT"/>
+        </logger>
+    </Loggers>
 </Configuration>
