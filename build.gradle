@@ -19,13 +19,12 @@ repositories {
 
 dependencies {
     compile 'com.octo.reactive.audit:reactive-audit-lib:0.8'
-
-    compile 'io.netifi.proteus:proteus-core:0.1.0-SNAPSHOT'
+    compile 'io.netifi.nrqp.frames:netifi-edge-frames:0.8.0-SNAPSHOT'
 
     compile 'io.rsocket:rsocket-load-balancer:0.9.12'
     compile 'io.rsocket:rsocket-transport-netty:0.9.12'
 
-    compile('io.netifi.auth:core:0.0.2-SNAPSHOT') { changing = true }
+    compile 'io.netifi.auth:core:0.0.2-SNAPSHOT'
 
     testCompile 'junit:junit:4.10'
 

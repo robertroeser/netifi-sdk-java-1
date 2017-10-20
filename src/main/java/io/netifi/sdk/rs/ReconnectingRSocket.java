@@ -39,15 +39,17 @@ public class ReconnectingRSocket implements RSocket {
   private final long tickPeriodSeconds;
   private final long ackTimeoutSeconds;
   private final int missedAcks;
-  private final RequestHandlingRSocket requestHandlingRSocket;
+  private final RSocket requestHandlingRSocket;
 
   private final long accessKey;
   private final byte[] accessTokenBytes;
 
   private MonoProcessor<RSocket> currentSink;
 
+  private double availability;
+
   public ReconnectingRSocket(
-      RequestHandlingRSocket requestHandlingRSocket,
+      RSocket requestHandlingRSocket,
       Supplier<Payload> setupPayloadSupplier,
       BooleanSupplier running,
       Supplier<ClientTransport> clientTransportSupplier,
@@ -106,7 +108,15 @@ public class ReconnectingRSocket implements RSocket {
             .start()
             .doOnNext(
                 rSocket -> {
-                  rSocket.onClose().doFinally(s -> connect(1).subscribe()).subscribe();
+                  availability = 1.0;
+                  rSocket
+                      .onClose()
+                      .doFinally(
+                          s -> {
+                            availability = 0.0;
+                            connect(1).subscribe();
+                          })
+                      .subscribe();
                   setRSocket(rSocket);
                 })
             .onErrorResume(
@@ -150,6 +160,11 @@ public class ReconnectingRSocket implements RSocket {
   }
 
   @Override
+  public double availability() {
+    return availability;
+  }
+
+  @Override
   public Mono<Void> close() {
     return Mono.fromRunnable(onClose::onComplete).doFinally(s -> source.onComplete()).then();
   }
@@ -170,7 +185,7 @@ public class ReconnectingRSocket implements RSocket {
   }
 
   private Mono<RSocket> getRSocket() {
-    return source.take(1).single().flatMap(Function.identity());
+    return source.next().flatMap(Function.identity());
   }
 
   private void setRSocket(RSocket rSocket) {

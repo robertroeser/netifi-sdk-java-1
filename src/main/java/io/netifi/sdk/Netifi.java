@@ -1,10 +1,10 @@
 package io.netifi.sdk;
 
-import io.netifi.auth.SessionUtil;
-import io.netifi.proteus.frames.DestinationSetupFlyweight;
-import io.netifi.proteus.util.TimebasedIdGenerator;
+import io.netifi.nrqp.frames.DestinationSetupFlyweight;
+import io.netifi.sdk.rs.DefaultNetifiSocket;
+import io.netifi.sdk.rs.NetifiSocket;
 import io.netifi.sdk.rs.ReconnectingRSocket;
-import io.netifi.sdk.rs.RequestHandlingRSocket;
+import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.rsocket.RSocket;
@@ -13,15 +13,14 @@ import io.rsocket.util.PayloadImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import javax.xml.bind.DatatypeConverter;
-import java.lang.reflect.Constructor;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Collection;
+import java.util.Objects;
 
 /** This is where the magic happens */
-public class Netifi implements AutoCloseable, PresenceNotificationHandler {
+public class Netifi implements PresenceNotificationHandler {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
 
   static {
@@ -32,9 +31,12 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
   private final TimebasedIdGenerator idGenerator;
   private final PresenceNotificationHandler presenceNotificationHandler;
   private final long accountId;
-  private final String destination;
-  private final String group;
+  private final String fromDestination;
+  private final String fromGroup;
   private final ReconnectingRSocket reconnectingRSocket;
+  private final long accessKey;
+  private final byte[] accessTokenBytes;
+  private final boolean keepalive;
   private volatile boolean running = true;
 
   private Netifi(
@@ -49,12 +51,15 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
       long tickPeriodSeconds,
       long ackTimeoutSeconds,
       int missedAcks,
-      RequestHandlingRSocket requestHandlingRSocket) {
+      RSocket requestHandlingRSocket) {
+    this.keepalive = keepalive;
+    this.accessKey = accessKey;
     this.accountId = accountId;
-    this.destination = destination;
-    this.group = group;
+    this.fromDestination = destination;
+    this.fromGroup = group;
     this.idGenerator = new TimebasedIdGenerator(destination.hashCode());
     this.presenceNotificationHandler = null;
+    this.accessTokenBytes = accessTokenBytes;
     //        new DefaultPresenceNotificationHandler(
     //            barrier, () -> running, idGenerator, accountId, destination);
 
@@ -102,57 +107,22 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
     return null;
   }
 
-  public <T> T create(Class<T> service, String group) {
-    return create(service, group, null);
+  public Mono<NetifiSocket> connect(String group, String destination) {
+    return Mono.just(
+        new DefaultNetifiSocket(
+            reconnectingRSocket,
+            accessKey,
+            accountId,
+            fromDestination,
+            destination,
+            group,
+            accessTokenBytes,
+            keepalive,
+            idGenerator));
   }
 
-  public <T> T create(Class<T> service, String group, String destination) {
-    Objects.requireNonNull(service, "service must be non-null");
-
-    logger.info(
-        "creating service {}, accountId {}, group {}, destination {}",
-        service,
-        accountId,
-        group,
-        destination);
-
-    try {
-      Constructor<T> constructor =
-          service.getConstructor(
-              RSocket.class, // io.rsocket.RSocket rSocket
-              Long.class, // long accountId
-              String.class, // String group
-              String.class, // String destination
-              Long.class, // long fromAccountId
-              String.class, // String fromGroup
-              String.class, // String fromDestination
-              TimebasedIdGenerator.class, // io.netifi.proteus.util.TimebasedIdGenerator generator,
-              SessionUtil.class, // io.netifi.proteus.auth.SessionUtil sessionUtil,
-              AtomicLong.class, // java.util.concurrent.atomic.AtomicLong currentSessionCounter,
-              AtomicReference
-                  .class // java.util.concurrent.atomic.AtomicReference<byte[]> currentSessionToken
-              );
-
-      return constructor.newInstance(
-          reconnectingRSocket,
-          accountId,
-          group,
-          destination,
-          accountId,
-          this.group,
-          this.destination,
-          idGenerator,
-          reconnectingRSocket.getSessionUtil(),
-          reconnectingRSocket.getCurrentSessionCounter().get(),
-          reconnectingRSocket.getCurrentSessionToken());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public void close() throws Exception {
-    running = false;
+  public Mono<NetifiSocket> connect(String group) {
+    return connect(group, null);
   }
 
   public static class Builder {
@@ -168,11 +138,9 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
     private long tickPeriodSeconds = 5;
     private long ackTimeoutSeconds = 10;
     private int missedAcks = 3;
-    private List<RSocket> handlers;
+    private RSocket requestHandler;
 
-    private Builder() {
-      handlers = new ArrayList<>();
-    }
+    private Builder() {}
 
     public Builder keepalive(boolean useKeepAlive) {
       this.keepalive = keepalive;
@@ -231,14 +199,8 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
       return this;
     }
 
-    public Builder addHandler(RSocket rSocket) {
-      handlers.add(rSocket);
-
-      return this;
-    }
-
-    public Builder addHandlers(RSocket... rSockets) {
-      Arrays.stream(rSockets).forEach(this::addHandler);
+    public Builder addHandler(RSocket requestHandler) {
+      this.requestHandler = requestHandler;
       return this;
     }
 
@@ -250,8 +212,6 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
       Objects.requireNonNull(accountId, "account Id is required");
       Objects.requireNonNull(group, "group is required");
       Objects.requireNonNull(destination, "destination id is required");
-
-      RSocket[] rSockets = handlers.toArray(new RSocket[handlers.size()]);
 
       logger.info(
           "registering with netifi with account id {}, group {}, and destination {}",
@@ -271,7 +231,7 @@ public class Netifi implements AutoCloseable, PresenceNotificationHandler {
           tickPeriodSeconds,
           ackTimeoutSeconds,
           missedAcks,
-          new RequestHandlingRSocket(rSockets));
+          requestHandler);
     }
   }
 }
