@@ -7,6 +7,12 @@ import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.ClientTransport;
+import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,17 +21,10 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 import reactor.core.publisher.ReplayProcessor;
 
-import java.nio.ByteBuffer;
-import java.time.Duration;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 public class ReconnectingRSocket implements RSocket {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
 
-  private static final RSocket EMTPY_SOCKET = new AbstractRSocket() {};
+  private static final RSocket EMPTY_SOCKET = new AbstractRSocket() {};
 
   private final SessionUtil sessionUtil = SessionUtil.instance();
 
@@ -75,6 +74,7 @@ public class ReconnectingRSocket implements RSocket {
     this.missedAcks = missedAcks;
 
     resetMono();
+
     connect(1).subscribe();
   }
 
@@ -108,7 +108,7 @@ public class ReconnectingRSocket implements RSocket {
             .setupPayload(setupPayloadSupplier.get())
             .errorConsumer(
                 throwable -> logger.error("netifi sdk recieved unhandled exception", throwable))
-            .acceptor(r -> requestHandlingRSocket == null ? EMTPY_SOCKET : requestHandlingRSocket)
+            .acceptor(r -> requestHandlingRSocket == null ? EMPTY_SOCKET : requestHandlingRSocket)
             .transport(clientTransportSupplier)
             .start()
             .doOnNext(
@@ -127,16 +127,19 @@ public class ReconnectingRSocket implements RSocket {
             .onErrorResume(
                 t -> {
                   logger.error(t.getMessage(), t);
-                  return Mono.delay(Duration.ofSeconds(retry))
-                      .then(connect(retry < 10 ? retry + 1 : 10));
+                  return retryConnection(retry);
                 });
 
       } catch (Throwable t) {
-        return Mono.delay(Duration.ofSeconds(retry)).then(connect(retry < 10 ? retry + 1 : 10));
+        return retryConnection(retry);
       }
     } else {
       return Mono.empty();
     }
+  }
+
+  private Mono<RSocket> retryConnection(int retry) {
+    return Mono.delay(Duration.ofSeconds(retry)).then(connect(retry < 10 ? retry + 1 : 10));
   }
 
   @Override
@@ -194,14 +197,17 @@ public class ReconnectingRSocket implements RSocket {
   }
 
   private void setRSocket(RSocket rSocket) {
-    long count = sessionUtil.getThirtySecondsStepsFromEpoch();
-    currentSessionCounter.onNext(new AtomicLong(count));
-    ByteBuffer allocate = ByteBuffer.allocate(8);
-    allocate.putLong(accessKey);
-    allocate.flip();
-    byte[] sessionToken = sessionUtil.generateSessionToken(accessTokenBytes, allocate, count);
-    currentSessionToken.onNext(sessionToken);
+    byte[] sessionToken;
+    synchronized (this) {
+      long count = sessionUtil.getThirtySecondsStepsFromEpoch();
+      currentSessionCounter.onNext(new AtomicLong(count));
+      ByteBuffer allocate = ByteBuffer.allocate(8);
+      allocate.putLong(accessKey);
+      allocate.flip();
+      sessionToken = sessionUtil.generateSessionToken(accessTokenBytes, allocate, count);
+    }
 
+    currentSessionToken.onNext(sessionToken);
     currentSink.onNext(rSocket);
     currentSink.onComplete();
 

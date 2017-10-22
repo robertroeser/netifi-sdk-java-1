@@ -18,9 +18,6 @@ import reactor.core.publisher.MonoProcessor;
 public class DefaultNetifiSocket implements NetifiSocket {
   private final SessionUtil sessionUtil = SessionUtil.instance();
   private final MonoProcessor<Void> onClose;
-  private final String destination;
-  private final String group;
-  private final long fromAccountId;
   private final ByteBuf route;
   private long accessKey;
   private String fromDestination;
@@ -42,9 +39,6 @@ public class DefaultNetifiSocket implements NetifiSocket {
     this.fromDestination = fromDestination;
     this.generator = generator;
     this.onClose = MonoProcessor.create();
-    this.destination = destination;
-    this.group = group;
-    this.fromAccountId = fromAccountId;
 
     if (destination != null && !destination.equals("")) {
       int length =

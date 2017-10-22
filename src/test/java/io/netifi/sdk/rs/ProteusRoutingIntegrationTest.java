@@ -2,14 +2,13 @@ package io.netifi.sdk.rs;
 
 import io.netifi.sdk.Netifi;
 import io.netifi.testing.protobuf.*;
+import java.time.Duration;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.time.Duration;
 
 @Ignore
 public class ProteusRoutingIntegrationTest {
@@ -59,10 +58,11 @@ public class ProteusRoutingIntegrationTest {
   @Test
   public void testServerStreamingRpc() {
     SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
-    SimpleResponse response = simpleServiceClient
-                                  .serverStreamingRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build())
-                                  .take(1000)
-                                  .blockLast();
+    SimpleResponse response =
+        simpleServiceClient
+            .serverStreamingRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build())
+            .take(1000)
+            .blockLast();
 
     System.out.println(response.getResponseMessage());
   }

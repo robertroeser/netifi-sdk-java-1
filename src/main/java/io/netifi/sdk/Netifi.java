@@ -11,14 +11,13 @@ import io.netty.buffer.Unpooled;
 import io.rsocket.RSocket;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.PayloadImpl;
+import java.util.Collection;
+import java.util.Objects;
+import javax.xml.bind.DatatypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import javax.xml.bind.DatatypeConverter;
-import java.util.Collection;
-import java.util.Objects;
 
 /** This is where the magic happens */
 public class Netifi implements PresenceNotificationHandler {
