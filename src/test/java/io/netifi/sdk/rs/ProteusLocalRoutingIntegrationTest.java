@@ -2,33 +2,40 @@ package io.netifi.sdk.rs;
 
 import io.netifi.sdk.Netifi;
 import io.netifi.testing.protobuf.*;
-import java.time.Duration;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+
 @Ignore
-public class ProteusIntegrationTest {
+public class ProteusLocalRoutingIntegrationTest {
 
   private static final long accessKey = 3855261330795754807L;
   private static final String accessToken = "n9R9042eE1KaLtE56rbWjBIGymo=";
 
-  @Test
-  public void testUnaryRpc() {
-    Netifi.builder()
-        .group("test.server")
-        .destination("server")
-        .accountId(Long.MAX_VALUE)
-        .accessKey(accessKey)
-        .accessToken(accessToken)
-        .addHandler(new SimpleServiceServer(new DefaultSimpleService()))
-        .host("127.0.0.1")
-        .port(8001)
-        .build();
+  private static Netifi server;
+  private static Netifi client;
+  private static NetifiSocket netifiSocket;
 
-    Netifi client =
+  @BeforeClass
+  public static void setup() {
+    server =
+        Netifi.builder()
+            .group("test.server")
+            .destination("server")
+            .accountId(Long.MAX_VALUE)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
+            .addHandler(new SimpleServiceServer(new DefaultSimpleService()))
+            .host("127.0.0.1")
+            .port(8001)
+            .build();
+
+    client =
         Netifi.builder()
             .group("test.client")
             .destination("client")
@@ -39,7 +46,11 @@ public class ProteusIntegrationTest {
             .port(8001)
             .build();
 
-    NetifiSocket netifiSocket = client.connect("test.server").block();
+    netifiSocket = client.connect("test.server").block();
+  }
+
+  @Test
+  public void testUnaryRpc() {
     SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
     SimpleResponse simpleResponse =
         simpleServiceClient
@@ -47,6 +58,17 @@ public class ProteusIntegrationTest {
             .block();
 
     System.out.println(simpleResponse.getResponseMessage());
+  }
+
+  @Test
+  public void testServerStreamingRpc() {
+    SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
+    SimpleResponse response = simpleServiceClient
+                                  .serverStreamingRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build())
+                                  .take(10)
+                                  .blockLast();
+
+    System.out.println(response.getResponseMessage());
   }
 
   static class DefaultSimpleService implements SimpleService {
@@ -110,7 +132,7 @@ public class ProteusIntegrationTest {
     @Override
     public Flux<SimpleResponse> serverStreamingRpc(SimpleRequest message) {
       String requestMessage = message.getRequestMessage();
-      return Flux.interval(Duration.ofMillis(200))
+      return Flux.interval(Duration.ofMillis(1))
           .onBackpressureDrop()
           .map(i -> i + " - got message - " + requestMessage)
           .map(s -> SimpleResponse.newBuilder().setResponseMessage(s).build());

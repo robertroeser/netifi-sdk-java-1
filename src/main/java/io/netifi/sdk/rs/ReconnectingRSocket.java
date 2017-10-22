@@ -7,13 +7,6 @@ import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.ClientTransport;
-import java.nio.ByteBuffer;
-import java.time.Duration;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +14,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 import reactor.core.publisher.ReplayProcessor;
+
+import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ReconnectingRSocket implements RSocket {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
@@ -61,11 +61,6 @@ public class ReconnectingRSocket implements RSocket {
       int missedAcks,
       long accessKey,
       byte[] accessTokenBytes) {
-
-    Objects.nonNull(requestHandlingRSocket);
-    Objects.nonNull(setupPayloadSupplier);
-    Objects.nonNull(clientTransportSupplier);
-
     this.requestHandlingRSocket = requestHandlingRSocket;
     this.onClose = MonoProcessor.create();
     this.source = ReplayProcessor.cacheLast();
