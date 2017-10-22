@@ -1,9 +1,16 @@
+import com.github.sherter.googlejavaformatgradleplugin.GoogleJavaFormat
+
 plugins {
-    id "me.tatarka.retrolambda" version "3.7.0"
+    id "com.gradle.build-scan" version "1.9"
     id "java"
     id "maven-publish"
     id 'idea'
-
+    id 'com.google.protobuf' version '0.8.3'
+    id 'com.jfrog.bintray' version '1.7.3'
+    id 'com.github.sherter.google-java-format' version '0.6'
+    id 'com.jfrog.artifactory' version '4.5.2'
+    id 'me.champeau.gradle.jmh' version '0.4.4'
+    id 'net.researchgate.release' version '2.6.0'
 }
 
 sourceCompatibility = 1.8
@@ -17,14 +24,21 @@ repositories {
     maven { url 'http://artifactory.netifiinc.com:8081/artifactory/netifi-all/' }
 }
 
+buildScan {
+    licenseAgreementUrl = 'https://gradle.com/terms-of-service'
+    licenseAgree = 'yes'
+}
+
 dependencies {
-    compile 'com.octo.reactive.audit:reactive-audit-lib:0.8'
-    compile 'io.netifi.nrqp.frames:netifi-edge-frames:0.8.0-SNAPSHOT'
+    compile 'io.netifi.nrqp.frames:netifi-edge-frames:0.8.1-SNAPSHOT'
+    compile 'io.netifi.proteus:proteus-core-java:0.1.0-SNAPSHOT'
 
     compile 'io.rsocket:rsocket-load-balancer:0.9.12'
     compile 'io.rsocket:rsocket-transport-netty:0.9.12'
 
     compile 'io.netifi.auth:core:0.0.2-SNAPSHOT'
+
+    compile 'com.google.protobuf:protobuf-java:3.4.0'
 
     testCompile 'junit:junit:4.10'
 
@@ -32,13 +46,40 @@ dependencies {
     testCompile 'org.apache.logging.log4j:log4j-core:2.8.2'
     testCompile 'org.apache.logging.log4j:log4j-slf4j-impl:2.8.2'
     testCompile 'io.rsocket:rsocket-transport-local:0.9.12'
-
+    testCompile 'org.mockito:mockito-all:1.10.19'
 }
 
 compileJava {
     options.warnings = true
     options.deprecation = true
     options.compilerArgs += ["-Xlint:unchecked"]
+}
+
+task format(type: GoogleJavaFormat) {}
+compileJava.dependsOn(format)
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.4.0'
+    }
+    plugins {
+        proteus {
+            artifact = "io.netifi.proteus:proteus-java:0.1.0-SNAPSHOT"
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            proteus {}
+        }
+    }
+}
+idea {
+    module {
+        sourceDirs += file("${projectDir}/build/generated/source/proto/main/java");
+        sourceDirs += file("${projectDir}/build/generated/source/proto/main/proteus");
+        sourceDirs += file("${projectDir}/build/generated/source/proto/test/java");
+        sourceDirs += file("${projectDir}/build/generated/source/proto/test/proteus");
+    }
 }
 
 task sourceJar(type: Jar) {

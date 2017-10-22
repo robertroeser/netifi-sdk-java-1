@@ -2,10 +2,18 @@ package io.netifi.sdk.rs;
 
 import io.netifi.auth.SessionUtil;
 import io.netifi.sdk.Netifi;
+import io.rsocket.AbstractRSocket;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.ClientTransport;
+import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,21 +22,12 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 import reactor.core.publisher.ReplayProcessor;
 
-import java.nio.ByteBuffer;
-import java.time.Duration;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 public class ReconnectingRSocket implements RSocket {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
 
-  private final SessionUtil sessionUtil = SessionUtil.instance();
+  private static final RSocket EMTPY_SOCKET = new AbstractRSocket() {};
 
-  private final AtomicReference<AtomicLong> currentSessionCounter = new AtomicReference<>();
-  private final AtomicReference<byte[]> currentSessionToken = new AtomicReference<>();
+  private final SessionUtil sessionUtil = SessionUtil.instance();
 
   private final ReplayProcessor<Mono<RSocket>> source;
   private final MonoProcessor<Void> onClose;
@@ -46,6 +45,9 @@ public class ReconnectingRSocket implements RSocket {
 
   private MonoProcessor<RSocket> currentSink;
 
+  private ReplayProcessor<AtomicLong> currentSessionCounter = ReplayProcessor.cacheLast();
+  private ReplayProcessor<byte[]> currentSessionToken = ReplayProcessor.cacheLast();
+
   private double availability;
 
   public ReconnectingRSocket(
@@ -59,6 +61,11 @@ public class ReconnectingRSocket implements RSocket {
       int missedAcks,
       long accessKey,
       byte[] accessTokenBytes) {
+
+    Objects.nonNull(requestHandlingRSocket);
+    Objects.nonNull(setupPayloadSupplier);
+    Objects.nonNull(clientTransportSupplier);
+
     this.requestHandlingRSocket = requestHandlingRSocket;
     this.onClose = MonoProcessor.create();
     this.source = ReplayProcessor.cacheLast();
@@ -80,12 +87,12 @@ public class ReconnectingRSocket implements RSocket {
     return sessionUtil;
   }
 
-  public AtomicReference<AtomicLong> getCurrentSessionCounter() {
-    return currentSessionCounter;
+  public Mono<AtomicLong> getCurrentSessionCounter() {
+    return currentSessionCounter.next();
   }
 
-  public AtomicReference<byte[]> getCurrentSessionToken() {
-    return currentSessionToken;
+  public Mono<byte[]> getCurrentSessionToken() {
+    return currentSessionToken.next();
   }
 
   private Mono<RSocket> connect(int retry) {
@@ -94,16 +101,19 @@ public class ReconnectingRSocket implements RSocket {
         RSocketFactory.ClientRSocketFactory connect = RSocketFactory.connect();
 
         if (keepalive) {
-          connect = connect.keepAlive();
-          connect
-              .keepAliveAckTimeout(Duration.ofSeconds(tickPeriodSeconds))
-              .keepAliveAckTimeout(Duration.ofSeconds(ackTimeoutSeconds))
-              .keepAliveMissedAcks(missedAcks);
+          connect =
+              connect
+                  .keepAlive()
+                  .keepAliveAckTimeout(Duration.ofSeconds(tickPeriodSeconds))
+                  .keepAliveAckTimeout(Duration.ofSeconds(ackTimeoutSeconds))
+                  .keepAliveMissedAcks(missedAcks);
         }
 
         return connect
             .setupPayload(setupPayloadSupplier.get())
-            .acceptor(r -> requestHandlingRSocket)
+            .errorConsumer(
+                throwable -> logger.error("netifi sdk recieved unhandled exception", throwable))
+            .acceptor(r -> requestHandlingRSocket == null ? EMTPY_SOCKET : requestHandlingRSocket)
             .transport(clientTransportSupplier)
             .start()
             .doOnNext(
@@ -190,12 +200,12 @@ public class ReconnectingRSocket implements RSocket {
 
   private void setRSocket(RSocket rSocket) {
     long count = sessionUtil.getThirtySecondsStepsFromEpoch();
-    currentSessionCounter.set(new AtomicLong(count));
+    currentSessionCounter.onNext(new AtomicLong(count));
     ByteBuffer allocate = ByteBuffer.allocate(8);
     allocate.putLong(accessKey);
     allocate.flip();
     byte[] sessionToken = sessionUtil.generateSessionToken(accessTokenBytes, allocate, count);
-    currentSessionToken.set(sessionToken);
+    currentSessionToken.onNext(sessionToken);
 
     currentSink.onNext(rSocket);
     currentSink.onComplete();

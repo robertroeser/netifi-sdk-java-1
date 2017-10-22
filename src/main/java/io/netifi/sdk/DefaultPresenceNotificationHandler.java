@@ -1,8 +1,7 @@
 package io.netifi.sdk;
 
-import reactor.core.publisher.Flux;
-
 import java.util.Collection;
+import reactor.core.publisher.Flux;
 
 /** Implementation of {@link PresenceNotificationHandler} */
 public class DefaultPresenceNotificationHandler implements PresenceNotificationHandler {

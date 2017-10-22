@@ -10,14 +10,13 @@ import io.netty.buffer.Unpooled;
 import io.rsocket.RSocket;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.PayloadImpl;
+import java.util.Collection;
+import java.util.Objects;
+import javax.xml.bind.DatatypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import javax.xml.bind.DatatypeConverter;
-import java.util.Collection;
-import java.util.Objects;
 
 /** This is where the magic happens */
 public class Netifi implements PresenceNotificationHandler {
@@ -30,7 +29,7 @@ public class Netifi implements PresenceNotificationHandler {
 
   private final TimebasedIdGenerator idGenerator;
   private final PresenceNotificationHandler presenceNotificationHandler;
-  private final long accountId;
+  private final long fromAccountId;
   private final String fromDestination;
   private final String fromGroup;
   private final ReconnectingRSocket reconnectingRSocket;
@@ -43,7 +42,7 @@ public class Netifi implements PresenceNotificationHandler {
       String host,
       int port,
       long accessKey,
-      long accountId,
+      long fromAccountId,
       String destination,
       String group,
       byte[] accessTokenBytes,
@@ -54,14 +53,14 @@ public class Netifi implements PresenceNotificationHandler {
       RSocket requestHandlingRSocket) {
     this.keepalive = keepalive;
     this.accessKey = accessKey;
-    this.accountId = accountId;
+    this.fromAccountId = fromAccountId;
     this.fromDestination = destination;
     this.fromGroup = group;
     this.idGenerator = new TimebasedIdGenerator(destination.hashCode());
     this.presenceNotificationHandler = null;
     this.accessTokenBytes = accessTokenBytes;
     //        new DefaultPresenceNotificationHandler(
-    //            barrier, () -> running, idGenerator, accountId, destination);
+    //            barrier, () -> running, idGenerator, fromAccountId, destination);
 
     int length = DestinationSetupFlyweight.computeLength(false, destination, group);
     byte[] metadata = new byte[length];
@@ -76,6 +75,8 @@ public class Netifi implements PresenceNotificationHandler {
         destination,
         group);
     byte[] empty = new byte[0];
+
+    Objects.nonNull(requestHandlingRSocket);
 
     this.reconnectingRSocket =
         new ReconnectingRSocket(
@@ -97,13 +98,13 @@ public class Netifi implements PresenceNotificationHandler {
 
   @Override
   public Flux<Collection<String>> presence(long accountId, String group) {
-    // return presenceNotificationHandler.presence(accountId, group);
+    // return presenceNotificationHandler.presence(fromAccountId, group);
     return null;
   }
 
   @Override
   public Flux<Collection<String>> presence(long accountId, String group, String destination) {
-    // return presenceNotificationHandler.presence(accountId, group, destination);
+    // return presenceNotificationHandler.presence(fromAccountId, group, destination);
     return null;
   }
 
@@ -112,7 +113,7 @@ public class Netifi implements PresenceNotificationHandler {
         new DefaultNetifiSocket(
             reconnectingRSocket,
             accessKey,
-            accountId,
+            fromAccountId,
             fromDestination,
             destination,
             group,
