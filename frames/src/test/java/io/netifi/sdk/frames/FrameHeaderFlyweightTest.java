@@ -39,7 +39,7 @@ public class FrameHeaderFlyweightTest {
   @Test
   public void testFlags() {
     ByteBuf buf = Unpooled.buffer(4);
-    buf.setInt(0, 216_009_742);
+    buf.setInt(0, 216009742);
 
     Assert.assertTrue(FrameHeaderFlyweight.hasData(buf));
     Assert.assertTrue(FrameHeaderFlyweight.hasMetadata(buf));

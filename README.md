@@ -2,20 +2,14 @@
 
 <a href='https://travis-ci.org/netifi/netifi-sdk-java'><img src='https://travis-ci.org/netifi/netifi-sdk-java.svg?branch=master'></a>
 
-## Build from Source
-1. Building proteus-java requires installation of the [Protobuf](https://github.com/google/protobuf) compiler. Proteus requires Protobuf 3.4.x or higher.
+The Netifi SDK for JDK connects to Netifi's router using the RSocket protocol. It serves as a drop-in replacement to the RSocketFactory, and provides a transparent routing layer.
 
-    For Mac users you can easily install the Protobuf compiler using Homebrew:
+Each connection to the Netifi Router is a unique destination. Each connection belongs to a group. The destination is string up to 255 characters, and a group is string up to 255. You can either
+route calls to a single destination, or you can route calls to a group. If you route calls to a group the Netifi Router will load balance automatically.
 
-        $ brew install protobuf
+## Trivial Proteus Example
+This example uses [Proteus](https://github.com/netifi/proteus-java) to send requests, but anything that uses an RSocket can be used.
 
-    For other operating systems you can install the Protobuf compiler using the pre-built packages hosted on the [Protobuf Releases](https://github.com/google/protobuf/releases) page.
-
-2. Run the following Gradle command to build the project:
-
-        $ ./gradlew clean build
-
-## Trivial Example
 1. Create a Protobuf IDL:
 ```
 syntax = "proto3";
@@ -185,7 +179,7 @@ client
 
 ## Bugs and Feedback
 
-For bugs, questions, and discussions please use the [Github Issues](https://github.com/netifi/proteus-java/issues).
+For bugs, questions, and discussions please use the [Github Issues](https://github.com/netifi/netifi-sdk-java/issues).
 
 ## License
 Copyright 2017 Netifi Inc.
