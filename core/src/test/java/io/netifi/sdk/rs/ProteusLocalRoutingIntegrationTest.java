@@ -2,16 +2,17 @@ package io.netifi.sdk.rs;
 
 import io.netifi.sdk.Netifi;
 import io.netifi.testing.protobuf.*;
-import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 @Ignore
 public class ProteusLocalRoutingIntegrationTest {
@@ -86,6 +87,24 @@ public class ProteusLocalRoutingIntegrationTest {
     System.out.println(response.getResponseMessage());
   }
 
+  @Test
+  public void testBidiRequest() {
+    SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
+
+    Flux<SimpleRequest> map =
+        Flux.range(1, 30_000)
+            .limitRate(32)
+            .map(i -> SimpleRequest.newBuilder().setRequestMessage("a message -> " + i).build());
+
+    SimpleResponse response =
+        simpleServiceClient
+            .bidiStreamingRpc(map)
+            .doOnNext(simpleResponse -> System.out.println(simpleResponse.getResponseMessage()))
+            .blockLast();
+
+    System.out.println(response.getResponseMessage());
+  }
+  
   static class DefaultSimpleService implements SimpleService {
     @Override
     public Mono<SimpleResponse> unaryRpc(SimpleRequest message) {

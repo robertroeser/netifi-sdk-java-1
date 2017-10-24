@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Ignore
 public class ProteusRoutingIntegrationTest {
@@ -84,7 +85,26 @@ public class ProteusRoutingIntegrationTest {
 
     System.out.println(response.getResponseMessage());
   }
+  
+  @Test
+  public void testBidiRequest() {
+    SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
 
+    Flux<SimpleRequest> map =
+        Flux.range(1, 100_000)
+            .publishOn(Schedulers.parallel(), 32)
+            .map(i -> SimpleRequest.newBuilder().setRequestMessage("a message -> " + i).build());
+
+    SimpleResponse response =
+        simpleServiceClient
+            .bidiStreamingRpc(map)
+            .doOnNext(simpleResponse -> System.out.println(simpleResponse.getResponseMessage()))
+            .blockLast();
+    
+    System.out.println(response.getResponseMessage());
+  }
+  
+  
   static class DefaultSimpleService implements SimpleService {
     @Override
     public Mono<SimpleResponse> unaryRpc(SimpleRequest message) {
