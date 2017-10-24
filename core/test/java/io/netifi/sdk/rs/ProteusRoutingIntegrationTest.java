@@ -3,6 +3,9 @@ package io.netifi.sdk.rs;
 import io.netifi.sdk.Netifi;
 import io.netifi.testing.protobuf.*;
 import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -11,7 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Ignore
-public class ProteusLocalRoutingIntegrationTest {
+public class ProteusRoutingIntegrationTest {
 
   private static final long accessKey = 3855261330795754807L;
   private static final String accessToken = "n9R9042eE1KaLtE56rbWjBIGymo=";
@@ -30,8 +33,6 @@ public class ProteusLocalRoutingIntegrationTest {
             .accessKey(accessKey)
             .accessToken(accessToken)
             .addHandler(new SimpleServiceServer(new DefaultSimpleService()))
-            .host("127.0.0.1")
-            .port(8001)
             .build();
 
     client =
@@ -41,8 +42,6 @@ public class ProteusLocalRoutingIntegrationTest {
             .accountId(Long.MAX_VALUE)
             .accessKey(accessKey)
             .accessToken(accessToken)
-            .host("127.0.0.1")
-            .port(8001)
             .build();
 
     netifiSocket = client.connect("test.server").block();
@@ -65,8 +64,23 @@ public class ProteusLocalRoutingIntegrationTest {
     SimpleResponse response =
         simpleServiceClient
             .serverStreamingRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build())
-            .take(10)
+            .take(1000)
             .blockLast();
+
+    System.out.println(response.getResponseMessage());
+  }
+
+  @Test
+  public void testClientStreamingRpc() {
+    SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
+    SimpleResponse response =
+        simpleServiceClient
+            .clientStreamingRpc(
+                Flux.range(1, 11)
+                    .map(
+                        i ->
+                            SimpleRequest.newBuilder().setRequestMessage("a message " + i).build()))
+            .block();
 
     System.out.println(response.getResponseMessage());
   }
@@ -83,17 +97,6 @@ public class ProteusLocalRoutingIntegrationTest {
 
     @Override
     public Mono<SimpleResponse> clientStreamingRpc(Publisher<SimpleRequest> messages) {
-      return Flux.from(messages)
-          .take(10)
-          .doOnNext(s -> System.out.println("got -> " + s.getRequestMessage()))
-          .last()
-          .map(
-              simpleRequest ->
-                  SimpleResponse.newBuilder()
-                      .setResponseMessage("last one -> " + simpleRequest.getRequestMessage())
-                      .build());
-
-      /*
       return Flux.from(messages)
           .windowTimeout(10, Duration.ofSeconds(500))
           .take(1)
@@ -126,7 +129,6 @@ public class ProteusLocalRoutingIntegrationTest {
 
                 return SimpleResponse.newBuilder().setResponseMessage(s).build();
               });
-       */
     }
 
     @Override

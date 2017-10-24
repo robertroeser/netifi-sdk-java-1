@@ -2,26 +2,20 @@ import com.github.sherter.googlejavaformatgradleplugin.GoogleJavaFormat
 
 plugins {
     id "com.gradle.build-scan" version "1.9"
-    id "java"
-    id "maven-publish"
-    id 'idea'
-    id 'com.google.protobuf' version '0.8.3'
     id 'com.jfrog.bintray' version '1.7.3'
     id 'com.github.sherter.google-java-format' version '0.6'
     id 'com.jfrog.artifactory' version '4.5.2'
     id 'me.champeau.gradle.jmh' version '0.4.4'
     id 'net.researchgate.release' version '2.6.0'
+    id 'maven-publish'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-group = 'io.netifi.sdk'
-version = '0.8.0-SNAPSHOT'
+configurations {
+    all*.exclude group: 'log4j', module: 'log4j'
+}
 
 repositories {
-    mavenLocal()
-    maven { url 'http://artifactory.netifiinc.com:8081/artifactory/netifi-all/' }
+    jcenter()
 }
 
 buildScan {
@@ -29,82 +23,39 @@ buildScan {
     licenseAgree = 'yes'
 }
 
-dependencies {
-    compile 'io.netifi.nrqp.frames:netifi-edge-frames:0.8.1-SNAPSHOT'
-    compile 'io.netifi.proteus:proteus-core-java:0.1.0-SNAPSHOT'
-
-    compile 'io.rsocket:rsocket-load-balancer:0.9.12'
-    compile 'io.rsocket:rsocket-transport-netty:0.9.12'
-
-    compile 'io.netifi.auth:core:0.0.2-SNAPSHOT'
-
-    compile 'com.google.protobuf:protobuf-java:3.4.0'
-
-    testCompile 'junit:junit:4.10'
-
-    testCompile 'org.apache.logging.log4j:log4j-api:2.8.2'
-    testCompile 'org.apache.logging.log4j:log4j-core:2.8.2'
-    testCompile 'org.apache.logging.log4j:log4j-slf4j-impl:2.8.2'
-    testCompile 'io.rsocket:rsocket-transport-local:0.9.12'
-    testCompile 'org.mockito:mockito-all:1.10.19'
+release {
+    failOnSnapshotDependencies = false
+    tagCommitMessage = '[gradle-release-plugin] - creating tag: '
+    newVersionCommitMessage = '[gradle-release-plugin] - new version commit: '
 }
 
-compileJava {
-    options.warnings = true
-    options.deprecation = true
-    options.compilerArgs += ["-Xlint:unchecked"]
+configurations.all {
+    resolutionStrategy.cacheDynamicVersionsFor 5, 'minutes'
+    resolutionStrategy.cacheChangingModulesFor 30, 'minutes'
 }
 
-task format(type: GoogleJavaFormat) {}
-compileJava.dependsOn(format)
+subprojects {
+    apply plugin: 'project-report'
+    apply plugin: 'idea'
+    apply plugin: 'java'
 
-protobuf {
-    protoc {
-        artifact = 'com.google.protobuf:protoc:3.4.0'
+    compileJava {
+        options.warnings = true
+        options.deprecation = true
+        options.compilerArgs += ["-Xlint:unchecked"]
     }
-    plugins {
-        proteus {
-            artifact = "io.netifi.proteus:proteus-java:0.1.0-SNAPSHOT"
-        }
-    }
-    generateProtoTasks {
-        all()*.plugins {
-            proteus {}
-        }
-    }
-}
-idea {
-    module {
-        sourceDirs += file("${projectDir}/build/generated/source/proto/main/java");
-        sourceDirs += file("${projectDir}/build/generated/source/proto/main/proteus");
-        sourceDirs += file("${projectDir}/build/generated/source/proto/test/java");
-        sourceDirs += file("${projectDir}/build/generated/source/proto/test/proteus");
-    }
-}
 
-task sourceJar(type: Jar) {
-    from sourceSets.main.allJava
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-
-            artifact sourceJar {
-                classifier "sources"
-            }
-        }
-    }
+    task format(type: GoogleJavaFormat) {}
+    compileJava.dependsOn(format)
 
     repositories {
-        maven {
-            // change to point to your repo, e.g. http://my.org/repo
-            /*credentials {
-                        username 'jenkins'
-                        password project.findProperty("password") ?: ""
-                    }*/
-            url "http://artifactory.netifiinc.com:8081/artifactory/netifi-repo-snapshot/"
-        }
+        maven { url 'https://dl.bintray.com/netifi/netifi-oss/' }
+        mavenCentral()
+        jcenter()
     }
+
+    dependencies {
+        testCompile 'junit:junit:4.12'
+    }
+
 }
