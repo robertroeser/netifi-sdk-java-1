@@ -1,13 +1,14 @@
-import com.github.sherter.googlejavaformatgradleplugin.GoogleJavaFormat
 
 plugins {
-    id "com.gradle.build-scan" version "1.9"
-    id 'com.jfrog.bintray' version '1.7.3'
+    id 'com.gradle.build-scan' version '1.9' // declare before any other plugin
+
     id 'com.github.sherter.google-java-format' version '0.6'
+    id 'com.github.johnrengelman.shadow' version '2.0.1' apply false
+    id 'me.champeau.gradle.jmh' version '0.4.4' apply false
+    id 'io.morethan.jmhreport' version '0.6.2.1' apply false
+
     id 'com.jfrog.artifactory' version '4.5.2'
-    id 'me.champeau.gradle.jmh' version '0.4.4'
-    id 'net.researchgate.release' version '2.6.0'
-    id 'maven-publish'
+    id 'com.jfrog.bintray' version '1.7.3'
 }
 
 configurations {
@@ -18,44 +19,94 @@ repositories {
     jcenter()
 }
 
-buildScan {
-    licenseAgreementUrl = 'https://gradle.com/terms-of-service'
-    licenseAgree = 'yes'
-}
+description = 'Netifi SDK for JDK 1.8 and higher'
 
-release {
-    failOnSnapshotDependencies = false
-    tagCommitMessage = '[gradle-release-plugin] - creating tag: '
-    newVersionCommitMessage = '[gradle-release-plugin] - new version commit: '
-}
+buildScan { licenseAgreementUrl = 'https://gradle.com/terms-of-service'; licenseAgree = 'yes' }
 
-configurations.all {
-    resolutionStrategy.cacheDynamicVersionsFor 5, 'minutes'
-    resolutionStrategy.cacheChangingModulesFor 30, 'minutes'
+googleJavaFormat {
+    toolVersion = '1.4'
 }
 
 subprojects {
-    apply plugin: 'project-report'
-    apply plugin: 'idea'
     apply plugin: 'java'
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.jfrog.bintray'
+    apply plugin: 'com.jfrog.artifactory'
+
+    group = 'io.netifi.sdk'
+    version = mavenversion
 
     compileJava {
-        options.warnings = true
-        options.deprecation = true
-        options.compilerArgs += ["-Xlint:unchecked"]
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+        options.compilerArgs << '-Xlint:all,-overloads,-rawtypes,-unchecked'
     }
 
-    task format(type: GoogleJavaFormat) {}
-    compileJava.dependsOn(format)
+    // custom tasks for creating source/javadoc jars
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    tasks.bintrayUpload.dependsOn tasks.jar, tasks.sourcesJar, tasks.javadocJar
+
+    // add javadoc/source jar tasks as artifacts
+    artifacts {
+        archives sourcesJar, javadocJar, jar
+    }
 
     repositories {
         maven { url 'https://dl.bintray.com/netifi/netifi-oss/' }
-        mavenCentral()
-        jcenter()
+        maven { url 'http://repo.spring.io/milestone' }
+        maven { url 'https://oss.jfrog.org/libs-snapshot' }
+        maven { url 'https://dl.bintray.com/rsocket/RSocket' }
+        maven { url 'https://dl.bintray.com/reactivesocket/ReactiveSocket' }
     }
 
     dependencies {
-        testCompile 'junit:junit:4.12'
+        testCompile "junit:junit:4.12"
     }
 
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+
+                artifact sourcesJar {
+                    classifier "sources"
+                }
+
+                artifact javadocJar {
+                    classifier "javadoc"
+                }
+            }
+        }
+    }
+
+    bintray {
+        if (project.hasProperty('bintrayUser')) {
+            user = project.property('bintrayUser')
+            key = project.property('bintrayKey')
+        }
+        publications = ['mavenJava']
+        dryRun = false
+        publish = true
+        override = false
+        pkg {
+            repo = 'netifi-oss'
+            name = 'netifi-sdk-java'
+            userOrg = 'netifi'
+            desc = 'Netifi SDK for JDK 1.8 and higher'
+            websiteUrl = 'https://github.com/netifi/netifi-sdk-java'
+            issueTrackerUrl = 'https://github.com/netifi/netifi-sdk-java'
+            vcsUrl = 'https://github.com/netifi/netifi-sdk-java'
+            licenses = ['Apache-2.0']
+        }
+    }
 }
