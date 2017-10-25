@@ -2,7 +2,7 @@
 
 <a href='https://travis-ci.org/netifi/netifi-sdk-java'><img src='https://travis-ci.org/netifi/netifi-sdk-java.svg?branch=master'></a>
 
-The Netifi SDK for Java connects to Netifi's router using the [RSocket](http://rsocket.io/) protocol. It serves as a drop-in replacement to the RSocketFactory, and provides a transparent routing layer.
+The [Netifi](http://www.getnetifi.com/) SDK for Java connects to Netifi's router using the [RSocket](http://rsocket.io/) protocol. It serves as a drop-in replacement to the RSocketFactory, and provides a transparent routing layer.
 
 Each connection to the Netifi Router is a identified by a unique destination id. Each connection also belongs to a group. The destination id is string up to 255 characters, and a group is string up to 255. You can either
 route calls to a single destination, or you can route calls to a group. If you route calls to a group the Netifi Router will load balance automatically.
