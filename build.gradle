@@ -1,3 +1,11 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+    }
+}
 
 plugins {
     id 'com.gradle.build-scan' version '1.9' // declare before any other plugin
@@ -6,9 +14,6 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '2.0.1' apply false
     id 'me.champeau.gradle.jmh' version '0.4.4' apply false
     id 'io.morethan.jmhreport' version '0.6.2.1' apply false
-
-    id 'com.jfrog.artifactory' version '4.5.2'
-    id 'com.jfrog.bintray' version '1.7.3'
 }
 
 configurations {
@@ -27,15 +32,21 @@ googleJavaFormat {
     toolVersion = '1.4'
 }
 
+project(':auth') {
+    ext.artifactName = 'netifi-sdk-auth'
+}
+
+project(':core') {
+    ext.artifactName = 'netifi-sdk-java18'
+}
+
+project(':frames') {
+    ext.artifactName = 'netifi-sdk-frames'
+}
+
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'maven'
-    apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.bintray'
-    apply plugin: 'com.jfrog.artifactory'
-
-    group = 'io.netifi.sdk'
-    version = mavenversion
+    apply from: file('../gradle/release.gradle')
 
     compileJava {
         sourceCompatibility = 1.8
@@ -47,18 +58,20 @@ subprojects {
     task sourcesJar(type: Jar, dependsOn: classes) {
         classifier = 'sources'
         from sourceSets.main.allSource
+        baseName = "${artifactName}"
+        version = "$releaseVersion"
     }
 
     task javadocJar(type: Jar, dependsOn: javadoc) {
         classifier = 'javadoc'
         from javadoc.destinationDir
+        baseName = "${artifactName}"
+        version = "$releaseVersion"
     }
-
-    tasks.bintrayUpload.dependsOn tasks.jar, tasks.sourcesJar, tasks.javadocJar
 
     // add javadoc/source jar tasks as artifacts
     artifacts {
-        archives sourcesJar, javadocJar, jar
+        archives sourcesJar, javadocJar
     }
 
     repositories {
@@ -71,42 +84,5 @@ subprojects {
 
     dependencies {
         testCompile "junit:junit:4.12"
-    }
-
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                from components.java
-
-                artifact sourcesJar {
-                    classifier "sources"
-                }
-
-                artifact javadocJar {
-                    classifier "javadoc"
-                }
-            }
-        }
-    }
-
-    bintray {
-        if (project.hasProperty('bintrayUser')) {
-            user = project.property('bintrayUser')
-            key = project.property('bintrayKey')
-        }
-        publications = ['mavenJava']
-        dryRun = false
-        publish = true
-        override = false
-        pkg {
-            repo = 'netifi-oss'
-            name = 'netifi-sdk-java'
-            userOrg = 'netifi'
-            desc = 'Netifi SDK for JDK 1.8 and higher'
-            websiteUrl = 'https://github.com/netifi/netifi-sdk-java'
-            issueTrackerUrl = 'https://github.com/netifi/netifi-sdk-java'
-            vcsUrl = 'https://github.com/netifi/netifi-sdk-java'
-            licenses = ['Apache-2.0']
-        }
     }
 }
