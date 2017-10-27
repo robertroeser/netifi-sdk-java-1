@@ -24,8 +24,6 @@ repositories {
     jcenter()
 }
 
-description = 'Netifi SDK for JDK 1.8 and higher'
-
 buildScan { licenseAgreementUrl = 'https://gradle.com/terms-of-service'; licenseAgree = 'yes' }
 
 googleJavaFormat {
@@ -33,14 +31,17 @@ googleJavaFormat {
 }
 
 project(':auth') {
+    description = 'Netifi Common Authentication and Authorization Components'
     ext.artifactName = 'netifi-sdk-auth'
 }
 
 project(':core') {
+    description = 'Netifi SDK for JDK 1.8 and higher'
     ext.artifactName = 'netifi-sdk-java18'
 }
 
 project(':frames') {
+    description = 'Netifi Common RSocket Frames'
     ext.artifactName = 'netifi-sdk-frames'
 }
 
