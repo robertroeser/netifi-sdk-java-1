@@ -45,7 +45,7 @@ bintray {
     key = project.hasProperty('bintrayKey') ? project.property('bintrayKey') : System.getenv('BINTRAY_KEY')
     publications = ['maven']
     pkg {
-        repo = 'maven'
+        repo = 'netifi-oss'
         name = "${artifactName}"
         userOrg = 'netifi'
         desc = "${project.description}"
