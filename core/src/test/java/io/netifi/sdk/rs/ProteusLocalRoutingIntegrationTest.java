@@ -2,17 +2,16 @@ package io.netifi.sdk.rs;
 
 import io.netifi.sdk.Netifi;
 import io.netifi.testing.protobuf.*;
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 
 @Ignore
 public class ProteusLocalRoutingIntegrationTest {
@@ -33,7 +32,6 @@ public class ProteusLocalRoutingIntegrationTest {
             .accountId(Long.MAX_VALUE)
             .accessKey(accessKey)
             .accessToken(accessToken)
-            .addHandler(new SimpleServiceServer(new DefaultSimpleService()))
             .host("127.0.0.1")
             .port(8001)
             .build();
@@ -48,6 +46,8 @@ public class ProteusLocalRoutingIntegrationTest {
             .host("127.0.0.1")
             .port(8001)
             .build();
+
+    server.addService(new SimpleServiceServer(new DefaultSimpleService()));
 
     netifiSocket = client.connect("test.server").block();
   }
@@ -104,7 +104,7 @@ public class ProteusLocalRoutingIntegrationTest {
 
     System.out.println(response.getResponseMessage());
   }
-  
+
   static class DefaultSimpleService implements SimpleService {
     @Override
     public Mono<SimpleResponse> unaryRpc(SimpleRequest message) {

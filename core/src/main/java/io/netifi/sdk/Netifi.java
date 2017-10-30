@@ -1,10 +1,8 @@
 package io.netifi.sdk;
 
+import io.netifi.proteus.ProteusService;
 import io.netifi.sdk.frames.DestinationSetupFlyweight;
-import io.netifi.sdk.rs.DefaultNetifiSocket;
-import io.netifi.sdk.rs.MetadataUnwrappingRSocket;
-import io.netifi.sdk.rs.NetifiSocket;
-import io.netifi.sdk.rs.ReconnectingRSocket;
+import io.netifi.sdk.rs.*;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -38,6 +36,7 @@ public class Netifi implements PresenceNotificationHandler {
   private final byte[] accessTokenBytes;
   private final boolean keepalive;
   private volatile boolean running = true;
+  private RequestHandlingRSocket requestHandlingRSocket;
 
   private Netifi(
       String host,
@@ -50,8 +49,7 @@ public class Netifi implements PresenceNotificationHandler {
       boolean keepalive,
       long tickPeriodSeconds,
       long ackTimeoutSeconds,
-      int missedAcks,
-      RSocket requestHandlingRSocket) {
+      int missedAcks) {
     this.keepalive = keepalive;
     this.accessKey = accessKey;
     this.fromAccountId = fromAccountId;
@@ -77,11 +75,11 @@ public class Netifi implements PresenceNotificationHandler {
         group);
     byte[] empty = new byte[0];
 
-    Objects.nonNull(requestHandlingRSocket);
+    requestHandlingRSocket = new RequestHandlingRSocket();
 
     this.reconnectingRSocket =
         new ReconnectingRSocket(
-            requestHandlingRSocket,
+            MetadataUnwrappingRSocket.wrap(requestHandlingRSocket),
             () -> new PayloadImpl(empty, metadata),
             () -> running,
             () -> TcpClientTransport.create(host, port),
@@ -99,14 +97,17 @@ public class Netifi implements PresenceNotificationHandler {
 
   @Override
   public Flux<Collection<String>> presence(long accountId, String group) {
-    // return presenceNotificationHandler.presence(fromAccountId, group);
-    return null;
+    throw new UnsupportedOperationException("not implemented yet");
   }
 
   @Override
   public Flux<Collection<String>> presence(long accountId, String group, String destination) {
-    // return presenceNotificationHandler.presence(fromAccountId, group, destination);
-    return null;
+    throw new UnsupportedOperationException("not implemented yet");
+  }
+
+  public Netifi addService(ProteusService service) {
+    requestHandlingRSocket.addService(service);
+    return this;
   }
 
   public Mono<NetifiSocket> connect(String group, String destination) {
@@ -201,11 +202,6 @@ public class Netifi implements PresenceNotificationHandler {
       return this;
     }
 
-    public Builder addHandler(RSocket requestHandler) {
-      this.requestHandler = MetadataUnwrappingRSocket.wrap(requestHandler);
-      return this;
-    }
-
     public Netifi build() {
       Objects.requireNonNull(host, "host is required");
       Objects.requireNonNull(port, "port is required");
@@ -232,8 +228,7 @@ public class Netifi implements PresenceNotificationHandler {
           keepalive,
           tickPeriodSeconds,
           ackTimeoutSeconds,
-          missedAcks,
-          requestHandler);
+          missedAcks);
     }
   }
 }

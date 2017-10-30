@@ -33,7 +33,6 @@ public class ProteusRoutingIntegrationTest {
             .accountId(Long.MAX_VALUE)
             .accessKey(accessKey)
             .accessToken(accessToken)
-            .addHandler(new SimpleServiceServer(new DefaultSimpleService()))
             .build();
 
     client =
@@ -44,6 +43,9 @@ public class ProteusRoutingIntegrationTest {
             .accessKey(accessKey)
             .accessToken(accessToken)
             .build();
+
+    server.addService(
+        new SimpleServiceServer(new ProteusLocalRoutingIntegrationTest.DefaultSimpleService()));
 
     netifiSocket = client.connect("test.server").block();
   }
@@ -85,7 +87,7 @@ public class ProteusRoutingIntegrationTest {
 
     System.out.println(response.getResponseMessage());
   }
-  
+
   @Test
   public void testBidiRequest() {
     SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
@@ -100,11 +102,10 @@ public class ProteusRoutingIntegrationTest {
             .bidiStreamingRpc(map)
             .doOnNext(simpleResponse -> System.out.println(simpleResponse.getResponseMessage()))
             .blockLast();
-    
+
     System.out.println(response.getResponseMessage());
   }
-  
-  
+
   static class DefaultSimpleService implements SimpleService {
     @Override
     public Mono<SimpleResponse> unaryRpc(SimpleRequest message) {
