@@ -8,7 +8,7 @@ Each connection to the Netifi Router is a identified by a unique destination id.
 route calls to a single destination, or you can route calls to a group. If you route calls to a group the Netifi Router will load balance automatically.
 
 ## Proteus Example
-Link to an [example](https://github.com/netifi/netifi-sdk-java-examples) uses that [Proteus](https://github.com/netifi/proteus-java) to send requests, but anything that uses an RSocket can be used.
+Link to an [example](https://github.com/netifi/netifi-sdk-java-examples) using [Proteus](https://github.com/netifi/proteus-java) to send requests, but anything that uses an RSocket can be used.
 
 ## Bugs and Feedback
 
