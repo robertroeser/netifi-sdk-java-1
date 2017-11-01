@@ -10,19 +10,24 @@ dependencies {
     compile project(':frames')
     compile project(':auth')
 
-    compile 'io.netifi.proteus:proteus-core-java:0.1.0'
-
-    compile 'io.rsocket:rsocket-load-balancer:0.9.13'
-    compile 'io.rsocket:rsocket-transport-netty:0.9.13'
+    compile 'io.rsocket:rsocket-load-balancer:0.9.14'
+    compile 'io.rsocket:rsocket-transport-netty:0.9.14'
 
     compile 'com.google.protobuf:protobuf-java:3.4.0'
+
+    compile('io.netifi.proteus:proteus-core-java:0.1.0') {
+        transitive = false
+    }
+    compile('io.netifi.proteus:proteus-core:0.1.0') {
+        transitive = false
+    }
 
     testCompile 'junit:junit:4.10'
 
     testCompile 'org.apache.logging.log4j:log4j-api:2.8.2'
     testCompile 'org.apache.logging.log4j:log4j-core:2.8.2'
     testCompile 'org.apache.logging.log4j:log4j-slf4j-impl:2.8.2'
-    testCompile 'io.rsocket:rsocket-transport-local:0.9.12'
+    testCompile 'io.rsocket:rsocket-transport-local:0.9.14'
     testCompile 'org.mockito:mockito-all:1.10.19'
 }
 

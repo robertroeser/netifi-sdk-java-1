@@ -2,16 +2,17 @@ package io.netifi.sdk.rs;
 
 import io.netifi.sdk.Netifi;
 import io.netifi.testing.protobuf.*;
-import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 @Ignore
 public class ProteusLocalRoutingIntegrationTest {
@@ -92,17 +93,17 @@ public class ProteusLocalRoutingIntegrationTest {
     SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
 
     Flux<SimpleRequest> map =
-        Flux.range(1, 30_000)
-            .limitRate(32)
+        Flux.range(1, 300_000)
             .map(i -> SimpleRequest.newBuilder().setRequestMessage("a message -> " + i).build());
 
-    SimpleResponse response =
+    long count =
         simpleServiceClient
             .bidiStreamingRpc(map)
             .doOnNext(simpleResponse -> System.out.println(simpleResponse.getResponseMessage()))
-            .blockLast();
+            .count()
+            .block();
 
-    System.out.println(response.getResponseMessage());
+    System.out.println(count);
   }
 
   static class DefaultSimpleService implements SimpleService {
@@ -155,6 +156,8 @@ public class ProteusLocalRoutingIntegrationTest {
     public Flux<SimpleResponse> serverStreamingRpc(SimpleRequest message) {
       String requestMessage = message.getRequestMessage();
       return Flux.interval(Duration.ofMillis(1))
+          .publish()
+          .refCount()
           .onBackpressureDrop()
           .map(i -> i + " - got message - " + requestMessage)
           .map(s -> SimpleResponse.newBuilder().setResponseMessage(s).build());

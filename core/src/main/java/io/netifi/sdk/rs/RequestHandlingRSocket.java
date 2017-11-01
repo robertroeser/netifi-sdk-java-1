@@ -8,11 +8,12 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
-import java.util.function.Function;
+import io.rsocket.internal.SwitchTransform;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
+import reactor.core.publisher.UnicastProcessor;
 
 public class RequestHandlingRSocket implements RSocket {
   private final BiInt2ObjectMap<ProteusService> registeredServices;
@@ -101,22 +102,19 @@ public class RequestHandlingRSocket implements RSocket {
 
   @Override
   public Flux<Payload> requestChannel(Publisher<Payload> payloads) {
-    try {
-      return Flux.from(payloads)
-          .next()
-          .flatMapMany(
-              new Function<Payload, Publisher<Payload>>() {
-                @Override
-                public Publisher<Payload> apply(Payload payload) {
-                  ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
-                  int namespaceId = ProteusMetadata.namespaceId(metadata);
-                  int serviceId = ProteusMetadata.serviceId(metadata);
-                  ProteusService proteusService = getService(namespaceId, serviceId);
-
-                  return proteusService.requestChannel(payloads);
-                }
+ try {
+      SwitchTransform<Payload, Payload> switchTransform =
+          new SwitchTransform<>(
+              payloads,
+              (payload, flux) -> {
+                ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
+                int namespaceId = ProteusMetadata.namespaceId(metadata);
+                int serviceId = ProteusMetadata.serviceId(metadata);
+                ProteusService proteusService = getService(namespaceId, serviceId);
+                return proteusService.requestChannel(flux);
               });
 
+      return switchTransform;
     } catch (Throwable t) {
       return Flux.error(t);
     }
