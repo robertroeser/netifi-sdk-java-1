@@ -18,12 +18,12 @@ dependencies {
     compile('io.netifi.proteus:proteus-core-java:0.2.1') {
         transitive = false
     }
+
     compile('io.netifi.proteus:proteus-core:0.2.1') {
         transitive = false
     }
 
     testCompile 'junit:junit:4.10'
-
     testCompile 'org.apache.logging.log4j:log4j-api:2.8.2'
     testCompile 'org.apache.logging.log4j:log4j-core:2.8.2'
     testCompile 'org.apache.logging.log4j:log4j-slf4j-impl:2.8.2'

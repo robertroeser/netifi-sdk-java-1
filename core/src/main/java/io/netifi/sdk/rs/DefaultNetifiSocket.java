@@ -63,7 +63,7 @@ public class DefaultNetifiSocket implements NetifiSocket {
   }
 
   public ByteBuf getRoute() {
-    return route;
+    return route.asReadOnly();
   }
 
   @Override

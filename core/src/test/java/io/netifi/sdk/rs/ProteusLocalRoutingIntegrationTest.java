@@ -1,16 +1,19 @@
 package io.netifi.sdk.rs;
 
+import com.google.protobuf.Empty;
 import io.netifi.sdk.Netifi;
 import io.netifi.testing.protobuf.*;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.reactivestreams.Publisher;
+import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -28,6 +31,7 @@ public class ProteusLocalRoutingIntegrationTest {
   public static void setup() {
     server =
         Netifi.builder()
+            .keepalive(false)
             .group("test.server")
             .destination("server")
             .accountId(Long.MAX_VALUE)
@@ -39,6 +43,7 @@ public class ProteusLocalRoutingIntegrationTest {
 
     client =
         Netifi.builder()
+            .keepalive(false)
             .group("test.client")
             .destination("client")
             .accountId(Long.MAX_VALUE)
@@ -105,8 +110,47 @@ public class ProteusLocalRoutingIntegrationTest {
 
     System.out.println(count);
   }
+  
+  @Test
+  public void testFireAndForget() throws Exception {
+    int count = 100;
+    CountDownLatch latch = new CountDownLatch(count);
+    SimpleServiceClient client = new SimpleServiceClient(netifiSocket);
+    client
+        .streamOnFireAndForget(Empty.getDefaultInstance())
+        .doOnError(Throwable::printStackTrace)
+        .subscribe(simpleResponse -> latch.countDown());
+    Flux.range(1, count)
+        .log()
+        .flatMap(
+            i -> {
+              System.out.println("fire -> " + i);
+              return client.fireAndForget(
+                  SimpleRequest.newBuilder().setRequestMessage("fire -> " + i).build());
+            })
+        .doOnError(Throwable::printStackTrace)
+        .subscribe();
+    latch.await();
+  }
 
   static class DefaultSimpleService implements SimpleService {
+    EmitterProcessor<SimpleRequest> messages = EmitterProcessor.create();
+  
+    @Override
+    public Mono<Void> fireAndForget(SimpleRequest message) {
+      messages.onNext(message);
+      return Mono.empty();
+    }
+  
+    @Override
+    public Flux<SimpleResponse> streamOnFireAndForget(Empty message) {
+      return messages.map(
+          simpleRequest ->
+              SimpleResponse.newBuilder()
+                  .setResponseMessage("got fire and forget -> " + simpleRequest.getRequestMessage())
+                  .build());
+    }
+    
     @Override
     public Mono<SimpleResponse> unaryRpc(SimpleRequest message) {
       return Mono.fromCallable(
