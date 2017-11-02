@@ -15,12 +15,9 @@ dependencies {
 
     compile 'com.google.protobuf:protobuf-java:3.4.0'
 
-    compile('io.netifi.proteus:proteus-core-java:0.2.0') {
-        transitive = false
-    }
-    compile('io.netifi.proteus:proteus-core:0.2.0') {
-        transitive = false
-    }
+    compile 'io.netifi.proteus:proteus-core-java:0.2.0'
+
+    compile 'io.netifi.proteus:proteus-core:0.2.0'
 
     testCompile 'junit:junit:4.10'
 
