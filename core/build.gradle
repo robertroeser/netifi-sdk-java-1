@@ -15,10 +15,10 @@ dependencies {
 
     compile 'com.google.protobuf:protobuf-java:3.4.0'
 
-    compile('io.netifi.proteus:proteus-core-java:0.2.0') {
+    compile('io.netifi.proteus:proteus-core-java:0.2.1') {
         transitive = false
     }
-    compile('io.netifi.proteus:proteus-core:0.2.0') {
+    compile('io.netifi.proteus:proteus-core:0.2.1') {
         transitive = false
     }
 
@@ -37,7 +37,7 @@ protobuf {
     }
     plugins {
         proteus {
-            artifact = 'io.netifi.proteus:proteus-java:0.2.0'
+            artifact = 'io.netifi.proteus:proteus-java:0.2.1'
         }
     }
     generateProtoTasks {
