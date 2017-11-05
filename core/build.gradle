@@ -13,15 +13,10 @@ dependencies {
     compile 'io.rsocket:rsocket-load-balancer:0.9.15'
     compile 'io.rsocket:rsocket-transport-netty:0.9.15'
 
-    compile 'com.google.protobuf:protobuf-java:3.4.0'
+    compile 'io.netifi.proteus:proteus-core:0.2.1'
 
-    compile('io.netifi.proteus:proteus-core-java:0.2.1') {
-        transitive = false
-    }
-
-    compile('io.netifi.proteus:proteus-core:0.2.1') {
-        transitive = false
-    }
+    testCompile 'io.netifi.proteus:proteus-core-java:0.2.1'
+    testCompile 'com.google.protobuf:protobuf-java:3.4.0'
 
     testCompile 'junit:junit:4.10'
     testCompile 'org.apache.logging.log4j:log4j-api:2.8.2'
@@ -48,8 +43,6 @@ protobuf {
 }
 idea {
     module {
-        sourceDirs += file("${projectDir}/build/generated/source/proto/main/java");
-        sourceDirs += file("${projectDir}/build/generated/source/proto/main/proteus");
         sourceDirs += file("${projectDir}/build/generated/source/proto/test/java");
         sourceDirs += file("${projectDir}/build/generated/source/proto/test/proteus");
     }
