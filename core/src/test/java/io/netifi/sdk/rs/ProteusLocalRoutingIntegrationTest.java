@@ -3,11 +3,6 @@ package io.netifi.sdk.rs;
 import com.google.protobuf.Empty;
 import io.netifi.sdk.Netifi;
 import io.netifi.testing.protobuf.*;
-import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -15,6 +10,12 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 @Ignore
 public class ProteusLocalRoutingIntegrationTest {
@@ -109,7 +110,7 @@ public class ProteusLocalRoutingIntegrationTest {
 
     System.out.println(count);
   }
-
+  
   @Test
   public void testFireAndForget() throws Exception {
     int count = 100;
@@ -134,13 +135,13 @@ public class ProteusLocalRoutingIntegrationTest {
 
   static class DefaultSimpleService implements SimpleService {
     EmitterProcessor<SimpleRequest> messages = EmitterProcessor.create();
-
+  
     @Override
     public Mono<Void> fireAndForget(SimpleRequest message) {
       messages.onNext(message);
       return Mono.empty();
     }
-
+  
     @Override
     public Flux<SimpleResponse> streamOnFireAndForget(Empty message) {
       return messages.map(
@@ -149,7 +150,7 @@ public class ProteusLocalRoutingIntegrationTest {
                   .setResponseMessage("got fire and forget -> " + simpleRequest.getRequestMessage())
                   .build());
     }
-
+    
     @Override
     public Mono<SimpleResponse> unaryRpc(SimpleRequest message) {
       return Mono.fromCallable(
