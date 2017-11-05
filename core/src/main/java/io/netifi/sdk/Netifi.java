@@ -2,23 +2,25 @@ package io.netifi.sdk;
 
 import io.netifi.proteus.ProteusService;
 import io.netifi.sdk.frames.DestinationSetupFlyweight;
+import io.netifi.sdk.presence.DefaultPresenceNotifier;
+import io.netifi.sdk.presence.PresenceNotifier;
 import io.netifi.sdk.rs.*;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.rsocket.Closeable;
 import io.rsocket.RSocket;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.PayloadImpl;
-import java.util.Collection;
 import java.util.Objects;
 import javax.xml.bind.DatatypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoProcessor;
 
 /** This is where the magic happens */
-public class Netifi implements PresenceNotificationHandler {
+public class Netifi implements Closeable {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
 
   static {
@@ -27,7 +29,7 @@ public class Netifi implements PresenceNotificationHandler {
   }
 
   private final TimebasedIdGenerator idGenerator;
-  private final PresenceNotificationHandler presenceNotificationHandler;
+  private final PresenceNotifier presenceNotifier;
   private final long fromAccountId;
   private final String fromDestination;
   private final String fromGroup;
@@ -36,6 +38,7 @@ public class Netifi implements PresenceNotificationHandler {
   private final byte[] accessTokenBytes;
   private final boolean keepalive;
   private volatile boolean running = true;
+  private MonoProcessor<Void> onClose;
   private RequestHandlingRSocket requestHandlingRSocket;
 
   private Netifi(
@@ -50,15 +53,16 @@ public class Netifi implements PresenceNotificationHandler {
       long tickPeriodSeconds,
       long ackTimeoutSeconds,
       int missedAcks) {
+    this.onClose = MonoProcessor.create();
     this.keepalive = keepalive;
     this.accessKey = accessKey;
     this.fromAccountId = fromAccountId;
     this.fromDestination = destination;
     this.fromGroup = group;
     this.idGenerator = new TimebasedIdGenerator(destination.hashCode());
-    this.presenceNotificationHandler = null;
+
     this.accessTokenBytes = accessTokenBytes;
-    //        new DefaultPresenceNotificationHandler(
+    //        new DefaultPresenceNotifier(
     //            barrier, () -> running, idGenerator, fromAccountId, destination);
 
     int length = DestinationSetupFlyweight.computeLength(false, destination, group);
@@ -89,6 +93,9 @@ public class Netifi implements PresenceNotificationHandler {
             missedAcks,
             accessKey,
             accessTokenBytes);
+
+    this.presenceNotifier =
+        new DefaultPresenceNotifier(idGenerator, accessKey, fromDestination, reconnectingRSocket);
   }
 
   public static Builder builder() {
@@ -96,13 +103,20 @@ public class Netifi implements PresenceNotificationHandler {
   }
 
   @Override
-  public Flux<Collection<String>> presence(long accountId, String group) {
-    throw new UnsupportedOperationException("not implemented yet");
+  public Mono<Void> close() {
+    return Mono.fromRunnable(onClose::onComplete)
+        .doFinally(
+            s -> {
+              running = false;
+              requestHandlingRSocket.close().subscribe();
+              reconnectingRSocket.close().subscribe();
+            })
+        .then();
   }
 
   @Override
-  public Flux<Collection<String>> presence(long accountId, String group, String destination) {
-    throw new UnsupportedOperationException("not implemented yet");
+  public Mono<Void> onClose() {
+    return onClose;
   }
 
   public Netifi addService(ProteusService service) {
@@ -112,16 +126,21 @@ public class Netifi implements PresenceNotificationHandler {
 
   public Mono<NetifiSocket> connect(String group, String destination) {
     return Mono.just(
-        new DefaultNetifiSocket(
-            reconnectingRSocket,
-            accessKey,
+        PresenceAwareRSocket.wrap(
+            new DefaultNetifiSocket(
+                reconnectingRSocket,
+                accessKey,
+                fromAccountId,
+                fromDestination,
+                destination,
+                group,
+                accessTokenBytes,
+                keepalive,
+                idGenerator),
             fromAccountId,
-            fromDestination,
             destination,
             group,
-            accessTokenBytes,
-            keepalive,
-            idGenerator));
+            presenceNotifier));
   }
 
   public Mono<NetifiSocket> connect(String group) {
@@ -137,9 +156,9 @@ public class Netifi implements PresenceNotificationHandler {
     private String destination;
     private String accessToken = null;
     private byte[] accessTokenBytes = new byte[20];
-    private boolean keepalive = true;
-    private long tickPeriodSeconds = 5;
-    private long ackTimeoutSeconds = 10;
+    private boolean keepalive = false;
+    private long tickPeriodSeconds = 60;
+    private long ackTimeoutSeconds = 120;
     private int missedAcks = 3;
     private RSocket requestHandler;
 

@@ -13,7 +13,6 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
-import reactor.core.publisher.UnicastProcessor;
 
 public class RequestHandlingRSocket implements RSocket {
   private final BiInt2ObjectMap<ProteusService> registeredServices;
@@ -102,7 +101,7 @@ public class RequestHandlingRSocket implements RSocket {
 
   @Override
   public Flux<Payload> requestChannel(Publisher<Payload> payloads) {
- try {
+    try {
       SwitchTransform<Payload, Payload> switchTransform =
           new SwitchTransform<>(
               payloads,

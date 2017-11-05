@@ -108,7 +108,7 @@ public class ProteusRoutingIntegrationTest {
 
     System.out.println(response.getResponseMessage());
   }
-  
+
   @Test
   public void testFireAndForget() throws Exception {
     int count = 1000;
@@ -128,13 +128,13 @@ public class ProteusRoutingIntegrationTest {
 
   static class DefaultSimpleService implements SimpleService {
     EmitterProcessor<SimpleRequest> messages = EmitterProcessor.create();
-  
+
     @Override
     public Mono<Void> fireAndForget(SimpleRequest message) {
       messages.onNext(message);
       return Mono.empty();
     }
-  
+
     @Override
     public Flux<SimpleResponse> streamOnFireAndForget(Empty message) {
       return messages.map(
@@ -143,7 +143,7 @@ public class ProteusRoutingIntegrationTest {
                   .setResponseMessage("got fire and forget -> " + simpleRequest.getRequestMessage())
                   .build());
     }
-    
+
     @Override
     public Mono<SimpleResponse> unaryRpc(SimpleRequest message) {
       return Mono.fromCallable(

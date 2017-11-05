@@ -102,10 +102,18 @@ public class ReconnectingRSocket implements RSocket {
                   .keepAliveAckTimeout(Duration.ofSeconds(tickPeriodSeconds))
                   .keepAliveAckTimeout(Duration.ofSeconds(ackTimeoutSeconds))
                   .keepAliveMissedAcks(missedAcks);
+        } else {
+          connect
+              .keepAlive()
+              .keepAliveAckTimeout(Duration.ofSeconds(0))
+              .keepAliveAckTimeout(Duration.ofSeconds(0))
+              .keepAliveMissedAcks(missedAcks);
         }
 
         return connect
             .setupPayload(setupPayloadSupplier.get())
+            .keepAliveAckTimeout(Duration.ofSeconds(0))
+            .keepAliveTickPeriod(Duration.ofSeconds(0))
             .errorConsumer(
                 throwable -> logger.error("netifi sdk recieved unhandled exception", throwable))
             .acceptor(r -> requestHandlingRSocket == null ? EMPTY_SOCKET : requestHandlingRSocket)
@@ -128,6 +136,10 @@ public class ReconnectingRSocket implements RSocket {
                 t -> {
                   logger.error(t.getMessage(), t);
                   return retryConnection(retry);
+                })
+            .doOnNext(
+                rSocket -> {
+                  onClose.doFinally(s -> rSocket.close().subscribe()).subscribe();
                 });
 
       } catch (Throwable t) {
@@ -174,7 +186,12 @@ public class ReconnectingRSocket implements RSocket {
 
   @Override
   public Mono<Void> close() {
-    return Mono.fromRunnable(onClose::onComplete).doFinally(s -> source.onComplete()).then();
+    return Mono.fromRunnable(onClose::onComplete)
+        .doFinally(
+            s -> {
+              source.onComplete();
+            })
+        .then();
   }
 
   @Override
