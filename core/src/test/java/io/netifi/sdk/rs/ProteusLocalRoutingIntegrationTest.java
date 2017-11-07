@@ -211,20 +211,5 @@ public class ProteusLocalRoutingIntegrationTest {
     public Flux<SimpleResponse> bidiStreamingRpc(Publisher<SimpleRequest> messages) {
       return Flux.from(messages).flatMap(this::unaryRpc);
     }
-
-    @Override
-    public double availability() {
-      return 1.0;
-    }
-
-    @Override
-    public Mono<Void> close() {
-      return Mono.empty();
-    }
-
-    @Override
-    public Mono<Void> onClose() {
-      return Mono.empty();
-    }
   }
 }

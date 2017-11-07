@@ -1,6 +1,7 @@
 package io.netifi.sdk;
 
 import io.netifi.proteus.ProteusService;
+import io.netifi.proteus.rs.RequestHandlingRSocket;
 import io.netifi.sdk.frames.DestinationSetupFlyweight;
 import io.netifi.sdk.presence.DefaultPresenceNotifier;
 import io.netifi.sdk.presence.PresenceNotifier;
