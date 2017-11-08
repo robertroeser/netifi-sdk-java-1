@@ -14,6 +14,7 @@ import io.rsocket.RSocket;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.PayloadImpl;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.bind.DatatypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import reactor.core.publisher.MonoProcessor;
 /** This is where the magic happens */
 public class Netifi implements Closeable {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
+  private static final ConcurrentHashMap<String, Netifi> NETIFI = new ConcurrentHashMap<>();
 
   static {
     // Set the Java DNS cache to 60 seconds
@@ -237,18 +239,27 @@ public class Netifi implements Closeable {
           group,
           destination);
 
-      return new Netifi(
-          host,
-          port,
-          accessKey,
-          accountId,
-          destination,
-          group,
-          accessTokenBytes,
-          keepalive,
-          tickPeriodSeconds,
-          ackTimeoutSeconds,
-          missedAcks);
+      String netifiKey = accessKey + accountId + group + destination;
+
+      return NETIFI.computeIfAbsent(
+          netifiKey,
+          _k -> {
+            Netifi netifi =
+                new Netifi(
+                    host,
+                    port,
+                    accessKey,
+                    accountId,
+                    destination,
+                    group,
+                    accessTokenBytes,
+                    keepalive,
+                    tickPeriodSeconds,
+                    ackTimeoutSeconds,
+                    missedAcks);
+            netifi.onClose.doFinally(s -> NETIFI.remove(netifiKey)).subscribe();
+            return netifi;
+          });
     }
   }
 }
