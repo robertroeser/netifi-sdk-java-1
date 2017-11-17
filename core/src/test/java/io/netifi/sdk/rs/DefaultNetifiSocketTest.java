@@ -6,9 +6,10 @@ import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
-import io.rsocket.util.PayloadImpl;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
+
+import io.rsocket.util.ByteBufPayload;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -35,11 +36,10 @@ public class DefaultNetifiSocketTest {
             invocation -> {
               Payload payload = (Payload) invocation.getArguments()[0];
 
-              ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
-              ByteBuf route = RoutingFlyweight.route(metadata);
+              ByteBuf route = RoutingFlyweight.route(payload.sliceMetadata());
               long accountId = RouteDestinationFlyweight.accountId(route);
               Assert.assertEquals(Long.MAX_VALUE, accountId);
-              return Mono.just(new PayloadImpl("here's the payload"));
+              return Mono.just(ByteBufPayload.create("here's the payload"));
             });
 
     DefaultNetifiSocket netifiSocket =
@@ -58,7 +58,7 @@ public class DefaultNetifiSocketTest {
     ThreadLocalRandom.current().nextBytes(metadata);
 
     netifiSocket
-        .requestResponse(new PayloadImpl("hi".getBytes(), metadata))
+        .requestResponse(ByteBufPayload.create("hi".getBytes(), metadata))
         .doOnError(Throwable::printStackTrace)
         .block();
   }
@@ -78,8 +78,7 @@ public class DefaultNetifiSocketTest {
             invocation -> {
               Payload payload = (Payload) invocation.getArguments()[0];
 
-              ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
-              ByteBuf route = RoutingFlyweight.route(metadata);
+              ByteBuf route = RoutingFlyweight.route(payload.sliceMetadata());
               long accountId = RouteDestinationFlyweight.accountId(route);
               Assert.assertEquals(Long.MAX_VALUE, accountId);
               return Mono.empty();
@@ -101,7 +100,7 @@ public class DefaultNetifiSocketTest {
     ThreadLocalRandom.current().nextBytes(metadata);
 
     netifiSocket
-        .fireAndForget(new PayloadImpl("hi".getBytes(), metadata))
+        .fireAndForget(ByteBufPayload.create("hi".getBytes(), metadata))
         .doOnError(Throwable::printStackTrace)
         .block();
   }
@@ -121,11 +120,10 @@ public class DefaultNetifiSocketTest {
             invocation -> {
               Payload payload = (Payload) invocation.getArguments()[0];
 
-              ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
-              ByteBuf route = RoutingFlyweight.route(metadata);
+              ByteBuf route = RoutingFlyweight.route(payload.sliceMetadata());
               long accountId = RouteDestinationFlyweight.accountId(route);
               Assert.assertEquals(Long.MAX_VALUE, accountId);
-              return Flux.range(1, 100).map(i -> new PayloadImpl("here's the payload " + i));
+              return Flux.range(1, 100).map(i -> ByteBufPayload.create("here's the payload " + i));
             });
 
     DefaultNetifiSocket netifiSocket =
@@ -144,7 +142,7 @@ public class DefaultNetifiSocketTest {
     ThreadLocalRandom.current().nextBytes(metadata);
 
     netifiSocket
-        .requestStream(new PayloadImpl("hi".getBytes(), metadata))
+        .requestStream(ByteBufPayload.create("hi".getBytes(), metadata))
         .doOnError(Throwable::printStackTrace)
         .blockLast();
   }
@@ -167,14 +165,13 @@ public class DefaultNetifiSocketTest {
               return Flux.from(payloads)
                   .doOnNext(
                       payload -> {
-                        ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
-                        ByteBuf route = RoutingFlyweight.route(metadata);
+                        ByteBuf route = RoutingFlyweight.route(payload.sliceMetadata());
                         long accountId = RouteDestinationFlyweight.accountId(route);
                         Assert.assertEquals(Long.MAX_VALUE, accountId);
                       })
                   .flatMap(
                       payload ->
-                          Flux.range(1, 100).map(i -> new PayloadImpl("here's the payload " + i)));
+                          Flux.range(1, 100).map(i -> ByteBufPayload.create("here's the payload " + i)));
             });
 
     DefaultNetifiSocket netifiSocket =
@@ -193,7 +190,7 @@ public class DefaultNetifiSocketTest {
     ThreadLocalRandom.current().nextBytes(metadata);
 
     netifiSocket
-        .requestChannel(Mono.just(new PayloadImpl("hi".getBytes(), metadata)))
+        .requestChannel(Mono.just(ByteBufPayload.create("hi".getBytes(), metadata)))
         .doOnError(Throwable::printStackTrace)
         .blockLast();
   }

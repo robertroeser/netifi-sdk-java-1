@@ -10,9 +10,10 @@ import io.rsocket.AbstractRSocket;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
-import io.rsocket.util.PayloadImpl;
 import java.time.Duration;
 import java.util.Base64;
+
+import io.rsocket.util.ByteBufPayload;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -98,11 +99,10 @@ public class DefaultPresenceNotifierTest {
   public RSocket createRSocketConnection(
       String destination, String group, RSocket handler, int port) {
     int length = DestinationSetupFlyweight.computeLength(false, destination, group);
-    byte[] bytes = new byte[length];
 
     byte[] accessTokenBytes = Base64.getDecoder().decode(accessToken);
 
-    ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+    ByteBuf byteBuf = Unpooled.directBuffer(length);
     DestinationSetupFlyweight.encode(
         byteBuf,
         Unpooled.EMPTY_BUFFER,
@@ -126,7 +126,7 @@ public class DefaultPresenceNotifierTest {
 
     RSocket client =
         RSocketFactory.connect()
-            .setupPayload(new PayloadImpl(new byte[0], bytes))
+            .setupPayload(ByteBufPayload.create(Unpooled.EMPTY_BUFFER, byteBuf))
             .errorConsumer(Throwable::printStackTrace)
             .acceptor(rSocket -> handler)
             .transport(TcpClientTransport.create(tcpClient))

@@ -12,10 +12,12 @@ import io.netty.buffer.Unpooled;
 import io.rsocket.Closeable;
 import io.rsocket.RSocket;
 import io.rsocket.transport.netty.client.TcpClientTransport;
-import io.rsocket.util.PayloadImpl;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.bind.DatatypeConverter;
+
+import io.rsocket.util.ByteBufPayload;
+import io.rsocket.util.DefaultPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -69,25 +71,23 @@ public class Netifi implements Closeable {
     //            barrier, () -> running, idGenerator, fromAccountId, destination);
 
     int length = DestinationSetupFlyweight.computeLength(false, destination, group);
-    byte[] metadata = new byte[length];
 
-    ByteBuf byteBuf = Unpooled.wrappedBuffer(metadata);
+    ByteBuf metadata = Unpooled.directBuffer(length);
     DestinationSetupFlyweight.encode(
-        byteBuf,
+        metadata,
         Unpooled.EMPTY_BUFFER,
         Unpooled.wrappedBuffer(accessTokenBytes),
         idGenerator.nextId(),
         accessKey,
         destination,
         group);
-    byte[] empty = new byte[0];
 
     requestHandlingRSocket = new RequestHandlingRSocket();
 
     this.reconnectingRSocket =
         new ReconnectingRSocket(
             MetadataUnwrappingRSocket.wrap(requestHandlingRSocket),
-            () -> new PayloadImpl(empty, metadata),
+            () -> ByteBufPayload.create(Unpooled.EMPTY_BUFFER, metadata.retain()),
             () -> running,
             () -> TcpClientTransport.create(host, port),
             keepalive,

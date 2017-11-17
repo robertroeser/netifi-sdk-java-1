@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
+import io.rsocket.util.DefaultPayload;
 import io.rsocket.util.RSocketProxy;
 import java.nio.ByteBuffer;
 import org.reactivestreams.Publisher;
@@ -58,15 +59,49 @@ public class MetadataUnwrappingRSocket extends RSocketProxy {
     }
 
     @Override
-    public ByteBuffer getMetadata() {
-      ByteBuf metadata = Unpooled.wrappedBuffer(payload.getMetadata());
-      ByteBuf byteBuf = RoutingFlyweight.wrappedMetadata(metadata);
-      return byteBuf.nioBuffer(0, byteBuf.capacity());
+    public ByteBuf sliceMetadata() {
+      ByteBuf metadata = payload.sliceMetadata();
+      return RoutingFlyweight.wrappedMetadata(metadata);
     }
 
     @Override
-    public ByteBuffer getData() {
-      return payload.getData();
+    public ByteBuf sliceData() {
+      return payload.sliceData();
+    }
+
+    @Override
+    public int refCnt() {
+      return 1;
+    }
+
+    @Override
+    public UnwrappingPayload retain() {
+      return this;
+    }
+
+    @Override
+    public UnwrappingPayload retain(int increment) {
+      return this;
+    }
+
+    @Override
+    public UnwrappingPayload touch() {
+      return this;
+    }
+
+    @Override
+    public UnwrappingPayload touch(Object hint) {
+      return this;
+    }
+
+    @Override
+    public boolean release() {
+      return false;
+    }
+
+    @Override
+    public boolean release(int decrement) {
+      return false;
     }
   }
 }

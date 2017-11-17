@@ -1,6 +1,5 @@
 package io.netifi.sdk.rs;
 
-import com.google.protobuf.Empty;
 import io.netifi.sdk.Netifi;
 import io.netifi.testing.protobuf.*;
 import java.time.Duration;

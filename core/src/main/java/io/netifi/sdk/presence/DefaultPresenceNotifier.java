@@ -9,9 +9,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
-import io.rsocket.util.PayloadImpl;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import io.rsocket.util.ByteBufPayload;
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ReplayProcessor;
@@ -57,16 +58,15 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
         groupKey(accountId, group),
         k -> {
           ByteBuf route = createGroupRoute(RouteType.PRESENCE_GROUP_QUERY, accountId, group);
-          byte[] routingInformation = createRoutingInformation(route, fromDestination);
-          Payload payload = new PayloadImpl(EMPTY, routingInformation);
+          ByteBuf routingInformation = createRoutingInformation(route, fromDestination);
+          Payload payload = ByteBufPayload.create(Unpooled.EMPTY_BUFFER, routingInformation);
 
           Disposable subscribe =
               reconnectingRSocket
                   .requestStream(payload)
                   .doOnNext(
                       p -> {
-                        ByteBuf metadata = Unpooled.wrappedBuffer(p.getMetadata());
-                        boolean found = DestinationAvailResult.found(metadata);
+                        boolean found = DestinationAvailResult.found(payload.sliceMetadata());
 
                         PresenceNotificationInfo presenceNotificationInfo =
                             new PresenceNotificationInfo(null, accountId, group);
@@ -100,16 +100,15 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
         k -> {
           ByteBuf route =
               createDestinationRoute(RouteType.PRESENCE_ID_QUERY, accountId, destination, group);
-          byte[] routingInformation = createRoutingInformation(route, fromDestination);
-          Payload payload = new PayloadImpl(EMPTY, routingInformation);
+          ByteBuf routingInformation = createRoutingInformation(route, fromDestination);
+          Payload payload = ByteBufPayload.create(Unpooled.EMPTY_BUFFER, routingInformation);
 
           Disposable subscribe =
               reconnectingRSocket
                   .requestStream(payload)
                   .doOnNext(
                       p -> {
-                        ByteBuf metadata = Unpooled.wrappedBuffer(p.getMetadata());
-                        boolean found = DestinationAvailResult.found(metadata);
+                        boolean found = DestinationAvailResult.found(payload.sliceMetadata());
 
                         PresenceNotificationInfo presenceNotificationInfo =
                             new PresenceNotificationInfo(destination, accountId, group);
@@ -194,7 +193,7 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
     return byteBuf;
   }
 
-  private byte[] createRoutingInformation(ByteBuf route, String fromDestination) {
+  private ByteBuf createRoutingInformation(ByteBuf route, String fromDestination) {
     int length = RoutingFlyweight.computeLength(false, fromDestination, route);
     byte[] bytes = new byte[length];
     ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
@@ -202,7 +201,7 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
     RoutingFlyweight.encode(
         byteBuf, false, 1, fromAccessKey, fromDestination, idGenerator.nextId(), route);
 
-    return bytes;
+    return byteBuf;
   }
 
   class PresenceNotificationInfo
