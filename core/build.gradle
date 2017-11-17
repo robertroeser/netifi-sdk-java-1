@@ -49,10 +49,13 @@ sourceSets {
     }
 }
 
-
 idea {
     module {
-        sourceDirs += file("${projectDir}/build/generated/source/proto/test/java");
-        sourceDirs += file("${projectDir}/build/generated/source/proto/test/proteus");
+        sourceDirs += file("src/test/proto")
+        sourceDirs += file("src/generated/test/java")
+        sourceDirs += file("src/generated/test/proteus")
+
+        generatedSourceDirs += file('src/generated/test/java')
+        generatedSourceDirs += file('src/generated/test/proteus')
     }
 }
