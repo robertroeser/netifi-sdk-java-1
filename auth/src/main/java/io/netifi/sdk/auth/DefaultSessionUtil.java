@@ -1,5 +1,7 @@
 package io.netifi.sdk.auth;
 
+import io.netty.buffer.ByteBuf;
+
 import java.nio.ByteBuffer;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -25,8 +27,9 @@ class DefaultSessionUtil extends SessionUtil {
   }
 
   @Override
-  public byte[] generateSessionToken(byte[] key, ByteBuffer data, long count) {
+  public byte[] generateSessionToken(byte[] key, ByteBuf data, long count) {
     try {
+      data.resetReaderIndex();
       byte[] steps = getStepsAsByteArray(count);
       byte[] oneTimeKey = new byte[key.length + 8];
 
@@ -36,7 +39,7 @@ class DefaultSessionUtil extends SessionUtil {
       SecretKeySpec keySpec = new SecretKeySpec(oneTimeKey, ALGORITHM);
       Mac mac = Mac.getInstance(ALGORITHM);
       mac.init(keySpec);
-      mac.update(data);
+      mac.update(data.nioBuffer());
       return mac.doFinal();
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -44,7 +47,7 @@ class DefaultSessionUtil extends SessionUtil {
   }
 
   @Override
-  public int generateRequestToken(byte[] sessionToken, ByteBuffer message, long count) {
+  public int generateRequestToken(byte[] sessionToken, ByteBuf message, long count) {
     byte[] bytes = generateSessionToken(sessionToken, message, count);
     ByteBuffer byteBuffer = LONG_BUFFER.get();
     byteBuffer.clear();
@@ -54,7 +57,7 @@ class DefaultSessionUtil extends SessionUtil {
 
   @Override
   public boolean validateMessage(
-      byte[] sessionToken, ByteBuffer message, int requestToken, long count) {
+      byte[] sessionToken, ByteBuf message, int requestToken, long count) {
     int generatedToken = generateRequestToken(sessionToken, message, count);
     return requestToken == generatedToken;
   }

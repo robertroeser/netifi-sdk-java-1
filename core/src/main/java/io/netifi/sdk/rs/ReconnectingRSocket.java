@@ -2,6 +2,8 @@ package io.netifi.sdk.rs;
 
 import io.netifi.sdk.Netifi;
 import io.netifi.sdk.auth.SessionUtil;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.rsocket.*;
 import io.rsocket.transport.ClientTransport;
 import org.reactivestreams.Publisher;
@@ -12,7 +14,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 import reactor.core.publisher.ReplayProcessor;
 
-import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
@@ -217,10 +218,15 @@ public class ReconnectingRSocket implements RSocket {
     synchronized (this) {
       long count = sessionUtil.getThirtySecondsStepsFromEpoch();
       currentSessionCounter.onNext(new AtomicLong(count));
-      ByteBuffer allocate = ByteBuffer.allocate(8);
-      allocate.putLong(accessKey);
-      allocate.flip();
-      sessionToken = sessionUtil.generateSessionToken(accessTokenBytes, allocate, count);
+      ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer();
+      try {
+        byteBuf.writeLong(accessKey);
+        sessionToken = sessionUtil.generateSessionToken(accessTokenBytes, byteBuf, count);
+      } finally {
+        if (byteBuf.refCnt() > 0) {
+          byteBuf.release();
+        }
+      }
     }
 
     currentSessionToken.onNext(sessionToken);

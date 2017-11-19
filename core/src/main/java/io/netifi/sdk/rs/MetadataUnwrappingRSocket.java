@@ -71,37 +71,41 @@ public class MetadataUnwrappingRSocket extends RSocketProxy {
 
     @Override
     public int refCnt() {
-      return 1;
+      return payload.refCnt();
     }
 
     @Override
     public UnwrappingPayload retain() {
+      payload.retain();
       return this;
     }
 
     @Override
     public UnwrappingPayload retain(int increment) {
+      payload.retain(increment);
       return this;
     }
 
     @Override
     public UnwrappingPayload touch() {
+      payload.touch();
       return this;
     }
 
     @Override
     public UnwrappingPayload touch(Object hint) {
+      payload.touch(hint);
       return this;
     }
 
     @Override
     public boolean release() {
-      return false;
+      return payload.release();
     }
 
     @Override
     public boolean release(int decrement) {
-      return false;
+      return payload.release(decrement);
     }
   }
 }

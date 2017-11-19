@@ -69,7 +69,7 @@ public class ProteusLocalRoutingIntegrationTest {
     System.out.println(simpleResponse.getResponseMessage());
   }
   
-  @Test
+  //@Test
   public void testUnaryRpc_multiple() {
     doTest();
     doTest();
@@ -78,7 +78,7 @@ public class ProteusLocalRoutingIntegrationTest {
   public void doTest() {
     SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
     long start = System.nanoTime();
-    Flux.range(1, 100_000_000).flatMap(
+    Flux.range(1, 1_000_000).flatMap(
         i -> simpleServiceClient
                  .unaryRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build())
                  .doOnError(Throwable::printStackTrace)

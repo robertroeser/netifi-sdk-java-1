@@ -66,16 +66,21 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
                   .requestStream(payload)
                   .doOnNext(
                       p -> {
-                        boolean found = DestinationAvailResult.found(p.sliceMetadata());
-
-                        PresenceNotificationInfo presenceNotificationInfo =
-                            new PresenceNotificationInfo(null, accountId, group);
-                        if (found) {
-                          presenceInfo.add(presenceNotificationInfo);
-                        } else {
-                          presenceInfo.remove(presenceNotificationInfo);
+                        try {
+                          boolean found = DestinationAvailResult.found(p.sliceMetadata());
+  
+                          PresenceNotificationInfo presenceNotificationInfo =
+                              new PresenceNotificationInfo(null, accountId, group);
+                          if (found) {
+                            presenceInfo.add(presenceNotificationInfo);
+                          } else {
+                            presenceInfo.remove(presenceNotificationInfo);
+                          }
+  
+                          onChange.onNext(EMPTY);
+                        } finally{
+                          p.release();
                         }
-                        onChange.onNext(EMPTY);
                       })
                   .doFinally(
                       s -> {
@@ -108,16 +113,20 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
                   .requestStream(payload)
                   .doOnNext(
                       p -> {
-                        boolean found = DestinationAvailResult.found(p.sliceMetadata());
-
-                        PresenceNotificationInfo presenceNotificationInfo =
-                            new PresenceNotificationInfo(destination, accountId, group);
-                        if (found) {
-                          presenceInfo.add(presenceNotificationInfo);
-                        } else {
-                          presenceInfo.remove(presenceNotificationInfo);
-                        }
-                        onChange.onNext(EVENT);
+                       try {
+                         boolean found = DestinationAvailResult.found(p.sliceMetadata());
+  
+                         PresenceNotificationInfo presenceNotificationInfo =
+                             new PresenceNotificationInfo(destination, accountId, group);
+                         if (found) {
+                           presenceInfo.add(presenceNotificationInfo);
+                         } else {
+                           presenceInfo.remove(presenceNotificationInfo);
+                         }
+                         onChange.onNext(EVENT);
+                       } finally{
+                         p.release();
+                       }
                       })
                   .doFinally(
                       s -> {

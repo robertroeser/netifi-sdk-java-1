@@ -15,7 +15,7 @@ public abstract class SessionUtil {
   public abstract int generateRequestToken(byte[] sessionToken, ByteBuf message, long count);
 
   public abstract boolean validateMessage(
-      byte[] sessionToken, ByteBuffer message, int requestToken, long count);
+      byte[] sessionToken, ByteBuf message, int requestToken, long count);
 
   public abstract long getThirtySecondsStepsFromEpoch();
 }

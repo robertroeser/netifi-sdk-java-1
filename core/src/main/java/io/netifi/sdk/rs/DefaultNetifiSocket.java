@@ -9,13 +9,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
-import java.nio.ByteBuffer;
-
 import io.rsocket.util.ByteBufPayload;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
+
+import java.nio.ByteBuffer;
 
 public class DefaultNetifiSocket implements NetifiSocket {
   private final SessionUtil sessionUtil = SessionUtil.instance();
@@ -72,6 +72,7 @@ public class DefaultNetifiSocket implements NetifiSocket {
   public Mono<Void> fireAndForget(Payload payload) {
     try {
       ByteBuf metadataToWrap = payload.sliceMetadata();
+      ByteBuf data = payload.sliceData();
       ByteBuf route = getRoute();
 
       int length = RoutingFlyweight.computeLength(true, fromDestination, route, metadataToWrap);
@@ -87,10 +88,9 @@ public class DefaultNetifiSocket implements NetifiSocket {
                     .flatMap(
                         key -> {
                           byte[] currentRequestToken =
-                              sessionUtil.generateSessionToken(key, payload.getData(), count);
+                              sessionUtil.generateSessionToken(key, data, count);
                           int requestToken =
-                              sessionUtil.generateRequestToken(
-                                  currentRequestToken, payload.getData(), count);
+                              sessionUtil.generateRequestToken(currentRequestToken, data, count);
                           ByteBuf metadata = ByteBufAllocator.DEFAULT.directBuffer(length);
                           RoutingFlyweight.encode(
                               metadata,
@@ -115,10 +115,9 @@ public class DefaultNetifiSocket implements NetifiSocket {
   @Override
   public Mono<Payload> requestResponse(Payload payload) {
     try {
-      payload.retain();
       ByteBuf metadataToWrap = payload.sliceMetadata();
       ByteBuf route = getRoute();
-
+      ByteBuf data = payload.sliceData();
       int length = RoutingFlyweight.computeLength(true, fromDestination, route, metadataToWrap);
 
       return reconnectingRSocket
@@ -132,10 +131,9 @@ public class DefaultNetifiSocket implements NetifiSocket {
                     .flatMap(
                         key -> {
                           byte[] currentRequestToken =
-                              sessionUtil.generateSessionToken(key, payload.getData(), count);
+                              sessionUtil.generateSessionToken(key, data, count);
                           int requestToken =
-                              sessionUtil.generateRequestToken(
-                                  currentRequestToken, payload.getData(), count);
+                              sessionUtil.generateRequestToken(currentRequestToken, data, count);
                           ByteBuf metadata = ByteBufAllocator.DEFAULT.directBuffer(length);
                           RoutingFlyweight.encode(
                               metadata,
@@ -147,17 +145,10 @@ public class DefaultNetifiSocket implements NetifiSocket {
                               route,
                               metadataToWrap);
 
-                          return reconnectingRSocket
-                              .requestResponse(ByteBufPayload.create(payload.sliceData(), metadata))
-                              .doAfterTerminate(() -> {
-                                  int i = metadata.refCnt();
-                                  if (payload.refCnt() > 0) {
-                                    payload.release();
-                                }
-                              });
+                          return reconnectingRSocket.requestResponse(
+                              ByteBufPayload.create(payload.sliceData(), metadata));
                         });
               });
-
     } catch (Throwable t) {
       return Mono.error(t);
     }
@@ -168,6 +159,7 @@ public class DefaultNetifiSocket implements NetifiSocket {
     try {
       ByteBuf metadataToWrap = payload.sliceMetadata();
       ByteBuf route = getRoute();
+      ByteBuf data = payload.sliceData();
 
       int length = RoutingFlyweight.computeLength(true, fromDestination, route, metadataToWrap);
 
@@ -182,10 +174,9 @@ public class DefaultNetifiSocket implements NetifiSocket {
                     .flatMapMany(
                         key -> {
                           byte[] currentRequestToken =
-                              sessionUtil.generateSessionToken(key, payload.getData(), count);
+                              sessionUtil.generateSessionToken(key, data, count);
                           int requestToken =
-                              sessionUtil.generateRequestToken(
-                                  currentRequestToken, payload.getData(), count);
+                              sessionUtil.generateRequestToken(currentRequestToken, data, count);
                           ByteBuf metadata = ByteBufAllocator.DEFAULT.directBuffer(length);
                           RoutingFlyweight.encode(
                               metadata,
@@ -214,6 +205,7 @@ public class DefaultNetifiSocket implements NetifiSocket {
         Flux.from(payloads)
             .flatMap(
                 payload -> {
+                  ByteBuf data = payload.sliceData();
                   ByteBuf metadataToWrap = payload.sliceMetadata();
                   int length =
                       RoutingFlyweight.computeLength(true, fromDestination, route, metadataToWrap);
@@ -229,12 +221,12 @@ public class DefaultNetifiSocket implements NetifiSocket {
                                 .map(
                                     key -> {
                                       byte[] currentRequestToken =
-                                          sessionUtil.generateSessionToken(
-                                              key, payload.getData(), count);
+                                          sessionUtil.generateSessionToken(key, data, count);
                                       int requestToken =
                                           sessionUtil.generateRequestToken(
-                                              currentRequestToken, payload.getData(), count);
-                                      ByteBuf metadata = ByteBufAllocator.DEFAULT.directBuffer(length);
+                                              currentRequestToken, data, count);
+                                      ByteBuf metadata =
+                                          ByteBufAllocator.DEFAULT.directBuffer(length);
                                       RoutingFlyweight.encode(
                                           metadata,
                                           true,
@@ -258,6 +250,7 @@ public class DefaultNetifiSocket implements NetifiSocket {
     try {
       ByteBuf route = getRoute();
       ByteBuf unwrappedMetadata = payload.sliceMetadata();
+      ByteBuf data = payload.sliceData();
 
       int length = RoutingFlyweight.computeLength(true, fromDestination, route);
 
@@ -272,10 +265,9 @@ public class DefaultNetifiSocket implements NetifiSocket {
                     .flatMap(
                         key -> {
                           byte[] currentRequestToken =
-                              sessionUtil.generateSessionToken(key, payload.getData(), count);
+                              sessionUtil.generateSessionToken(key, data, count);
                           int requestToken =
-                              sessionUtil.generateRequestToken(
-                                  currentRequestToken, payload.getData(), count);
+                              sessionUtil.generateRequestToken(currentRequestToken, data, count);
                           ByteBuf metadata = ByteBufAllocator.DEFAULT.directBuffer(length);
                           RoutingFlyweight.encode(
                               metadata,
