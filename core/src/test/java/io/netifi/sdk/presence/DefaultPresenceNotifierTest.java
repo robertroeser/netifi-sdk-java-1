@@ -7,6 +7,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelOption;
 import io.rsocket.AbstractRSocket;
+import io.rsocket.Frame;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
@@ -73,7 +74,7 @@ public class DefaultPresenceNotifierTest {
     build.close().block();
 
     try {
-      handler.notify(Long.MAX_VALUE, "anotherGroup").timeout(Duration.ofSeconds(2)).block();
+      handler.notify(Long.MAX_VALUE, "anotherGroup").timeout(Duration.ofSeconds(4)).block();
       Assert.fail();
     } catch (Throwable t) {
       if (!t.getMessage().contains("Timeout")) {
@@ -126,6 +127,7 @@ public class DefaultPresenceNotifierTest {
 
     RSocket client =
         RSocketFactory.connect()
+            .frameDecoder(Frame::retain)
             .setupPayload(ByteBufPayload.create(Unpooled.EMPTY_BUFFER, byteBuf))
             .errorConsumer(Throwable::printStackTrace)
             .acceptor(rSocket -> handler)

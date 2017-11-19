@@ -6,6 +6,7 @@ import io.netifi.sdk.frames.RouteType;
 import io.netifi.sdk.frames.RoutingFlyweight;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
 import java.nio.ByteBuffer;
@@ -90,7 +91,7 @@ public class DefaultNetifiSocket implements NetifiSocket {
                           int requestToken =
                               sessionUtil.generateRequestToken(
                                   currentRequestToken, payload.getData(), count);
-                          ByteBuf metadata = Unpooled.directBuffer(length);
+                          ByteBuf metadata = ByteBufAllocator.DEFAULT.directBuffer(length);
                           RoutingFlyweight.encode(
                               metadata,
                               true,
@@ -114,6 +115,7 @@ public class DefaultNetifiSocket implements NetifiSocket {
   @Override
   public Mono<Payload> requestResponse(Payload payload) {
     try {
+      payload.retain();
       ByteBuf metadataToWrap = payload.sliceMetadata();
       ByteBuf route = getRoute();
 
@@ -134,7 +136,7 @@ public class DefaultNetifiSocket implements NetifiSocket {
                           int requestToken =
                               sessionUtil.generateRequestToken(
                                   currentRequestToken, payload.getData(), count);
-                          ByteBuf metadata = Unpooled.directBuffer(length);
+                          ByteBuf metadata = ByteBufAllocator.DEFAULT.directBuffer(length);
                           RoutingFlyweight.encode(
                               metadata,
                               true,
@@ -145,8 +147,14 @@ public class DefaultNetifiSocket implements NetifiSocket {
                               route,
                               metadataToWrap);
 
-                          return reconnectingRSocket.requestResponse(
-                              ByteBufPayload.create(payload.sliceData(), metadata));
+                          return reconnectingRSocket
+                              .requestResponse(ByteBufPayload.create(payload.sliceData(), metadata))
+                              .doAfterTerminate(() -> {
+                                  int i = metadata.refCnt();
+                                  if (payload.refCnt() > 0) {
+                                    payload.release();
+                                }
+                              });
                         });
               });
 
@@ -178,7 +186,7 @@ public class DefaultNetifiSocket implements NetifiSocket {
                           int requestToken =
                               sessionUtil.generateRequestToken(
                                   currentRequestToken, payload.getData(), count);
-                          ByteBuf metadata = Unpooled.directBuffer(length);
+                          ByteBuf metadata = ByteBufAllocator.DEFAULT.directBuffer(length);
                           RoutingFlyweight.encode(
                               metadata,
                               true,
@@ -226,7 +234,7 @@ public class DefaultNetifiSocket implements NetifiSocket {
                                       int requestToken =
                                           sessionUtil.generateRequestToken(
                                               currentRequestToken, payload.getData(), count);
-                                      ByteBuf metadata = Unpooled.directBuffer(length);
+                                      ByteBuf metadata = ByteBufAllocator.DEFAULT.directBuffer(length);
                                       RoutingFlyweight.encode(
                                           metadata,
                                           true,
@@ -268,7 +276,7 @@ public class DefaultNetifiSocket implements NetifiSocket {
                           int requestToken =
                               sessionUtil.generateRequestToken(
                                   currentRequestToken, payload.getData(), count);
-                          ByteBuf metadata = Unpooled.directBuffer(length);
+                          ByteBuf metadata = ByteBufAllocator.DEFAULT.directBuffer(length);
                           RoutingFlyweight.encode(
                               metadata,
                               true,

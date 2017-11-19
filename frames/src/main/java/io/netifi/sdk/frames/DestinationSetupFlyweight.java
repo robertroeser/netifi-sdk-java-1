@@ -92,6 +92,8 @@ public class DestinationSetupFlyweight {
 
     byteBuf.setCharSequence(offset, group, StandardCharsets.US_ASCII);
     offset += groupLength;
+  
+    byteBuf.writerIndex(offset);
 
     return offset;
   }

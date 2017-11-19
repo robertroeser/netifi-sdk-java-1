@@ -31,6 +31,9 @@ public class RouterSetupFlyweight {
     offset += ROUTER_ID_SIZE;
 
     byteBuf.setBytes(offset, authToken);
+  
+    byteBuf.writerIndex(offset);
+    
     return length;
   }
 

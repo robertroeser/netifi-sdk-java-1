@@ -78,6 +78,7 @@ subprojects {
     repositories {
         jcenter()
         maven { url 'https://dl.bintray.com/netifi/netifi-oss/' }
+        mavenLocal()
     }
 
     dependencies {

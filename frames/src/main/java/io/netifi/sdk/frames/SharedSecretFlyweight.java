@@ -29,6 +29,8 @@ public class SharedSecretFlyweight {
 
     byteBuf.setBytes(offset, sharedSecret);
     offset += SHARED_SECRET_SIZE;
+  
+    byteBuf.writerIndex(offset);
 
     return offset;
   }

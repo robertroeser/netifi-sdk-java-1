@@ -66,7 +66,7 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
                   .requestStream(payload)
                   .doOnNext(
                       p -> {
-                        boolean found = DestinationAvailResult.found(payload.sliceMetadata());
+                        boolean found = DestinationAvailResult.found(p.sliceMetadata());
 
                         PresenceNotificationInfo presenceNotificationInfo =
                             new PresenceNotificationInfo(null, accountId, group);
@@ -108,7 +108,7 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
                   .requestStream(payload)
                   .doOnNext(
                       p -> {
-                        boolean found = DestinationAvailResult.found(payload.sliceMetadata());
+                        boolean found = DestinationAvailResult.found(p.sliceMetadata());
 
                         PresenceNotificationInfo presenceNotificationInfo =
                             new PresenceNotificationInfo(destination, accountId, group);

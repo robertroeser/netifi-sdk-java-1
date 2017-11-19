@@ -1,5 +1,7 @@
 package io.netifi.sdk.auth;
 
+import io.netty.buffer.ByteBuf;
+
 import java.nio.ByteBuffer;
 
 /** Generates a shared secret based on a string input. */
@@ -8,9 +10,9 @@ public abstract class SessionUtil {
     return new DefaultSessionUtil();
   }
 
-  public abstract byte[] generateSessionToken(byte[] key, ByteBuffer data, long count);
+  public abstract byte[] generateSessionToken(byte[] key, ByteBuf data, long count);
 
-  public abstract int generateRequestToken(byte[] sessionToken, ByteBuffer message, long count);
+  public abstract int generateRequestToken(byte[] sessionToken, ByteBuf message, long count);
 
   public abstract boolean validateMessage(
       byte[] sessionToken, ByteBuffer message, int requestToken, long count);

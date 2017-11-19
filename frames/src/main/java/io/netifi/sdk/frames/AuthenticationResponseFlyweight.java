@@ -34,7 +34,9 @@ public class AuthenticationResponseFlyweight {
 
     byteBuf.setLong(offset, seqId);
     offset += offset;
-
+  
+    byteBuf.writerIndex(offset);
+    
     return offset;
   }
 

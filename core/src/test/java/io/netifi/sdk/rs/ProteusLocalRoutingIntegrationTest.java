@@ -2,11 +2,6 @@ package io.netifi.sdk.rs;
 
 import io.netifi.sdk.Netifi;
 import io.netifi.testing.protobuf.*;
-import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -14,6 +9,12 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 @Ignore
 public class ProteusLocalRoutingIntegrationTest {
@@ -62,9 +63,33 @@ public class ProteusLocalRoutingIntegrationTest {
     SimpleResponse simpleResponse =
         simpleServiceClient
             .unaryRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build())
+            .doOnError(Throwable::printStackTrace)
             .block();
 
     System.out.println(simpleResponse.getResponseMessage());
+  }
+  
+  @Test
+  public void testUnaryRpc_multiple() {
+    doTest();
+    doTest();
+  }
+
+  public void doTest() {
+    SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
+    long start = System.nanoTime();
+    Flux.range(1, 100_000_000).flatMap(
+        i -> simpleServiceClient
+                 .unaryRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build())
+                 .doOnError(Throwable::printStackTrace)
+    ).blockLast();
+
+    double time = (System.nanoTime() - start) / 1_000_000d;
+    double rps = 1_000_000 / (time / 1_000);
+    System.out.println("time -> " + time + "ms");
+    System.out.println("rps -> " + rps);
+
+    // System.out.println(simpleResponse.getResponseMessage());
   }
 
   @Test

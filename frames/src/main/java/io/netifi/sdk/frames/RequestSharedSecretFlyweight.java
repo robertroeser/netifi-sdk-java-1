@@ -22,7 +22,9 @@ public class RequestSharedSecretFlyweight {
 
     byteBuf.setBytes(offset, pk);
     offset += PUBLIC_KEY_SIZE;
-
+  
+    byteBuf.writerIndex(offset);
+    
     return offset;
   }
 

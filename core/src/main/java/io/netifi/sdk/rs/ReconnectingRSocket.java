@@ -2,17 +2,8 @@ package io.netifi.sdk.rs;
 
 import io.netifi.sdk.Netifi;
 import io.netifi.sdk.auth.SessionUtil;
-import io.rsocket.AbstractRSocket;
-import io.rsocket.Payload;
-import io.rsocket.RSocket;
-import io.rsocket.RSocketFactory;
+import io.rsocket.*;
 import io.rsocket.transport.ClientTransport;
-import java.nio.ByteBuffer;
-import java.time.Duration;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +11,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 import reactor.core.publisher.ReplayProcessor;
+
+import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ReconnectingRSocket implements RSocket {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);
@@ -93,7 +91,8 @@ public class ReconnectingRSocket implements RSocket {
   private Mono<RSocket> connect(int retry) {
     if (running.getAsBoolean()) {
       try {
-        RSocketFactory.ClientRSocketFactory connect = RSocketFactory.connect();
+        RSocketFactory.ClientRSocketFactory connect =
+            RSocketFactory.connect().frameDecoder(Frame::retain);
 
         if (keepalive) {
           connect =

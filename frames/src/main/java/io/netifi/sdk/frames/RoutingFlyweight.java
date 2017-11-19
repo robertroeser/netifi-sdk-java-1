@@ -144,7 +144,9 @@ public class RoutingFlyweight {
       byteBuf.setBytes(offset, wrappedMetadata);
       offset += wrappedMetadataLength;
     }
-
+  
+    byteBuf.writerIndex(offset);
+    
     return offset;
   }
 

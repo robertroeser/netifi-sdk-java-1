@@ -115,6 +115,8 @@ public class LogDestinationFlyweight {
         offset += GROUP_ID_SIZE;
       }
     }
+  
+    byteBuf.writerIndex(offset);
 
     return offset;
   }

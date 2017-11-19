@@ -111,7 +111,9 @@ public class RouteDestinationFlyweight {
     byte[] bytes = group.getBytes(StandardCharsets.US_ASCII);
     byteBuf.setBytes(offset, bytes);
     offset += groupLength;
-
+  
+    byteBuf.writerIndex(offset);
+    
     return offset;
   }
 }

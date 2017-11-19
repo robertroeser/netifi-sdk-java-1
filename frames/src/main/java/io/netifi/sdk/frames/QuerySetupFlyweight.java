@@ -26,7 +26,9 @@ public class QuerySetupFlyweight {
 
     byteBuf.setLong(offset, accessKey);
     offset += ACCESS_KEY_SIZE;
-
+  
+    byteBuf.writerIndex(offset);
+    
     return offset;
   }
 
