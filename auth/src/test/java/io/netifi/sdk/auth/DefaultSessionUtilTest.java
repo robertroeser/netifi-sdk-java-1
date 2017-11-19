@@ -1,8 +1,10 @@
 package io.netifi.sdk.auth;
 
-import java.nio.ByteBuffer;
+import io.netty.buffer.Unpooled;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.nio.ByteBuffer;
 
 /** */
 public class DefaultSessionUtilTest {
@@ -61,9 +63,9 @@ public class DefaultSessionUtilTest {
     byte[] key = "super secret password".getBytes();
     byte[] message = "hello world!".getBytes();
     long epoch = sessionUtil.getThirtySecondsStepsFromEpoch();
-    byte[] m1 = sessionUtil.generateSessionToken(key, ByteBuffer.wrap(message), epoch);
+    byte[] m1 = sessionUtil.generateSessionToken(key, Unpooled.wrappedBuffer(message), epoch);
 
-    byte[] m3 = sessionUtil.generateSessionToken(key, ByteBuffer.wrap(message), epoch + 1);
+    byte[] m3 = sessionUtil.generateSessionToken(key, Unpooled.wrappedBuffer(message), epoch + 1);
 
     Assert.assertNotNull(m1);
     Assert.assertNotNull(m3);
@@ -78,28 +80,28 @@ public class DefaultSessionUtilTest {
     String destination = "test";
     long epoch = sessionUtil.getThirtySecondsStepsFromEpoch();
     byte[] sessionToken =
-        sessionUtil.generateSessionToken(key, ByteBuffer.wrap(destination.getBytes()), epoch);
+        sessionUtil.generateSessionToken(key, Unpooled.wrappedBuffer(destination.getBytes()), epoch);
 
     int r1 =
         sessionUtil.generateRequestToken(
-            sessionToken, ByteBuffer.wrap("a new request".getBytes()), epoch);
+            sessionToken, Unpooled.wrappedBuffer("a new request".getBytes()), epoch);
 
     clock.setTime(40000);
     int r2 =
         sessionUtil.generateRequestToken(
-            sessionToken, ByteBuffer.wrap("a new request".getBytes()), epoch);
+            sessionToken, Unpooled.wrappedBuffer("a new request".getBytes()), epoch);
     Assert.assertEquals(r1, r2);
     clock.setTime(40000);
 
     int r3 =
         sessionUtil.generateRequestToken(
-            sessionToken, ByteBuffer.wrap("another request".getBytes()), epoch + 1);
+            sessionToken, Unpooled.wrappedBuffer("another request".getBytes()), epoch + 1);
     Assert.assertNotEquals(r1, r3);
 
     clock.setTime(60000);
     int r4 =
         sessionUtil.generateRequestToken(
-            sessionToken, ByteBuffer.wrap("a new request".getBytes()), epoch + 2);
+            sessionToken, Unpooled.wrappedBuffer("a new request".getBytes()), epoch + 2);
     Assert.assertNotEquals(r1, r4);
   }
 
@@ -110,21 +112,21 @@ public class DefaultSessionUtilTest {
     String destination = "test";
     long epoch = sessionUtil.getThirtySecondsStepsFromEpoch();
     byte[] sessionToken =
-        sessionUtil.generateSessionToken(key, ByteBuffer.wrap(destination.getBytes()), epoch);
+        sessionUtil.generateSessionToken(key, Unpooled.wrappedBuffer(destination.getBytes()), epoch);
     byte[] message = "a request".getBytes();
 
     int requestToken =
-        sessionUtil.generateRequestToken(sessionToken, ByteBuffer.wrap(message), epoch + 1);
+        sessionUtil.generateRequestToken(sessionToken, Unpooled.wrappedBuffer(message), epoch + 1);
 
     boolean valid =
         sessionUtil.validateMessage(
-            sessionToken, ByteBuffer.wrap(message), requestToken, epoch + 1);
+            sessionToken, Unpooled.wrappedBuffer(message), requestToken, epoch + 1);
     Assert.assertTrue(valid);
 
     clock.setTime(40000);
     valid =
         sessionUtil.validateMessage(
-            sessionToken, ByteBuffer.wrap(message), requestToken, epoch + 2);
+            sessionToken, Unpooled.wrappedBuffer(message), requestToken, epoch + 2);
     Assert.assertFalse(valid);
   }
 
