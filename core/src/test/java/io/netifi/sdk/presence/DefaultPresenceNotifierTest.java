@@ -18,6 +18,7 @@ import io.rsocket.util.ByteBufPayload;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import reactor.core.scheduler.Schedulers;
 import reactor.ipc.netty.tcp.TcpClient;
 
 @Ignore
@@ -44,13 +45,13 @@ public class DefaultPresenceNotifierTest {
             .destination("test1")
             .group("anotherGroup")
             .host("127.0.0.1")
-            .port(8001)
+            .port(8002)
             .build();
 
     handler.notify(Long.MAX_VALUE, "anotherGroup").block();
 
     try {
-      handler.notify(Long.MAX_VALUE, "anotherGroup2").timeout(Duration.ofSeconds(2)).block();
+      handler.notify(Long.MAX_VALUE, "anotherGroup2").timeout(Duration.ofSeconds(8), Schedulers.elastic()).block();
       Assert.fail();
     } catch (Throwable t) {
       if (!t.getMessage().contains("Timeout")) {
@@ -74,7 +75,7 @@ public class DefaultPresenceNotifierTest {
     build.close().block();
 
     try {
-      handler.notify(Long.MAX_VALUE, "anotherGroup").timeout(Duration.ofSeconds(4)).block();
+      handler.notify(Long.MAX_VALUE, "anotherGroup").timeout(Duration.ofSeconds(8)).block();
       Assert.fail();
     } catch (Throwable t) {
       if (!t.getMessage().contains("Timeout")) {

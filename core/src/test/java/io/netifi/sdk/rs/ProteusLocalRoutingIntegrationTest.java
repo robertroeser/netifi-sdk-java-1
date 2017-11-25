@@ -26,6 +26,12 @@ public class ProteusLocalRoutingIntegrationTest {
   private static Netifi client;
   private static NetifiSocket netifiSocket;
 
+ private static final String host = "localhost";
+ // private static final String host = "192.168.99.100";
+  private static final int port = 8001;
+ // private static final int server_port = 8001;
+  private static final int server_port = 8003;
+  
   @BeforeClass
   public static void setup() {
     server =
@@ -36,8 +42,8 @@ public class ProteusLocalRoutingIntegrationTest {
             .accountId(Long.MAX_VALUE)
             .accessKey(accessKey)
             .accessToken(accessToken)
-            .host("127.0.0.1")
-            .port(8001)
+            .host(host)
+            .port(server_port)
             .build();
 
     client =
@@ -48,8 +54,8 @@ public class ProteusLocalRoutingIntegrationTest {
             .accountId(Long.MAX_VALUE)
             .accessKey(accessKey)
             .accessToken(accessToken)
-            .host("127.0.0.1")
-            .port(8001)
+            .host(host)
+            .port(port)
             .build();
 
     server.addService(new SimpleServiceServer(new DefaultSimpleService()));
@@ -98,7 +104,7 @@ public class ProteusLocalRoutingIntegrationTest {
     SimpleResponse response =
         simpleServiceClient
             .serverStreamingRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build())
-            .take(10)
+            .take(100)
             .blockLast();
 
     System.out.println(response.getResponseMessage());

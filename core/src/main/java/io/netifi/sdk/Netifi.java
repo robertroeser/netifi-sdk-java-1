@@ -8,20 +8,20 @@ import io.netifi.sdk.presence.PresenceNotifier;
 import io.netifi.sdk.rs.*;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Closeable;
 import io.rsocket.RSocket;
 import io.rsocket.transport.netty.client.TcpClientTransport;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import javax.xml.bind.DatatypeConverter;
-
 import io.rsocket.util.ByteBufPayload;
-import io.rsocket.util.DefaultPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
+
+import javax.xml.bind.DatatypeConverter;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** This is where the magic happens */
 public class Netifi implements Closeable {
@@ -70,24 +70,25 @@ public class Netifi implements Closeable {
     //        new DefaultPresenceNotifier(
     //            barrier, () -> running, idGenerator, fromAccountId, destination);
 
-    int length = DestinationSetupFlyweight.computeLength(false, destination, group);
-
-    ByteBuf metadata = Unpooled.directBuffer(length);
-    DestinationSetupFlyweight.encode(
-        metadata,
-        Unpooled.EMPTY_BUFFER,
-        Unpooled.wrappedBuffer(accessTokenBytes),
-        idGenerator.nextId(),
-        accessKey,
-        destination,
-        group);
-
     requestHandlingRSocket = new RequestHandlingRSocket();
 
     this.reconnectingRSocket =
         new ReconnectingRSocket(
             MetadataUnwrappingRSocket.wrap(requestHandlingRSocket),
-            () -> ByteBufPayload.create(Unpooled.EMPTY_BUFFER, metadata.retain()),
+            () -> {
+              int length = DestinationSetupFlyweight.computeLength(false, destination, group);
+
+              ByteBuf metadata = ByteBufAllocator.DEFAULT.directBuffer(length);
+              DestinationSetupFlyweight.encode(
+                  metadata,
+                  Unpooled.EMPTY_BUFFER,
+                  Unpooled.wrappedBuffer(accessTokenBytes),
+                  idGenerator.nextId(),
+                  accessKey,
+                  destination,
+                  group);
+              return ByteBufPayload.create(Unpooled.EMPTY_BUFFER, metadata);
+            },
             () -> running,
             () -> TcpClientTransport.create(host, port),
             keepalive,
