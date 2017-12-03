@@ -1,7 +1,6 @@
 package io.netifi.sdk.auth;
 
 import io.netty.buffer.ByteBuf;
-
 import java.nio.ByteBuffer;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;

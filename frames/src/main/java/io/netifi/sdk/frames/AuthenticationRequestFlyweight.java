@@ -21,9 +21,9 @@ public class AuthenticationRequestFlyweight {
     offset += ACCESS_TOKEN_SIZE;
     byteBuf.setLong(offset, accessKey);
     offset += ACCESS_KEY_SIZE;
-    
+
     byteBuf.writerIndex(offset);
-    
+
     return offset;
   }
 

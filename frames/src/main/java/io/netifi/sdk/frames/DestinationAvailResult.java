@@ -1,8 +1,6 @@
 package io.netifi.sdk.frames;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
-
 import java.nio.charset.StandardCharsets;
 
 /** */
@@ -38,7 +36,7 @@ public class DestinationAvailResult {
 
     byteBuf.setCharSequence(offset, destination, StandardCharsets.US_ASCII);
     offset += destinationLength;
-  
+
     byteBuf.writerIndex(offset);
 
     return offset;

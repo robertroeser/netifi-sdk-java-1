@@ -43,7 +43,7 @@ public class QueryDestinationAvailFlyweight {
 
     byteBuf.setLong(offset, destinationId);
     offset += DESTINATION_ID_SIZE;
-  
+
     byteBuf.writerIndex(offset);
 
     return offset;

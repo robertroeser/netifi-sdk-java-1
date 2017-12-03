@@ -11,10 +11,9 @@ import io.rsocket.Frame;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
+import io.rsocket.util.ByteBufPayload;
 import java.time.Duration;
 import java.util.Base64;
-
-import io.rsocket.util.ByteBufPayload;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -51,7 +50,10 @@ public class DefaultPresenceNotifierTest {
     handler.notify(Long.MAX_VALUE, "anotherGroup").block();
 
     try {
-      handler.notify(Long.MAX_VALUE, "anotherGroup2").timeout(Duration.ofSeconds(8), Schedulers.elastic()).block();
+      handler
+          .notify(Long.MAX_VALUE, "anotherGroup2")
+          .timeout(Duration.ofSeconds(8), Schedulers.elastic())
+          .block();
       Assert.fail();
     } catch (Throwable t) {
       if (!t.getMessage().contains("Timeout")) {

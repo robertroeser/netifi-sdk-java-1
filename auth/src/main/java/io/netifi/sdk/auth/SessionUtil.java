@@ -2,8 +2,6 @@ package io.netifi.sdk.auth;
 
 import io.netty.buffer.ByteBuf;
 
-import java.nio.ByteBuffer;
-
 /** Generates a shared secret based on a string input. */
 public abstract class SessionUtil {
   public static final SessionUtil instance() {

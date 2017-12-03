@@ -1,10 +1,9 @@
 package io.netifi.sdk.auth;
 
 import io.netty.buffer.Unpooled;
+import java.nio.ByteBuffer;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.nio.ByteBuffer;
 
 /** */
 public class DefaultSessionUtilTest {
@@ -80,7 +79,8 @@ public class DefaultSessionUtilTest {
     String destination = "test";
     long epoch = sessionUtil.getThirtySecondsStepsFromEpoch();
     byte[] sessionToken =
-        sessionUtil.generateSessionToken(key, Unpooled.wrappedBuffer(destination.getBytes()), epoch);
+        sessionUtil.generateSessionToken(
+            key, Unpooled.wrappedBuffer(destination.getBytes()), epoch);
 
     int r1 =
         sessionUtil.generateRequestToken(
@@ -112,7 +112,8 @@ public class DefaultSessionUtilTest {
     String destination = "test";
     long epoch = sessionUtil.getThirtySecondsStepsFromEpoch();
     byte[] sessionToken =
-        sessionUtil.generateSessionToken(key, Unpooled.wrappedBuffer(destination.getBytes()), epoch);
+        sessionUtil.generateSessionToken(
+            key, Unpooled.wrappedBuffer(destination.getBytes()), epoch);
     byte[] message = "a request".getBytes();
 
     int requestToken =

@@ -10,18 +10,22 @@ import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.rsocket.Closeable;
 import io.rsocket.RSocket;
+import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.ByteBufPayload;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
+import javax.xml.bind.DatatypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
-
-import javax.xml.bind.DatatypeConverter;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
+import reactor.ipc.netty.tcp.TcpClient;
 
 /** This is where the magic happens */
 public class Netifi implements Closeable {
@@ -45,6 +49,7 @@ public class Netifi implements Closeable {
   private volatile boolean running = true;
   private MonoProcessor<Void> onClose;
   private RequestHandlingRSocket requestHandlingRSocket;
+  private Executor executor;
 
   private Netifi(
       String host,
@@ -57,7 +62,8 @@ public class Netifi implements Closeable {
       boolean keepalive,
       long tickPeriodSeconds,
       long ackTimeoutSeconds,
-      int missedAcks) {
+      int missedAcks,
+      Executor executor) {
     this.onClose = MonoProcessor.create();
     this.keepalive = keepalive;
     this.accessKey = accessKey;
@@ -65,7 +71,7 @@ public class Netifi implements Closeable {
     this.fromDestination = destination;
     this.fromGroup = group;
     this.idGenerator = new TimebasedIdGenerator(destination.hashCode());
-
+    this.executor = executor;
     this.accessTokenBytes = accessTokenBytes;
     //        new DefaultPresenceNotifier(
     //            barrier, () -> running, idGenerator, fromAccountId, destination);
@@ -90,7 +96,8 @@ public class Netifi implements Closeable {
               return ByteBufPayload.create(Unpooled.EMPTY_BUFFER, metadata);
             },
             () -> running,
-            () -> TcpClientTransport.create(host, port),
+            //            () -> TcpClientTransport.create(host, port),
+            () -> createClientTransport(host, port),
             keepalive,
             tickPeriodSeconds,
             ackTimeoutSeconds,
@@ -104,6 +111,28 @@ public class Netifi implements Closeable {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  private ClientTransport createClientTransport(String host, int port) {
+    if (executor == null) {
+      return TcpClientTransport.create(host, port);
+    } else {
+      NioEventLoopGroup group =
+          new NioEventLoopGroup(
+              Runtime.getRuntime().availableProcessors(), ForkJoinPool.commonPool());
+      TcpClient client =
+          TcpClient.builder()
+              .options(
+                  options -> {
+                    options.disablePool();
+                    options.eventLoopGroup(group);
+                    options.host(host);
+                    options.port(port);
+                  })
+              .build();
+
+      return TcpClientTransport.create(client);
+    }
   }
 
   @Override
@@ -166,6 +195,8 @@ public class Netifi implements Closeable {
     private int missedAcks = 3;
     private RSocket requestHandler;
 
+    private Executor executor = null;
+
     private Builder() {}
 
     public Builder keepalive(boolean useKeepAlive) {
@@ -225,6 +256,12 @@ public class Netifi implements Closeable {
       return this;
     }
 
+    public Builder executor(Executor executor) {
+      this.executor = executor;
+
+      return this;
+    }
+
     public Netifi build() {
       Objects.requireNonNull(host, "host is required");
       Objects.requireNonNull(port, "port is required");
@@ -257,7 +294,8 @@ public class Netifi implements Closeable {
                     keepalive,
                     tickPeriodSeconds,
                     ackTimeoutSeconds,
-                    missedAcks);
+                    missedAcks,
+                    executor);
             netifi.onClose.doFinally(s -> NETIFI.remove(netifiKey)).subscribe();
             return netifi;
           });

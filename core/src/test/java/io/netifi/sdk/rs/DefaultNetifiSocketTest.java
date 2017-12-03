@@ -4,12 +4,10 @@ import io.netifi.sdk.frames.RouteDestinationFlyweight;
 import io.netifi.sdk.frames.RoutingFlyweight;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
+import io.rsocket.util.ByteBufPayload;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
-
-import io.rsocket.util.ByteBufPayload;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -171,7 +169,8 @@ public class DefaultNetifiSocketTest {
                       })
                   .flatMap(
                       payload ->
-                          Flux.range(1, 100).map(i -> ByteBufPayload.create("here's the payload " + i)));
+                          Flux.range(1, 100)
+                              .map(i -> ByteBufPayload.create("here's the payload " + i)));
             });
 
     DefaultNetifiSocket netifiSocket =

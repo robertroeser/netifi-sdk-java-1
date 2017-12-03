@@ -9,10 +9,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
+import io.rsocket.util.ByteBufPayload;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import io.rsocket.util.ByteBufPayload;
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ReplayProcessor;
@@ -68,7 +67,7 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
                       p -> {
                         try {
                           boolean found = DestinationAvailResult.found(p.sliceMetadata());
-  
+
                           PresenceNotificationInfo presenceNotificationInfo =
                               new PresenceNotificationInfo(null, accountId, group);
                           if (found) {
@@ -76,9 +75,9 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
                           } else {
                             presenceInfo.remove(presenceNotificationInfo);
                           }
-  
+
                           onChange.onNext(EMPTY);
-                        } finally{
+                        } finally {
                           p.release();
                         }
                       })
@@ -113,20 +112,20 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
                   .requestStream(payload)
                   .doOnNext(
                       p -> {
-                       try {
-                         boolean found = DestinationAvailResult.found(p.sliceMetadata());
-  
-                         PresenceNotificationInfo presenceNotificationInfo =
-                             new PresenceNotificationInfo(destination, accountId, group);
-                         if (found) {
-                           presenceInfo.add(presenceNotificationInfo);
-                         } else {
-                           presenceInfo.remove(presenceNotificationInfo);
-                         }
-                         onChange.onNext(EVENT);
-                       } finally{
-                         p.release();
-                       }
+                        try {
+                          boolean found = DestinationAvailResult.found(p.sliceMetadata());
+
+                          PresenceNotificationInfo presenceNotificationInfo =
+                              new PresenceNotificationInfo(destination, accountId, group);
+                          if (found) {
+                            presenceInfo.add(presenceNotificationInfo);
+                          } else {
+                            presenceInfo.remove(presenceNotificationInfo);
+                          }
+                          onChange.onNext(EVENT);
+                        } finally {
+                          p.release();
+                        }
                       })
                   .doFinally(
                       s -> {

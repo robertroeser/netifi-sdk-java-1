@@ -10,12 +10,11 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
 import io.rsocket.util.ByteBufPayload;
+import java.nio.ByteBuffer;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
-
-import java.nio.ByteBuffer;
 
 public class DefaultNetifiSocket implements NetifiSocket {
   private final SessionUtil sessionUtil = SessionUtil.instance();

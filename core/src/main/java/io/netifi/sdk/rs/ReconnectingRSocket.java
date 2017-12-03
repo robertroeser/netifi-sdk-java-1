@@ -6,6 +6,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.rsocket.*;
 import io.rsocket.transport.ClientTransport;
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,12 +18,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 import reactor.core.publisher.ReplayProcessor;
-
-import java.time.Duration;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class ReconnectingRSocket implements RSocket {
   private static final Logger logger = LoggerFactory.getLogger(Netifi.class);

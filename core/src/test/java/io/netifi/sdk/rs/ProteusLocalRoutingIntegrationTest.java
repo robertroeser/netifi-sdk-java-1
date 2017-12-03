@@ -2,6 +2,12 @@ package io.netifi.sdk.rs;
 
 import io.netifi.sdk.Netifi;
 import io.netifi.testing.protobuf.*;
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -9,12 +15,6 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 
 @Ignore
 public class ProteusLocalRoutingIntegrationTest {
@@ -26,12 +26,12 @@ public class ProteusLocalRoutingIntegrationTest {
   private static Netifi client;
   private static NetifiSocket netifiSocket;
 
- private static final String host = "localhost";
- // private static final String host = "192.168.99.100";
+  private static final String host = "localhost";
+  // private static final String host = "192.168.99.100";
   private static final int port = 8001;
- // private static final int server_port = 8001;
-  private static final int server_port = 8003;
-  
+  // private static final int server_port = 8001;
+  private static final int server_port = 8001;
+
   @BeforeClass
   public static void setup() {
     server =
@@ -39,6 +39,7 @@ public class ProteusLocalRoutingIntegrationTest {
             .keepalive(false)
             .group("test.server")
             .destination("server")
+            .executor(ForkJoinPool.commonPool())
             .accountId(Long.MAX_VALUE)
             .accessKey(accessKey)
             .accessToken(accessToken)
@@ -51,6 +52,7 @@ public class ProteusLocalRoutingIntegrationTest {
             .keepalive(false)
             .group("test.client")
             .destination("client")
+            .executor(ForkJoinPool.commonPool())
             .accountId(Long.MAX_VALUE)
             .accessKey(accessKey)
             .accessToken(accessToken)
@@ -74,8 +76,8 @@ public class ProteusLocalRoutingIntegrationTest {
 
     System.out.println(simpleResponse.getResponseMessage());
   }
-  
-  //@Test
+
+  // @Test
   public void testUnaryRpc_multiple() {
     doTest();
     doTest();
@@ -84,11 +86,13 @@ public class ProteusLocalRoutingIntegrationTest {
   public void doTest() {
     SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
     long start = System.nanoTime();
-    Flux.range(1, 1_000_000).flatMap(
-        i -> simpleServiceClient
-                 .unaryRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build())
-                 .doOnError(Throwable::printStackTrace)
-    ).blockLast();
+    Flux.range(1, 1_000_000)
+        .flatMap(
+            i ->
+                simpleServiceClient
+                    .unaryRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build())
+                    .doOnError(Throwable::printStackTrace))
+        .blockLast();
 
     double time = (System.nanoTime() - start) / 1_000_000d;
     double rps = 1_000_000 / (time / 1_000);
@@ -133,7 +137,12 @@ public class ProteusLocalRoutingIntegrationTest {
     long count =
         simpleServiceClient
             .bidiStreamingRpc(map)
-            .doOnNext(simpleResponse -> System.out.println(simpleResponse.getResponseMessage()))
+            .doOnNext(
+                simpleResponse ->
+                    System.out.println(
+                        Thread.currentThread().getName()
+                            + " - "
+                            + simpleResponse.getResponseMessage()))
             .count()
             .block();
 
