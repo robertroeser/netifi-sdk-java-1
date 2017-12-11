@@ -16,7 +16,8 @@ public class RouterSetupFlyweight {
 
   public static int encode(
       ByteBuf byteBuf, int clusterId, int routerId, ByteBuf authToken, long seqId) {
-    int length = computeLength(authToken.capacity());
+    int tokenLength = authToken.readableBytes();
+    int length = computeLength(authToken.readableBytes());
 
     if (byteBuf.capacity() < length) {
       byteBuf.capacity(length);
@@ -31,6 +32,7 @@ public class RouterSetupFlyweight {
     offset += ROUTER_ID_SIZE;
 
     byteBuf.setBytes(offset, authToken);
+    offset += tokenLength;
 
     byteBuf.writerIndex(offset);
 
@@ -47,7 +49,7 @@ public class RouterSetupFlyweight {
 
   public static ByteBuf authToken(ByteBuf byteBuf) {
     int offset = FrameHeaderFlyweight.computeFrameHeaderLength() + ROUTER_ID_SIZE + CLUSTER_ID_SIZE;
-    int tokenLength = byteBuf.capacity() - offset;
+    int tokenLength = byteBuf.readableBytes() - offset;
     return byteBuf.slice(offset, tokenLength);
   }
 }

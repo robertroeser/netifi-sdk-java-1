@@ -47,20 +47,20 @@ public class DestinationSetupFlyweight {
       throw new IllegalArgumentException("group is longer then 255 characters");
     }
 
-    if (accessToken.capacity() != ACCESS_TOKEN_SIZE) {
+    if (accessToken.readableBytes() != ACCESS_TOKEN_SIZE) {
       throw new IllegalStateException(
           String.format(
               "invalid access token size: found %d, expected %d",
-              accessToken.capacity(), ACCESS_TOKEN_SIZE));
+              accessToken.readableBytes(), ACCESS_TOKEN_SIZE));
     }
 
-    boolean encrypted = publicKey != null && publicKey.capacity() > 0;
+    boolean encrypted = publicKey != null && publicKey.readableBytes() > 0;
 
-    if (encrypted && publicKey.capacity() != PUBLIC_KEY_SIZE) {
+    if (encrypted && publicKey.readableBytes() != PUBLIC_KEY_SIZE) {
       throw new IllegalStateException(
           String.format(
               "invalid public key size: found %d, expected %d",
-              publicKey.capacity(), PUBLIC_KEY_SIZE));
+              publicKey.readableBytes(), PUBLIC_KEY_SIZE));
     }
 
     int offset =

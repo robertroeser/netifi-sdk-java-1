@@ -3,24 +3,26 @@
 
 package io.netifi.testing.protobuf;
 
-/** Protobuf type {@code io.netifi.testing.Empty} */
-public final class Empty extends com.google.protobuf.GeneratedMessageV3
-    implements
+/**
+ * Protobuf type {@code io.netifi.testing.Empty}
+ */
+public  final class Empty extends
+    com.google.protobuf.GeneratedMessageV3 implements
     // @@protoc_insertion_point(message_implements:io.netifi.testing.Empty)
     EmptyOrBuilder {
-  private static final long serialVersionUID = 0L;
+private static final long serialVersionUID = 0L;
   // Use Empty.newBuilder() to construct.
   private Empty(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-
-  private Empty() {}
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
+  private Empty() {
   }
 
+  @java.lang.Override
+  public final com.google.protobuf.UnknownFieldSet
+  getUnknownFields() {
+    return this.unknownFields;
+  }
   private Empty(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -39,39 +41,38 @@ public final class Empty extends com.google.protobuf.GeneratedMessageV3
           case 0:
             done = true;
             break;
-          default:
-            {
-              if (!parseUnknownFieldProto3(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
+          default: {
+            if (!parseUnknownFieldProto3(
+                input, unknownFields, extensionRegistry, tag)) {
+              done = true;
             }
+            break;
+          }
         }
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
+      throw new com.google.protobuf.InvalidProtocolBufferException(
+          e).setUnfinishedMessage(this);
     } finally {
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
     }
   }
-
-  public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-    return io.netifi.testing.protobuf.SimpleServiceProto
-        .internal_static_io_netifi_testing_Empty_descriptor;
+  public static final com.google.protobuf.Descriptors.Descriptor
+      getDescriptor() {
+    return io.netifi.testing.protobuf.SimpleServiceProto.internal_static_io_netifi_testing_Empty_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.netifi.testing.protobuf.SimpleServiceProto
-        .internal_static_io_netifi_testing_Empty_fieldAccessorTable.ensureFieldAccessorsInitialized(
-        io.netifi.testing.protobuf.Empty.class, io.netifi.testing.protobuf.Empty.Builder.class);
+    return io.netifi.testing.protobuf.SimpleServiceProto.internal_static_io_netifi_testing_Empty_fieldAccessorTable
+        .ensureFieldAccessorsInitialized(
+            io.netifi.testing.protobuf.Empty.class, io.netifi.testing.protobuf.Empty.Builder.class);
   }
 
   private byte memoizedIsInitialized = -1;
-
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
@@ -81,7 +82,8 @@ public final class Empty extends com.google.protobuf.GeneratedMessageV3
     return true;
   }
 
-  public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
+  public void writeTo(com.google.protobuf.CodedOutputStream output)
+                      throws java.io.IOException {
     unknownFields.writeTo(output);
   }
 
@@ -98,7 +100,7 @@ public final class Empty extends com.google.protobuf.GeneratedMessageV3
   @java.lang.Override
   public boolean equals(final java.lang.Object obj) {
     if (obj == this) {
-      return true;
+     return true;
     }
     if (!(obj instanceof io.netifi.testing.protobuf.Empty)) {
       return super.equals(obj);
@@ -122,115 +124,111 @@ public final class Empty extends com.google.protobuf.GeneratedMessageV3
     return hash;
   }
 
-  public static io.netifi.testing.protobuf.Empty parseFrom(java.nio.ByteBuffer data)
+  public static io.netifi.testing.protobuf.Empty parseFrom(
+      java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-
   public static io.netifi.testing.protobuf.Empty parseFrom(
-      java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      java.nio.ByteBuffer data,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-
-  public static io.netifi.testing.protobuf.Empty parseFrom(com.google.protobuf.ByteString data)
+  public static io.netifi.testing.protobuf.Empty parseFrom(
+      com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-
   public static io.netifi.testing.protobuf.Empty parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-
   public static io.netifi.testing.protobuf.Empty parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-
   public static io.netifi.testing.protobuf.Empty parseFrom(
-      byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      byte[] data,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-
   public static io.netifi.testing.protobuf.Empty parseFrom(java.io.InputStream input)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
+    return com.google.protobuf.GeneratedMessageV3
+        .parseWithIOException(PARSER, input);
   }
-
   public static io.netifi.testing.protobuf.Empty parseFrom(
-      java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      java.io.InputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
-        PARSER, input, extensionRegistry);
+    return com.google.protobuf.GeneratedMessageV3
+        .parseWithIOException(PARSER, input, extensionRegistry);
   }
-
   public static io.netifi.testing.protobuf.Empty parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
+    return com.google.protobuf.GeneratedMessageV3
+        .parseDelimitedWithIOException(PARSER, input);
   }
-
   public static io.netifi.testing.protobuf.Empty parseDelimitedFrom(
-      java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      java.io.InputStream input,
+      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
-        PARSER, input, extensionRegistry);
+    return com.google.protobuf.GeneratedMessageV3
+        .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-
   public static io.netifi.testing.protobuf.Empty parseFrom(
-      com.google.protobuf.CodedInputStream input) throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
+      com.google.protobuf.CodedInputStream input)
+      throws java.io.IOException {
+    return com.google.protobuf.GeneratedMessageV3
+        .parseWithIOException(PARSER, input);
   }
-
   public static io.netifi.testing.protobuf.Empty parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
-        PARSER, input, extensionRegistry);
+    return com.google.protobuf.GeneratedMessageV3
+        .parseWithIOException(PARSER, input, extensionRegistry);
   }
 
-  public Builder newBuilderForType() {
-    return newBuilder();
-  }
-
+  public Builder newBuilderForType() { return newBuilder(); }
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-
   public static Builder newBuilder(io.netifi.testing.protobuf.Empty prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
-
   public Builder toBuilder() {
-    return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
+    return this == DEFAULT_INSTANCE
+        ? new Builder() : new Builder().mergeFrom(this);
   }
 
   @java.lang.Override
-  protected Builder newBuilderForType(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+  protected Builder newBuilderForType(
+      com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
-  /** Protobuf type {@code io.netifi.testing.Empty} */
-  public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
-      implements
+  /**
+   * Protobuf type {@code io.netifi.testing.Empty}
+   */
+  public static final class Builder extends
+      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:io.netifi.testing.Empty)
       io.netifi.testing.protobuf.EmptyOrBuilder {
-    public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
-      return io.netifi.testing.protobuf.SimpleServiceProto
-          .internal_static_io_netifi_testing_Empty_descriptor;
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.netifi.testing.protobuf.SimpleServiceProto.internal_static_io_netifi_testing_Empty_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.netifi.testing.protobuf.SimpleServiceProto
-          .internal_static_io_netifi_testing_Empty_fieldAccessorTable
+      return io.netifi.testing.protobuf.SimpleServiceProto.internal_static_io_netifi_testing_Empty_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.netifi.testing.protobuf.Empty.class,
-              io.netifi.testing.protobuf.Empty.Builder.class);
+              io.netifi.testing.protobuf.Empty.class, io.netifi.testing.protobuf.Empty.Builder.class);
     }
 
     // Construct using io.netifi.testing.protobuf.Empty.newBuilder()
@@ -238,23 +236,24 @@ public final class Empty extends com.google.protobuf.GeneratedMessageV3
       maybeForceBuilderInitialization();
     }
 
-    private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+    private Builder(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
-
     private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
+      if (com.google.protobuf.GeneratedMessageV3
+              .alwaysUseFieldBuilders) {
+      }
     }
-
     public Builder clear() {
       super.clear();
       return this;
     }
 
-    public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
-      return io.netifi.testing.protobuf.SimpleServiceProto
-          .internal_static_io_netifi_testing_Empty_descriptor;
+    public com.google.protobuf.Descriptors.Descriptor
+        getDescriptorForType() {
+      return io.netifi.testing.protobuf.SimpleServiceProto.internal_static_io_netifi_testing_Empty_descriptor;
     }
 
     public io.netifi.testing.protobuf.Empty getDefaultInstanceForType() {
@@ -278,33 +277,32 @@ public final class Empty extends com.google.protobuf.GeneratedMessageV3
     public Builder clone() {
       return (Builder) super.clone();
     }
-
     public Builder setField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field,
+        java.lang.Object value) {
       return (Builder) super.setField(field, value);
     }
-
-    public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
+    public Builder clearField(
+        com.google.protobuf.Descriptors.FieldDescriptor field) {
       return (Builder) super.clearField(field);
     }
-
-    public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+    public Builder clearOneof(
+        com.google.protobuf.Descriptors.OneofDescriptor oneof) {
       return (Builder) super.clearOneof(oneof);
     }
-
     public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, int index, java.lang.Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field,
+        int index, java.lang.Object value) {
       return (Builder) super.setRepeatedField(field, index, value);
     }
-
     public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field,
+        java.lang.Object value) {
       return (Builder) super.addRepeatedField(field, value);
     }
-
     public Builder mergeFrom(com.google.protobuf.Message other) {
       if (other instanceof io.netifi.testing.protobuf.Empty) {
-        return mergeFrom((io.netifi.testing.protobuf.Empty) other);
+        return mergeFrom((io.netifi.testing.protobuf.Empty)other);
       } else {
         super.mergeFrom(other);
         return this;
@@ -339,8 +337,8 @@ public final class Empty extends com.google.protobuf.GeneratedMessageV3
       }
       return this;
     }
-
-    public final Builder setUnknownFields(final com.google.protobuf.UnknownFieldSet unknownFields) {
+    public final Builder setUnknownFields(
+        final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFieldsProto3(unknownFields);
     }
 
@@ -349,12 +347,12 @@ public final class Empty extends com.google.protobuf.GeneratedMessageV3
       return super.mergeUnknownFields(unknownFields);
     }
 
+
     // @@protoc_insertion_point(builder_scope:io.netifi.testing.Empty)
   }
 
   // @@protoc_insertion_point(class_scope:io.netifi.testing.Empty)
   private static final io.netifi.testing.protobuf.Empty DEFAULT_INSTANCE;
-
   static {
     DEFAULT_INSTANCE = new io.netifi.testing.protobuf.Empty();
   }
@@ -363,15 +361,15 @@ public final class Empty extends com.google.protobuf.GeneratedMessageV3
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<Empty> PARSER =
-      new com.google.protobuf.AbstractParser<Empty>() {
-        public Empty parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Empty(input, extensionRegistry);
-        }
-      };
+  private static final com.google.protobuf.Parser<Empty>
+      PARSER = new com.google.protobuf.AbstractParser<Empty>() {
+    public Empty parsePartialFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return new Empty(input, extensionRegistry);
+    }
+  };
 
   public static com.google.protobuf.Parser<Empty> parser() {
     return PARSER;
@@ -385,4 +383,6 @@ public final class Empty extends com.google.protobuf.GeneratedMessageV3
   public io.netifi.testing.protobuf.Empty getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
+
 }
+
