@@ -39,12 +39,12 @@ public class RoutingFlyweight {
     length +=
         ACCESS_KEY_SIZE
             + ROUTE_LENGTH_SIZE
-            + route.capacity()
+            + route.readableBytes()
             + DESTINATION_LENGTH_SIZE
             + destination.length();
 
     if (hasMetadata) {
-      length += WRAPPED_METADATA_LENGTH_SIZE + wrappedMetadata.capacity();
+      length += WRAPPED_METADATA_LENGTH_SIZE + wrappedMetadata.readableBytes();
     }
 
     return length;
@@ -102,8 +102,7 @@ public class RoutingFlyweight {
       ByteBuf route,
       ByteBuf wrappedMetadata) {
 
-    int routeLength = route.capacity();
-    int wrappedMetadataLength = wrappedMetadata.capacity();
+    int routeLength = route.readableBytes();
 
     byte[] destinationBytes = fromDestination.getBytes(StandardCharsets.US_ASCII);
     int destinationLength = destinationBytes.length;
@@ -138,6 +137,8 @@ public class RoutingFlyweight {
     offset += routeLength;
 
     if (hasMetadata) {
+      int wrappedMetadataLength = wrappedMetadata.readableBytes();
+
       byteBuf.setInt(offset, wrappedMetadataLength);
       offset += WRAPPED_METADATA_LENGTH_SIZE;
 

@@ -8,10 +8,8 @@ import io.netifi.sdk.frames.RoutingFlyweight;
 import io.netifi.sdk.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
 import io.rsocket.util.ByteBufPayload;
-import java.nio.ByteBuffer;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -46,12 +44,12 @@ public class DefaultNetifiSocket implements NetifiSocket {
       int length =
           RouteDestinationFlyweight.computeLength(
               RouteType.STREAM_ID_ROUTE, fromDestination, group);
-      route = Unpooled.wrappedBuffer(ByteBuffer.allocateDirect(length));
+      route = ByteBufAllocator.DEFAULT.directBuffer(length);
       RouteDestinationFlyweight.encodeRouteByDestination(
           route, RouteType.STREAM_ID_ROUTE, fromAccountId, destination, group);
     } else {
       int length = RouteDestinationFlyweight.computeLength(RouteType.STREAM_GROUP_ROUTE, group);
-      route = Unpooled.wrappedBuffer(ByteBuffer.allocateDirect(length));
+      route = ByteBufAllocator.DEFAULT.directBuffer(length);
       RouteDestinationFlyweight.encodeRouteByGroup(
           route, RouteType.STREAM_GROUP_ROUTE, fromAccountId, group);
     }
