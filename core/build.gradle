@@ -13,8 +13,7 @@ dependencies {
     compile 'io.rsocket:rsocket-load-balancer:0.9.19'
     compile 'io.rsocket:rsocket-transport-netty:0.9.19'
 
-    compile 'io.netifi.proteus:proteus-core:0.2.4'
-    compile 'io.netifi.proteus:proteus-core-java:0.2.4'
+    compile 'io.netifi.proteus:proteus-core:0.2.5'
 
     testCompile 'com.google.protobuf:protobuf-java:3.5.0'
     testCompile 'junit:junit:4.12'
@@ -33,7 +32,7 @@ protobuf {
     }
     plugins {
         proteus {
-            artifact = 'io.netifi.proteus:proteus-java:0.2.4'
+            artifact = 'io.netifi.proteus:proteus-java:0.2.5'
         }
     }
     generateProtoTasks {

@@ -7,6 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+
+import io.netty.buffer.ByteBuf;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -131,13 +133,13 @@ public class ProteusRoutingIntegrationTest {
     EmitterProcessor<SimpleRequest> messages = EmitterProcessor.create();
 
     @Override
-    public Mono<Void> fireAndForget(SimpleRequest message) {
+    public Mono<Void> fireAndForget(SimpleRequest message, ByteBuf metadata) {
       messages.onNext(message);
       return Mono.empty();
     }
 
     @Override
-    public Flux<SimpleResponse> streamOnFireAndForget(Empty message) {
+    public Flux<SimpleResponse> streamOnFireAndForget(Empty message, ByteBuf metadata) {
       return messages.map(
           simpleRequest ->
               SimpleResponse.newBuilder()
@@ -146,7 +148,7 @@ public class ProteusRoutingIntegrationTest {
     }
 
     @Override
-    public Mono<SimpleResponse> unaryRpc(SimpleRequest message) {
+    public Mono<SimpleResponse> unaryRpc(SimpleRequest message, ByteBuf metadata) {
       return Mono.fromCallable(
           () ->
               SimpleResponse.newBuilder()
@@ -155,7 +157,7 @@ public class ProteusRoutingIntegrationTest {
     }
 
     @Override
-    public Mono<SimpleResponse> clientStreamingRpc(Publisher<SimpleRequest> messages) {
+    public Mono<SimpleResponse> clientStreamingRpc(Publisher<SimpleRequest> messages, ByteBuf metadata) {
       return Flux.from(messages)
           .windowTimeout(10, Duration.ofSeconds(500))
           .take(1)
@@ -191,7 +193,7 @@ public class ProteusRoutingIntegrationTest {
     }
 
     @Override
-    public Flux<SimpleResponse> serverStreamingRpc(SimpleRequest message) {
+    public Flux<SimpleResponse> serverStreamingRpc(SimpleRequest message, ByteBuf metadata) {
       String requestMessage = message.getRequestMessage();
       return Flux.interval(Duration.ofMillis(1))
           .onBackpressureDrop()
@@ -200,8 +202,8 @@ public class ProteusRoutingIntegrationTest {
     }
 
     @Override
-    public Flux<SimpleResponse> bidiStreamingRpc(Publisher<SimpleRequest> messages) {
-      return Flux.from(messages).flatMap(this::unaryRpc);
+    public Flux<SimpleResponse> bidiStreamingRpc(Publisher<SimpleRequest> messages, ByteBuf metadata) {
+      return Flux.from(messages).flatMap(message -> unaryRpc(message, metadata));
     }
   }
 }

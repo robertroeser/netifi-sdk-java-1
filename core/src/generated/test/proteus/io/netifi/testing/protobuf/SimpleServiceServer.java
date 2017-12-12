@@ -1,13 +1,35 @@
 package io.netifi.testing.protobuf;
 
 @javax.annotation.Generated(
-    value = "by Proteus proto compiler (version 0.2.4)",
+    value = "by Proteus proto compiler (version 0.2.5)",
     comments = "Source: io.netifi.sdk.proteus/simpleservice.proto")
 public final class SimpleServiceServer extends io.netifi.proteus.AbstractProteusService {
   private final SimpleService service;
+  private final java.util.function.Function<? super org.reactivestreams.Publisher<Void>, ? extends org.reactivestreams.Publisher<Void>> fireAndForget;
+  private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> streamOnFireAndForget;
+  private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> unaryRpc;
+  private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> clientStreamingRpc;
+  private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> serverStreamingRpc;
+  private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> bidiStreamingRpc;
 
   public SimpleServiceServer(SimpleService service) {
     this.service = service;
+    this.fireAndForget = java.util.function.Function.identity();
+    this.streamOnFireAndForget = java.util.function.Function.identity();
+    this.unaryRpc = java.util.function.Function.identity();
+    this.clientStreamingRpc = java.util.function.Function.identity();
+    this.serverStreamingRpc = java.util.function.Function.identity();
+    this.bidiStreamingRpc = java.util.function.Function.identity();
+  }
+
+  public SimpleServiceServer(SimpleService service, io.micrometer.core.instrument.MeterRegistry registry) {
+    this.service = service;
+    this.fireAndForget = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "fireAndForget");
+    this.streamOnFireAndForget = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "streamOnFireAndForget");
+    this.unaryRpc = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "unaryRpc");
+    this.clientStreamingRpc = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "clientStreamingRpc");
+    this.serverStreamingRpc = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "serverStreamingRpc");
+    this.bidiStreamingRpc = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "bidiStreamingRpc");
   }
 
   @java.lang.Override
@@ -27,7 +49,7 @@ public final class SimpleServiceServer extends io.netifi.proteus.AbstractProteus
       switch(io.netifi.proteus.frames.ProteusMetadata.methodId(metadata)) {
         case SimpleService.METHOD_FIRE_AND_FORGET: {
           com.google.protobuf.CodedInputStream is = com.google.protobuf.CodedInputStream.newInstance(payload.getData());
-          return service.fireAndForget(io.netifi.testing.protobuf.SimpleRequest.parseFrom(is));
+          return service.fireAndForget(io.netifi.testing.protobuf.SimpleRequest.parseFrom(is), metadata);
         }
         default: {
           return reactor.core.publisher.Mono.error(new UnsupportedOperationException());
@@ -47,7 +69,7 @@ public final class SimpleServiceServer extends io.netifi.proteus.AbstractProteus
       switch(io.netifi.proteus.frames.ProteusMetadata.methodId(metadata)) {
         case SimpleService.METHOD_UNARY_RPC: {
           com.google.protobuf.CodedInputStream is = com.google.protobuf.CodedInputStream.newInstance(payload.getData());
-          return service.unaryRpc(io.netifi.testing.protobuf.SimpleRequest.parseFrom(is)).map(serializer);
+          return service.unaryRpc(io.netifi.testing.protobuf.SimpleRequest.parseFrom(is), metadata).map(serializer).transform(unaryRpc);
         }
         default: {
           return reactor.core.publisher.Mono.error(new UnsupportedOperationException());
@@ -67,11 +89,11 @@ public final class SimpleServiceServer extends io.netifi.proteus.AbstractProteus
       switch(io.netifi.proteus.frames.ProteusMetadata.methodId(metadata)) {
         case SimpleService.METHOD_STREAM_ON_FIRE_AND_FORGET: {
           com.google.protobuf.CodedInputStream is = com.google.protobuf.CodedInputStream.newInstance(payload.getData());
-          return service.streamOnFireAndForget(io.netifi.testing.protobuf.Empty.parseFrom(is)).map(serializer);
+          return service.streamOnFireAndForget(io.netifi.testing.protobuf.Empty.parseFrom(is), metadata).map(serializer).transform(streamOnFireAndForget);
         }
         case SimpleService.METHOD_SERVER_STREAMING_RPC: {
           com.google.protobuf.CodedInputStream is = com.google.protobuf.CodedInputStream.newInstance(payload.getData());
-          return service.serverStreamingRpc(io.netifi.testing.protobuf.SimpleRequest.parseFrom(is)).map(serializer);
+          return service.serverStreamingRpc(io.netifi.testing.protobuf.SimpleRequest.parseFrom(is), metadata).map(serializer).transform(serverStreamingRpc);
         }
         default: {
           return reactor.core.publisher.Flux.error(new UnsupportedOperationException());
@@ -92,12 +114,12 @@ public final class SimpleServiceServer extends io.netifi.proteus.AbstractProteus
         case SimpleService.METHOD_CLIENT_STREAMING_RPC: {
           reactor.core.publisher.Flux<io.netifi.testing.protobuf.SimpleRequest> messages =
             publisher.map(deserializer(io.netifi.testing.protobuf.SimpleRequest.parser()));
-          return service.clientStreamingRpc(messages).map(serializer).flux();
+          return service.clientStreamingRpc(messages, metadata).map(serializer).transform(clientStreamingRpc).flux();
         }
         case SimpleService.METHOD_BIDI_STREAMING_RPC: {
           reactor.core.publisher.Flux<io.netifi.testing.protobuf.SimpleRequest> messages =
             publisher.map(deserializer(io.netifi.testing.protobuf.SimpleRequest.parser()));
-          return service.bidiStreamingRpc(messages).map(serializer);
+          return service.bidiStreamingRpc(messages, metadata).map(serializer).transform(bidiStreamingRpc);
         }
         default: {
           return reactor.core.publisher.Flux.error(new UnsupportedOperationException());

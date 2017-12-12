@@ -34,7 +34,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import javax.xml.bind.DatatypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -292,7 +291,7 @@ public class Netifi implements Closeable {
 
     public Builder accessToken(String accessToken) {
       this.accessToken = accessToken;
-      this.accessTokenBytes = DatatypeConverter.parseBase64Binary(accessToken);
+      this.accessTokenBytes = Base64.getDecoder().decode(accessToken);
       return this;
     }
 
