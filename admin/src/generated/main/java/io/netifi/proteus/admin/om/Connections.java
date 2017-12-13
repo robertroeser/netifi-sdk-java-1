@@ -3,18 +3,17 @@
 
 package io.netifi.proteus.admin.om;
 
-/**
- * Protobuf type {@code io.netifi.proteus.admin.om.Connections}
- */
-public  final class Connections extends
-    com.google.protobuf.GeneratedMessageV3 implements
+/** Protobuf type {@code io.netifi.proteus.admin.om.Connections} */
+public final class Connections extends com.google.protobuf.GeneratedMessageV3
+    implements
     // @@protoc_insertion_point(message_implements:io.netifi.proteus.admin.om.Connections)
     ConnectionsOrBuilder {
-private static final long serialVersionUID = 0L;
+  private static final long serialVersionUID = 0L;
   // Use Connections.newBuilder() to construct.
   private Connections(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
+
   private Connections() {
     connections_ = java.util.Collections.emptyList();
     metadata_ = com.google.protobuf.LazyStringArrayList.EMPTY;
@@ -22,10 +21,10 @@ private static final long serialVersionUID = 0L;
   }
 
   @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet
-  getUnknownFields() {
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
     return this.unknownFields;
   }
+
   private Connections(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -42,44 +41,47 @@ private static final long serialVersionUID = 0L;
           case 0:
             done = true;
             break;
-          default: {
-            if (!parseUnknownFieldProto3(
-                input, unknownFields, extensionRegistry, tag)) {
-              done = true;
+          default:
+            {
+              if (!parseUnknownFieldProto3(input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
             }
-            break;
-          }
-          case 10: {
-            if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-              connections_ = new java.util.ArrayList<io.netifi.proteus.admin.om.Connection>();
-              mutable_bitField0_ |= 0x00000001;
+          case 10:
+            {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                connections_ = new java.util.ArrayList<io.netifi.proteus.admin.om.Connection>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              connections_.add(
+                  input.readMessage(
+                      io.netifi.proteus.admin.om.Connection.parser(), extensionRegistry));
+              break;
             }
-            connections_.add(
-                input.readMessage(io.netifi.proteus.admin.om.Connection.parser(), extensionRegistry));
-            break;
-          }
-          case 18: {
-            java.lang.String s = input.readStringRequireUtf8();
-            if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-              metadata_ = new com.google.protobuf.LazyStringArrayList();
-              mutable_bitField0_ |= 0x00000002;
+          case 18:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                metadata_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              metadata_.add(s);
+              break;
             }
-            metadata_.add(s);
-            break;
-          }
-          case 26: {
-            java.lang.String s = input.readStringRequireUtf8();
+          case 26:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
 
-            class__ = s;
-            break;
-          }
+              class__ = s;
+              break;
+            }
         }
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(
-          e).setUnfinishedMessage(this);
+      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
       if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
         connections_ = java.util.Collections.unmodifiableList(connections_);
@@ -91,110 +93,85 @@ private static final long serialVersionUID = 0L;
       makeExtensionsImmutable();
     }
   }
-  public static final com.google.protobuf.Descriptors.Descriptor
-      getDescriptor() {
-    return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_Connections_descriptor;
+
+  public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+    return io.netifi.proteus.admin.om.ProteusAdmin
+        .internal_static_io_netifi_proteus_admin_om_Connections_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_Connections_fieldAccessorTable
+    return io.netifi.proteus.admin.om.ProteusAdmin
+        .internal_static_io_netifi_proteus_admin_om_Connections_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            io.netifi.proteus.admin.om.Connections.class, io.netifi.proteus.admin.om.Connections.Builder.class);
+            io.netifi.proteus.admin.om.Connections.class,
+            io.netifi.proteus.admin.om.Connections.Builder.class);
   }
 
   private int bitField0_;
   public static final int CONNECTIONS_FIELD_NUMBER = 1;
   private java.util.List<io.netifi.proteus.admin.om.Connection> connections_;
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-   */
+  /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
   public java.util.List<io.netifi.proteus.admin.om.Connection> getConnectionsList() {
     return connections_;
   }
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-   */
-  public java.util.List<? extends io.netifi.proteus.admin.om.ConnectionOrBuilder> 
+  /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
+  public java.util.List<? extends io.netifi.proteus.admin.om.ConnectionOrBuilder>
       getConnectionsOrBuilderList() {
     return connections_;
   }
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-   */
+  /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
   public int getConnectionsCount() {
     return connections_.size();
   }
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-   */
+  /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
   public io.netifi.proteus.admin.om.Connection getConnections(int index) {
     return connections_.get(index);
   }
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-   */
-  public io.netifi.proteus.admin.om.ConnectionOrBuilder getConnectionsOrBuilder(
-      int index) {
+  /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
+  public io.netifi.proteus.admin.om.ConnectionOrBuilder getConnectionsOrBuilder(int index) {
     return connections_.get(index);
   }
 
   public static final int METADATA_FIELD_NUMBER = 2;
   private com.google.protobuf.LazyStringList metadata_;
-  /**
-   * <code>repeated string metadata = 2;</code>
-   */
-  public com.google.protobuf.ProtocolStringList
-      getMetadataList() {
+  /** <code>repeated string metadata = 2;</code> */
+  public com.google.protobuf.ProtocolStringList getMetadataList() {
     return metadata_;
   }
-  /**
-   * <code>repeated string metadata = 2;</code>
-   */
+  /** <code>repeated string metadata = 2;</code> */
   public int getMetadataCount() {
     return metadata_.size();
   }
-  /**
-   * <code>repeated string metadata = 2;</code>
-   */
+  /** <code>repeated string metadata = 2;</code> */
   public java.lang.String getMetadata(int index) {
     return metadata_.get(index);
   }
-  /**
-   * <code>repeated string metadata = 2;</code>
-   */
-  public com.google.protobuf.ByteString
-      getMetadataBytes(int index) {
+  /** <code>repeated string metadata = 2;</code> */
+  public com.google.protobuf.ByteString getMetadataBytes(int index) {
     return metadata_.getByteString(index);
   }
 
   public static final int CLASS_FIELD_NUMBER = 3;
   private volatile java.lang.Object class__;
-  /**
-   * <code>string class = 3;</code>
-   */
+  /** <code>string class = 3;</code> */
   public java.lang.String getClass_() {
     java.lang.Object ref = class__;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       class__ = s;
       return s;
     }
   }
-  /**
-   * <code>string class = 3;</code>
-   */
-  public com.google.protobuf.ByteString
-      getClass_Bytes() {
+  /** <code>string class = 3;</code> */
+  public com.google.protobuf.ByteString getClass_Bytes() {
     java.lang.Object ref = class__;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
       class__ = b;
       return b;
     } else {
@@ -203,6 +180,7 @@ private static final long serialVersionUID = 0L;
   }
 
   private byte memoizedIsInitialized = -1;
+
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
@@ -212,8 +190,7 @@ private static final long serialVersionUID = 0L;
     return true;
   }
 
-  public void writeTo(com.google.protobuf.CodedOutputStream output)
-                      throws java.io.IOException {
+  public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
     for (int i = 0; i < connections_.size(); i++) {
       output.writeMessage(1, connections_.get(i));
     }
@@ -232,8 +209,7 @@ private static final long serialVersionUID = 0L;
 
     size = 0;
     for (int i = 0; i < connections_.size(); i++) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(1, connections_.get(i));
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(1, connections_.get(i));
     }
     {
       int dataSize = 0;
@@ -254,7 +230,7 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public boolean equals(final java.lang.Object obj) {
     if (obj == this) {
-     return true;
+      return true;
     }
     if (!(obj instanceof io.netifi.proteus.admin.om.Connections)) {
       return super.equals(obj);
@@ -262,12 +238,9 @@ private static final long serialVersionUID = 0L;
     io.netifi.proteus.admin.om.Connections other = (io.netifi.proteus.admin.om.Connections) obj;
 
     boolean result = true;
-    result = result && getConnectionsList()
-        .equals(other.getConnectionsList());
-    result = result && getMetadataList()
-        .equals(other.getMetadataList());
-    result = result && getClass_()
-        .equals(other.getClass_());
+    result = result && getConnectionsList().equals(other.getConnectionsList());
+    result = result && getMetadataList().equals(other.getMetadataList());
+    result = result && getClass_().equals(other.getClass_());
     result = result && unknownFields.equals(other.unknownFields);
     return result;
   }
@@ -294,111 +267,116 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static io.netifi.proteus.admin.om.Connections parseFrom(
-      java.nio.ByteBuffer data)
+  public static io.netifi.proteus.admin.om.Connections parseFrom(java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
+
   public static io.netifi.proteus.admin.om.Connections parseFrom(
-      java.nio.ByteBuffer data,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.Connections parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
+
   public static io.netifi.proteus.admin.om.Connections parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.Connections parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
+
   public static io.netifi.proteus.admin.om.Connections parseFrom(
-      byte[] data,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.Connections parseFrom(java.io.InputStream input)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseWithIOException(PARSER, input);
+    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
+
   public static io.netifi.proteus.admin.om.Connections parseFrom(
-      java.io.InputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseWithIOException(PARSER, input, extensionRegistry);
+    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+        PARSER, input, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.Connections parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseDelimitedWithIOException(PARSER, input);
+    return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
+
   public static io.netifi.proteus.admin.om.Connections parseDelimitedFrom(
-      java.io.InputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
+        PARSER, input, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.Connections parseFrom(
-      com.google.protobuf.CodedInputStream input)
-      throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseWithIOException(PARSER, input);
+      com.google.protobuf.CodedInputStream input) throws java.io.IOException {
+    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
+
   public static io.netifi.proteus.admin.om.Connections parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseWithIOException(PARSER, input, extensionRegistry);
+    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+        PARSER, input, extensionRegistry);
   }
 
-  public Builder newBuilderForType() { return newBuilder(); }
+  public Builder newBuilderForType() {
+    return newBuilder();
+  }
+
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
+
   public static Builder newBuilder(io.netifi.proteus.admin.om.Connections prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
+
   public Builder toBuilder() {
-    return this == DEFAULT_INSTANCE
-        ? new Builder() : new Builder().mergeFrom(this);
+    return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
   }
 
   @java.lang.Override
-  protected Builder newBuilderForType(
-      com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+  protected Builder newBuilderForType(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
-  /**
-   * Protobuf type {@code io.netifi.proteus.admin.om.Connections}
-   */
-  public static final class Builder extends
-      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+  /** Protobuf type {@code io.netifi.proteus.admin.om.Connections} */
+  public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
+      implements
       // @@protoc_insertion_point(builder_implements:io.netifi.proteus.admin.om.Connections)
       io.netifi.proteus.admin.om.ConnectionsOrBuilder {
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_Connections_descriptor;
+    public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+      return io.netifi.proteus.admin.om.ProteusAdmin
+          .internal_static_io_netifi_proteus_admin_om_Connections_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_Connections_fieldAccessorTable
+      return io.netifi.proteus.admin.om.ProteusAdmin
+          .internal_static_io_netifi_proteus_admin_om_Connections_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.netifi.proteus.admin.om.Connections.class, io.netifi.proteus.admin.om.Connections.Builder.class);
+              io.netifi.proteus.admin.om.Connections.class,
+              io.netifi.proteus.admin.om.Connections.Builder.class);
     }
 
     // Construct using io.netifi.proteus.admin.om.Connections.newBuilder()
@@ -406,17 +384,17 @@ private static final long serialVersionUID = 0L;
       maybeForceBuilderInitialization();
     }
 
-    private Builder(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+    private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
+
     private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3
-              .alwaysUseFieldBuilders) {
+      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
         getConnectionsFieldBuilder();
       }
     }
+
     public Builder clear() {
       super.clear();
       if (connectionsBuilder_ == null) {
@@ -432,9 +410,9 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    public com.google.protobuf.Descriptors.Descriptor
-        getDescriptorForType() {
-      return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_Connections_descriptor;
+    public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
+      return io.netifi.proteus.admin.om.ProteusAdmin
+          .internal_static_io_netifi_proteus_admin_om_Connections_descriptor;
     }
 
     public io.netifi.proteus.admin.om.Connections getDefaultInstanceForType() {
@@ -450,7 +428,8 @@ private static final long serialVersionUID = 0L;
     }
 
     public io.netifi.proteus.admin.om.Connections buildPartial() {
-      io.netifi.proteus.admin.om.Connections result = new io.netifi.proteus.admin.om.Connections(this);
+      io.netifi.proteus.admin.om.Connections result =
+          new io.netifi.proteus.admin.om.Connections(this);
       int from_bitField0_ = bitField0_;
       int to_bitField0_ = 0;
       if (connectionsBuilder_ == null) {
@@ -476,32 +455,33 @@ private static final long serialVersionUID = 0L;
     public Builder clone() {
       return (Builder) super.clone();
     }
+
     public Builder setField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        java.lang.Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return (Builder) super.setField(field, value);
     }
-    public Builder clearField(
-        com.google.protobuf.Descriptors.FieldDescriptor field) {
+
+    public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
       return (Builder) super.clearField(field);
     }
-    public Builder clearOneof(
-        com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+
+    public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
       return (Builder) super.clearOneof(oneof);
     }
+
     public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        int index, java.lang.Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, int index, java.lang.Object value) {
       return (Builder) super.setRepeatedField(field, index, value);
     }
+
     public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        java.lang.Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return (Builder) super.addRepeatedField(field, value);
     }
+
     public Builder mergeFrom(com.google.protobuf.Message other) {
       if (other instanceof io.netifi.proteus.admin.om.Connections) {
-        return mergeFrom((io.netifi.proteus.admin.om.Connections)other);
+        return mergeFrom((io.netifi.proteus.admin.om.Connections) other);
       } else {
         super.mergeFrom(other);
         return this;
@@ -528,9 +508,10 @@ private static final long serialVersionUID = 0L;
             connectionsBuilder_ = null;
             connections_ = other.connections_;
             bitField0_ = (bitField0_ & ~0x00000001);
-            connectionsBuilder_ = 
-              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getConnectionsFieldBuilder() : null;
+            connectionsBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
+                    ? getConnectionsFieldBuilder()
+                    : null;
           } else {
             connectionsBuilder_.addAllMessages(other.connections_);
           }
@@ -576,23 +557,25 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
+
     private int bitField0_;
 
     private java.util.List<io.netifi.proteus.admin.om.Connection> connections_ =
-      java.util.Collections.emptyList();
+        java.util.Collections.emptyList();
+
     private void ensureConnectionsIsMutable() {
       if (!((bitField0_ & 0x00000001) == 0x00000001)) {
         connections_ = new java.util.ArrayList<io.netifi.proteus.admin.om.Connection>(connections_);
         bitField0_ |= 0x00000001;
-       }
+      }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        io.netifi.proteus.admin.om.Connection, io.netifi.proteus.admin.om.Connection.Builder, io.netifi.proteus.admin.om.ConnectionOrBuilder> connectionsBuilder_;
+            io.netifi.proteus.admin.om.Connection, io.netifi.proteus.admin.om.Connection.Builder,
+            io.netifi.proteus.admin.om.ConnectionOrBuilder>
+        connectionsBuilder_;
 
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
     public java.util.List<io.netifi.proteus.admin.om.Connection> getConnectionsList() {
       if (connectionsBuilder_ == null) {
         return java.util.Collections.unmodifiableList(connections_);
@@ -600,9 +583,7 @@ private static final long serialVersionUID = 0L;
         return connectionsBuilder_.getMessageList();
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
     public int getConnectionsCount() {
       if (connectionsBuilder_ == null) {
         return connections_.size();
@@ -610,9 +591,7 @@ private static final long serialVersionUID = 0L;
         return connectionsBuilder_.getCount();
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
     public io.netifi.proteus.admin.om.Connection getConnections(int index) {
       if (connectionsBuilder_ == null) {
         return connections_.get(index);
@@ -620,11 +599,8 @@ private static final long serialVersionUID = 0L;
         return connectionsBuilder_.getMessage(index);
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
-    public Builder setConnections(
-        int index, io.netifi.proteus.admin.om.Connection value) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
+    public Builder setConnections(int index, io.netifi.proteus.admin.om.Connection value) {
       if (connectionsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -637,9 +613,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
     public Builder setConnections(
         int index, io.netifi.proteus.admin.om.Connection.Builder builderForValue) {
       if (connectionsBuilder_ == null) {
@@ -651,9 +625,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
     public Builder addConnections(io.netifi.proteus.admin.om.Connection value) {
       if (connectionsBuilder_ == null) {
         if (value == null) {
@@ -667,11 +639,8 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
-    public Builder addConnections(
-        int index, io.netifi.proteus.admin.om.Connection value) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
+    public Builder addConnections(int index, io.netifi.proteus.admin.om.Connection value) {
       if (connectionsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -684,11 +653,8 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
-    public Builder addConnections(
-        io.netifi.proteus.admin.om.Connection.Builder builderForValue) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
+    public Builder addConnections(io.netifi.proteus.admin.om.Connection.Builder builderForValue) {
       if (connectionsBuilder_ == null) {
         ensureConnectionsIsMutable();
         connections_.add(builderForValue.build());
@@ -698,9 +664,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
     public Builder addConnections(
         int index, io.netifi.proteus.admin.om.Connection.Builder builderForValue) {
       if (connectionsBuilder_ == null) {
@@ -712,24 +676,19 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
     public Builder addAllConnections(
         java.lang.Iterable<? extends io.netifi.proteus.admin.om.Connection> values) {
       if (connectionsBuilder_ == null) {
         ensureConnectionsIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, connections_);
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(values, connections_);
         onChanged();
       } else {
         connectionsBuilder_.addAllMessages(values);
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
     public Builder clearConnections() {
       if (connectionsBuilder_ == null) {
         connections_ = java.util.Collections.emptyList();
@@ -740,9 +699,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
     public Builder removeConnections(int index) {
       if (connectionsBuilder_ == null) {
         ensureConnectionsIsMutable();
@@ -753,62 +710,53 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
-    public io.netifi.proteus.admin.om.Connection.Builder getConnectionsBuilder(
-        int index) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
+    public io.netifi.proteus.admin.om.Connection.Builder getConnectionsBuilder(int index) {
       return getConnectionsFieldBuilder().getBuilder(index);
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
-    public io.netifi.proteus.admin.om.ConnectionOrBuilder getConnectionsOrBuilder(
-        int index) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
+    public io.netifi.proteus.admin.om.ConnectionOrBuilder getConnectionsOrBuilder(int index) {
       if (connectionsBuilder_ == null) {
-        return connections_.get(index);  } else {
+        return connections_.get(index);
+      } else {
         return connectionsBuilder_.getMessageOrBuilder(index);
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
-    public java.util.List<? extends io.netifi.proteus.admin.om.ConnectionOrBuilder> 
-         getConnectionsOrBuilderList() {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
+    public java.util.List<? extends io.netifi.proteus.admin.om.ConnectionOrBuilder>
+        getConnectionsOrBuilderList() {
       if (connectionsBuilder_ != null) {
         return connectionsBuilder_.getMessageOrBuilderList();
       } else {
         return java.util.Collections.unmodifiableList(connections_);
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
     public io.netifi.proteus.admin.om.Connection.Builder addConnectionsBuilder() {
-      return getConnectionsFieldBuilder().addBuilder(
-          io.netifi.proteus.admin.om.Connection.getDefaultInstance());
+      return getConnectionsFieldBuilder()
+          .addBuilder(io.netifi.proteus.admin.om.Connection.getDefaultInstance());
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
-    public io.netifi.proteus.admin.om.Connection.Builder addConnectionsBuilder(
-        int index) {
-      return getConnectionsFieldBuilder().addBuilder(
-          index, io.netifi.proteus.admin.om.Connection.getDefaultInstance());
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
+    public io.netifi.proteus.admin.om.Connection.Builder addConnectionsBuilder(int index) {
+      return getConnectionsFieldBuilder()
+          .addBuilder(index, io.netifi.proteus.admin.om.Connection.getDefaultInstance());
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code>
-     */
-    public java.util.List<io.netifi.proteus.admin.om.Connection.Builder> 
-         getConnectionsBuilderList() {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connections = 1;</code> */
+    public java.util.List<io.netifi.proteus.admin.om.Connection.Builder>
+        getConnectionsBuilderList() {
       return getConnectionsFieldBuilder().getBuilderList();
     }
+
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        io.netifi.proteus.admin.om.Connection, io.netifi.proteus.admin.om.Connection.Builder, io.netifi.proteus.admin.om.ConnectionOrBuilder> 
+            io.netifi.proteus.admin.om.Connection, io.netifi.proteus.admin.om.Connection.Builder,
+            io.netifi.proteus.admin.om.ConnectionOrBuilder>
         getConnectionsFieldBuilder() {
       if (connectionsBuilder_ == null) {
-        connectionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-            io.netifi.proteus.admin.om.Connection, io.netifi.proteus.admin.om.Connection.Builder, io.netifi.proteus.admin.om.ConnectionOrBuilder>(
+        connectionsBuilder_ =
+            new com.google.protobuf.RepeatedFieldBuilderV3<
+                io.netifi.proteus.admin.om.Connection,
+                io.netifi.proteus.admin.om.Connection.Builder,
+                io.netifi.proteus.admin.om.ConnectionOrBuilder>(
                 connections_,
                 ((bitField0_ & 0x00000001) == 0x00000001),
                 getParentForChildren(),
@@ -818,94 +766,71 @@ private static final long serialVersionUID = 0L;
       return connectionsBuilder_;
     }
 
-    private com.google.protobuf.LazyStringList metadata_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringList metadata_ =
+        com.google.protobuf.LazyStringArrayList.EMPTY;
+
     private void ensureMetadataIsMutable() {
       if (!((bitField0_ & 0x00000002) == 0x00000002)) {
         metadata_ = new com.google.protobuf.LazyStringArrayList(metadata_);
         bitField0_ |= 0x00000002;
-       }
+      }
     }
-    /**
-     * <code>repeated string metadata = 2;</code>
-     */
-    public com.google.protobuf.ProtocolStringList
-        getMetadataList() {
+    /** <code>repeated string metadata = 2;</code> */
+    public com.google.protobuf.ProtocolStringList getMetadataList() {
       return metadata_.getUnmodifiableView();
     }
-    /**
-     * <code>repeated string metadata = 2;</code>
-     */
+    /** <code>repeated string metadata = 2;</code> */
     public int getMetadataCount() {
       return metadata_.size();
     }
-    /**
-     * <code>repeated string metadata = 2;</code>
-     */
+    /** <code>repeated string metadata = 2;</code> */
     public java.lang.String getMetadata(int index) {
       return metadata_.get(index);
     }
-    /**
-     * <code>repeated string metadata = 2;</code>
-     */
-    public com.google.protobuf.ByteString
-        getMetadataBytes(int index) {
+    /** <code>repeated string metadata = 2;</code> */
+    public com.google.protobuf.ByteString getMetadataBytes(int index) {
       return metadata_.getByteString(index);
     }
-    /**
-     * <code>repeated string metadata = 2;</code>
-     */
-    public Builder setMetadata(
-        int index, java.lang.String value) {
+    /** <code>repeated string metadata = 2;</code> */
+    public Builder setMetadata(int index, java.lang.String value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureMetadataIsMutable();
+        throw new NullPointerException();
+      }
+      ensureMetadataIsMutable();
       metadata_.set(index, value);
       onChanged();
       return this;
     }
-    /**
-     * <code>repeated string metadata = 2;</code>
-     */
-    public Builder addMetadata(
-        java.lang.String value) {
+    /** <code>repeated string metadata = 2;</code> */
+    public Builder addMetadata(java.lang.String value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureMetadataIsMutable();
+        throw new NullPointerException();
+      }
+      ensureMetadataIsMutable();
       metadata_.add(value);
       onChanged();
       return this;
     }
-    /**
-     * <code>repeated string metadata = 2;</code>
-     */
-    public Builder addAllMetadata(
-        java.lang.Iterable<java.lang.String> values) {
+    /** <code>repeated string metadata = 2;</code> */
+    public Builder addAllMetadata(java.lang.Iterable<java.lang.String> values) {
       ensureMetadataIsMutable();
-      com.google.protobuf.AbstractMessageLite.Builder.addAll(
-          values, metadata_);
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(values, metadata_);
       onChanged();
       return this;
     }
-    /**
-     * <code>repeated string metadata = 2;</code>
-     */
+    /** <code>repeated string metadata = 2;</code> */
     public Builder clearMetadata() {
       metadata_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
-    /**
-     * <code>repeated string metadata = 2;</code>
-     */
-    public Builder addMetadataBytes(
-        com.google.protobuf.ByteString value) {
+    /** <code>repeated string metadata = 2;</code> */
+    public Builder addMetadataBytes(com.google.protobuf.ByteString value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
       ensureMetadataIsMutable();
       metadata_.add(value);
       onChanged();
@@ -913,14 +838,11 @@ private static final long serialVersionUID = 0L;
     }
 
     private java.lang.Object class__ = "";
-    /**
-     * <code>string class = 3;</code>
-     */
+    /** <code>string class = 3;</code> */
     public java.lang.String getClass_() {
       java.lang.Object ref = class__;
       if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         class__ = s;
         return s;
@@ -928,60 +850,48 @@ private static final long serialVersionUID = 0L;
         return (java.lang.String) ref;
       }
     }
-    /**
-     * <code>string class = 3;</code>
-     */
-    public com.google.protobuf.ByteString
-        getClass_Bytes() {
+    /** <code>string class = 3;</code> */
+    public com.google.protobuf.ByteString getClass_Bytes() {
       java.lang.Object ref = class__;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         class__ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    /**
-     * <code>string class = 3;</code>
-     */
-    public Builder setClass_(
-        java.lang.String value) {
+    /** <code>string class = 3;</code> */
+    public Builder setClass_(java.lang.String value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        throw new NullPointerException();
+      }
+
       class__ = value;
       onChanged();
       return this;
     }
-    /**
-     * <code>string class = 3;</code>
-     */
+    /** <code>string class = 3;</code> */
     public Builder clearClass_() {
-      
+
       class__ = getDefaultInstance().getClass_();
       onChanged();
       return this;
     }
-    /**
-     * <code>string class = 3;</code>
-     */
-    public Builder setClass_Bytes(
-        com.google.protobuf.ByteString value) {
+    /** <code>string class = 3;</code> */
+    public Builder setClass_Bytes(com.google.protobuf.ByteString value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
       class__ = value;
       onChanged();
       return this;
     }
-    public final Builder setUnknownFields(
-        final com.google.protobuf.UnknownFieldSet unknownFields) {
+
+    public final Builder setUnknownFields(final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFieldsProto3(unknownFields);
     }
 
@@ -990,12 +900,12 @@ private static final long serialVersionUID = 0L;
       return super.mergeUnknownFields(unknownFields);
     }
 
-
     // @@protoc_insertion_point(builder_scope:io.netifi.proteus.admin.om.Connections)
   }
 
   // @@protoc_insertion_point(class_scope:io.netifi.proteus.admin.om.Connections)
   private static final io.netifi.proteus.admin.om.Connections DEFAULT_INSTANCE;
+
   static {
     DEFAULT_INSTANCE = new io.netifi.proteus.admin.om.Connections();
   }
@@ -1004,15 +914,15 @@ private static final long serialVersionUID = 0L;
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<Connections>
-      PARSER = new com.google.protobuf.AbstractParser<Connections>() {
-    public Connections parsePartialFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Connections(input, extensionRegistry);
-    }
-  };
+  private static final com.google.protobuf.Parser<Connections> PARSER =
+      new com.google.protobuf.AbstractParser<Connections>() {
+        public Connections parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new Connections(input, extensionRegistry);
+        }
+      };
 
   public static com.google.protobuf.Parser<Connections> parser() {
     return PARSER;
@@ -1026,6 +936,4 @@ private static final long serialVersionUID = 0L;
   public io.netifi.proteus.admin.om.Connections getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
-
 }
-

@@ -19,17 +19,16 @@ import io.netty.buffer.Unpooled;
 import io.rsocket.Closeable;
 import io.rsocket.Payload;
 import io.rsocket.util.ByteBufPayload;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoProcessor;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoProcessor;
 
 public class DefaultAdminTraceService implements AdminTraceService, Closeable {
   private static final Logger logger = LoggerFactory.getLogger(DefaultAdminTraceService.class);
@@ -45,7 +44,11 @@ public class DefaultAdminTraceService implements AdminTraceService, Closeable {
     streamData =
         connectionManager
             .getRSockets()
-            .flatMap(rsocket -> rsocket.requestStream(request))
+            .flatMap(
+                rsocket -> {
+                  logger.debug("streaming tracing data from server {}", rsocket);
+                  return rsocket.requestStream(request);
+                })
             .doOnError(t -> logger.error(t.getMessage(), t))
             .scan(createRootNode(), this::handleResponse)
             .filter(node -> !node.getNodes().isEmpty())
@@ -63,8 +66,8 @@ public class DefaultAdminTraceService implements AdminTraceService, Closeable {
   }
 
   private Node handleResponse(Node rootNode, Payload response) {
-    ByteBuf data = Unpooled.wrappedBuffer(response.getData());
-    ByteBuf metadata = Unpooled.wrappedBuffer(response.getMetadata());
+    ByteBuf data = response.sliceData();
+    ByteBuf metadata = response.sliceMetadata();
 
     AdminTraceType adminTraceType = AdminTraceMetadataFlyweight.adminTraceType(metadata);
     double metric = AdminTraceMetadataFlyweight.metric(metadata);

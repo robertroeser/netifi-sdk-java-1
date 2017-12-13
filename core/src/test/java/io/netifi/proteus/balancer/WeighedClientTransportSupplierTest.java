@@ -4,15 +4,14 @@ import io.netifi.proteus.balancer.transport.WeighedClientTransportSupplier;
 import io.netifi.proteus.rs.WeightedRSocket;
 import io.rsocket.DuplexConnection;
 import io.rsocket.transport.ClientTransport;
+import java.net.InetSocketAddress;
+import java.util.function.Supplier;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.DirectProcessor;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
-
-import java.net.InetSocketAddress;
-import java.util.function.Supplier;
 
 public class WeighedClientTransportSupplierTest {
   @Test
@@ -44,5 +43,4 @@ public class WeighedClientTransportSupplierTest {
 
     Assert.assertEquals(0, i);
   }
-  
 }

@@ -3,11 +3,14 @@
 
 package io.netifi.testing.protobuf;
 
-public interface SimpleRequestOrBuilder extends
+public interface SimpleRequestOrBuilder
+    extends
     // @@protoc_insertion_point(interface_extends:io.netifi.testing.SimpleRequest)
     com.google.protobuf.MessageOrBuilder {
 
   /**
+   *
+   *
    * <pre>
    * An optional string message for test.
    * </pre>
@@ -16,12 +19,13 @@ public interface SimpleRequestOrBuilder extends
    */
   java.lang.String getRequestMessage();
   /**
+   *
+   *
    * <pre>
    * An optional string message for test.
    * </pre>
    *
    * <code>string requestMessage = 1;</code>
    */
-  com.google.protobuf.ByteString
-      getRequestMessageBytes();
+  com.google.protobuf.ByteString getRequestMessageBytes();
 }

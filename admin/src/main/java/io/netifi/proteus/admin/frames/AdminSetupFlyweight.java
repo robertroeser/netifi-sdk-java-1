@@ -22,7 +22,7 @@ public class AdminSetupFlyweight {
     offset += ADMIN_FRAME_TYPE;
 
     byteBuf.writerIndex(offset);
-    
+
     return offset;
   }
 }

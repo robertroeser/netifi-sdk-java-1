@@ -2,7 +2,6 @@ package io.netifi.proteus.admin.frames;
 
 import io.netifi.proteus.frames.BitUtil;
 import io.netty.buffer.ByteBuf;
-
 import java.nio.charset.StandardCharsets;
 
 /** */

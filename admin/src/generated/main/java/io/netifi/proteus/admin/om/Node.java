@@ -3,18 +3,17 @@
 
 package io.netifi.proteus.admin.om;
 
-/**
- * Protobuf type {@code io.netifi.proteus.admin.om.Node}
- */
-public  final class Node extends
-    com.google.protobuf.GeneratedMessageV3 implements
+/** Protobuf type {@code io.netifi.proteus.admin.om.Node} */
+public final class Node extends com.google.protobuf.GeneratedMessageV3
+    implements
     // @@protoc_insertion_point(message_implements:io.netifi.proteus.admin.om.Node)
     NodeOrBuilder {
-private static final long serialVersionUID = 0L;
+  private static final long serialVersionUID = 0L;
   // Use Node.newBuilder() to construct.
   private Node(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
+
   private Node() {
     renderer_ = "";
     name_ = "";
@@ -29,10 +28,10 @@ private static final long serialVersionUID = 0L;
   }
 
   @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet
-  getUnknownFields() {
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
     return this.unknownFields;
   }
+
   private Node(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -49,100 +48,110 @@ private static final long serialVersionUID = 0L;
           case 0:
             done = true;
             break;
-          default: {
-            if (!parseUnknownFieldProto3(
-                input, unknownFields, extensionRegistry, tag)) {
-              done = true;
+          default:
+            {
+              if (!parseUnknownFieldProto3(input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
             }
-            break;
-          }
-          case 10: {
-            java.lang.String s = input.readStringRequireUtf8();
+          case 10:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
 
-            renderer_ = s;
-            break;
-          }
-          case 18: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            name_ = s;
-            break;
-          }
-          case 26: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            entryNode_ = s;
-            break;
-          }
-          case 33: {
-
-            maxVolume_ = input.readDouble();
-            break;
-          }
-          case 42: {
-            java.lang.String s = input.readStringRequireUtf8();
-
-            class__ = s;
-            break;
-          }
-          case 48: {
-
-            updated_ = input.readInt64();
-            break;
-          }
-          case 58: {
-            if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
-              nodes_ = new java.util.ArrayList<io.netifi.proteus.admin.om.Node>();
-              mutable_bitField0_ |= 0x00000040;
+              renderer_ = s;
+              break;
             }
-            nodes_.add(
-                input.readMessage(io.netifi.proteus.admin.om.Node.parser(), extensionRegistry));
-            break;
-          }
-          case 66: {
-            if (!((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
-              connection_ = new java.util.ArrayList<io.netifi.proteus.admin.om.Connection>();
-              mutable_bitField0_ |= 0x00000080;
-            }
-            connection_.add(
-                input.readMessage(io.netifi.proteus.admin.om.Connection.parser(), extensionRegistry));
-            break;
-          }
-          case 74: {
-            java.lang.String s = input.readStringRequireUtf8();
+          case 18:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
 
-            displayName_ = s;
-            break;
-          }
-          case 82: {
-            java.lang.String s = input.readStringRequireUtf8();
-            if (!((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
-              metadata_ = new com.google.protobuf.LazyStringArrayList();
-              mutable_bitField0_ |= 0x00000200;
+              name_ = s;
+              break;
             }
-            metadata_.add(s);
-            break;
-          }
-          case 90: {
-            io.netifi.proteus.admin.om.Metrics.Builder subBuilder = null;
-            if (metrics_ != null) {
-              subBuilder = metrics_.toBuilder();
-            }
-            metrics_ = input.readMessage(io.netifi.proteus.admin.om.Metrics.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(metrics_);
-              metrics_ = subBuilder.buildPartial();
-            }
+          case 26:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
 
-            break;
-          }
+              entryNode_ = s;
+              break;
+            }
+          case 33:
+            {
+              maxVolume_ = input.readDouble();
+              break;
+            }
+          case 42:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              class__ = s;
+              break;
+            }
+          case 48:
+            {
+              updated_ = input.readInt64();
+              break;
+            }
+          case 58:
+            {
+              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+                nodes_ = new java.util.ArrayList<io.netifi.proteus.admin.om.Node>();
+                mutable_bitField0_ |= 0x00000040;
+              }
+              nodes_.add(
+                  input.readMessage(io.netifi.proteus.admin.om.Node.parser(), extensionRegistry));
+              break;
+            }
+          case 66:
+            {
+              if (!((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
+                connection_ = new java.util.ArrayList<io.netifi.proteus.admin.om.Connection>();
+                mutable_bitField0_ |= 0x00000080;
+              }
+              connection_.add(
+                  input.readMessage(
+                      io.netifi.proteus.admin.om.Connection.parser(), extensionRegistry));
+              break;
+            }
+          case 74:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              displayName_ = s;
+              break;
+            }
+          case 82:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
+              if (!((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
+                metadata_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000200;
+              }
+              metadata_.add(s);
+              break;
+            }
+          case 90:
+            {
+              io.netifi.proteus.admin.om.Metrics.Builder subBuilder = null;
+              if (metrics_ != null) {
+                subBuilder = metrics_.toBuilder();
+              }
+              metrics_ =
+                  input.readMessage(io.netifi.proteus.admin.om.Metrics.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(metrics_);
+                metrics_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
         }
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(
-          e).setUnfinishedMessage(this);
+      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
       if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
         nodes_ = java.util.Collections.unmodifiableList(nodes_);
@@ -157,14 +166,16 @@ private static final long serialVersionUID = 0L;
       makeExtensionsImmutable();
     }
   }
-  public static final com.google.protobuf.Descriptors.Descriptor
-      getDescriptor() {
-    return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_Node_descriptor;
+
+  public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+    return io.netifi.proteus.admin.om.ProteusAdmin
+        .internal_static_io_netifi_proteus_admin_om_Node_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_Node_fieldAccessorTable
+    return io.netifi.proteus.admin.om.ProteusAdmin
+        .internal_static_io_netifi_proteus_admin_om_Node_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             io.netifi.proteus.admin.om.Node.class, io.netifi.proteus.admin.om.Node.Builder.class);
   }
@@ -172,31 +183,24 @@ private static final long serialVersionUID = 0L;
   private int bitField0_;
   public static final int RENDERER_FIELD_NUMBER = 1;
   private volatile java.lang.Object renderer_;
-  /**
-   * <code>string renderer = 1;</code>
-   */
+  /** <code>string renderer = 1;</code> */
   public java.lang.String getRenderer() {
     java.lang.Object ref = renderer_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       renderer_ = s;
       return s;
     }
   }
-  /**
-   * <code>string renderer = 1;</code>
-   */
-  public com.google.protobuf.ByteString
-      getRendererBytes() {
+  /** <code>string renderer = 1;</code> */
+  public com.google.protobuf.ByteString getRendererBytes() {
     java.lang.Object ref = renderer_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
       renderer_ = b;
       return b;
     } else {
@@ -206,31 +210,24 @@ private static final long serialVersionUID = 0L;
 
   public static final int NAME_FIELD_NUMBER = 2;
   private volatile java.lang.Object name_;
-  /**
-   * <code>string name = 2;</code>
-   */
+  /** <code>string name = 2;</code> */
   public java.lang.String getName() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       name_ = s;
       return s;
     }
   }
-  /**
-   * <code>string name = 2;</code>
-   */
-  public com.google.protobuf.ByteString
-      getNameBytes() {
+  /** <code>string name = 2;</code> */
+  public com.google.protobuf.ByteString getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
       name_ = b;
       return b;
     } else {
@@ -240,31 +237,24 @@ private static final long serialVersionUID = 0L;
 
   public static final int ENTRYNODE_FIELD_NUMBER = 3;
   private volatile java.lang.Object entryNode_;
-  /**
-   * <code>string entryNode = 3;</code>
-   */
+  /** <code>string entryNode = 3;</code> */
   public java.lang.String getEntryNode() {
     java.lang.Object ref = entryNode_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       entryNode_ = s;
       return s;
     }
   }
-  /**
-   * <code>string entryNode = 3;</code>
-   */
-  public com.google.protobuf.ByteString
-      getEntryNodeBytes() {
+  /** <code>string entryNode = 3;</code> */
+  public com.google.protobuf.ByteString getEntryNodeBytes() {
     java.lang.Object ref = entryNode_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
       entryNode_ = b;
       return b;
     } else {
@@ -274,40 +264,31 @@ private static final long serialVersionUID = 0L;
 
   public static final int MAXVOLUME_FIELD_NUMBER = 4;
   private double maxVolume_;
-  /**
-   * <code>double maxVolume = 4;</code>
-   */
+  /** <code>double maxVolume = 4;</code> */
   public double getMaxVolume() {
     return maxVolume_;
   }
 
   public static final int CLASS_FIELD_NUMBER = 5;
   private volatile java.lang.Object class__;
-  /**
-   * <code>string class = 5;</code>
-   */
+  /** <code>string class = 5;</code> */
   public java.lang.String getClass_() {
     java.lang.Object ref = class__;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       class__ = s;
       return s;
     }
   }
-  /**
-   * <code>string class = 5;</code>
-   */
-  public com.google.protobuf.ByteString
-      getClass_Bytes() {
+  /** <code>string class = 5;</code> */
+  public com.google.protobuf.ByteString getClass_Bytes() {
     java.lang.Object ref = class__;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
       class__ = b;
       return b;
     } else {
@@ -317,110 +298,79 @@ private static final long serialVersionUID = 0L;
 
   public static final int UPDATED_FIELD_NUMBER = 6;
   private long updated_;
-  /**
-   * <code>int64 updated = 6;</code>
-   */
+  /** <code>int64 updated = 6;</code> */
   public long getUpdated() {
     return updated_;
   }
 
   public static final int NODES_FIELD_NUMBER = 7;
   private java.util.List<io.netifi.proteus.admin.om.Node> nodes_;
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-   */
+  /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
   public java.util.List<io.netifi.proteus.admin.om.Node> getNodesList() {
     return nodes_;
   }
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-   */
-  public java.util.List<? extends io.netifi.proteus.admin.om.NodeOrBuilder> 
+  /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
+  public java.util.List<? extends io.netifi.proteus.admin.om.NodeOrBuilder>
       getNodesOrBuilderList() {
     return nodes_;
   }
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-   */
+  /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
   public int getNodesCount() {
     return nodes_.size();
   }
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-   */
+  /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
   public io.netifi.proteus.admin.om.Node getNodes(int index) {
     return nodes_.get(index);
   }
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-   */
-  public io.netifi.proteus.admin.om.NodeOrBuilder getNodesOrBuilder(
-      int index) {
+  /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
+  public io.netifi.proteus.admin.om.NodeOrBuilder getNodesOrBuilder(int index) {
     return nodes_.get(index);
   }
 
   public static final int CONNECTION_FIELD_NUMBER = 8;
   private java.util.List<io.netifi.proteus.admin.om.Connection> connection_;
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-   */
+  /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
   public java.util.List<io.netifi.proteus.admin.om.Connection> getConnectionList() {
     return connection_;
   }
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-   */
-  public java.util.List<? extends io.netifi.proteus.admin.om.ConnectionOrBuilder> 
+  /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
+  public java.util.List<? extends io.netifi.proteus.admin.om.ConnectionOrBuilder>
       getConnectionOrBuilderList() {
     return connection_;
   }
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-   */
+  /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
   public int getConnectionCount() {
     return connection_.size();
   }
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-   */
+  /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
   public io.netifi.proteus.admin.om.Connection getConnection(int index) {
     return connection_.get(index);
   }
-  /**
-   * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-   */
-  public io.netifi.proteus.admin.om.ConnectionOrBuilder getConnectionOrBuilder(
-      int index) {
+  /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
+  public io.netifi.proteus.admin.om.ConnectionOrBuilder getConnectionOrBuilder(int index) {
     return connection_.get(index);
   }
 
   public static final int DISPLAYNAME_FIELD_NUMBER = 9;
   private volatile java.lang.Object displayName_;
-  /**
-   * <code>string displayName = 9;</code>
-   */
+  /** <code>string displayName = 9;</code> */
   public java.lang.String getDisplayName() {
     java.lang.Object ref = displayName_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       displayName_ = s;
       return s;
     }
   }
-  /**
-   * <code>string displayName = 9;</code>
-   */
-  public com.google.protobuf.ByteString
-      getDisplayNameBytes() {
+  /** <code>string displayName = 9;</code> */
+  public com.google.protobuf.ByteString getDisplayNameBytes() {
     java.lang.Object ref = displayName_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
       displayName_ = b;
       return b;
     } else {
@@ -430,55 +380,40 @@ private static final long serialVersionUID = 0L;
 
   public static final int METADATA_FIELD_NUMBER = 10;
   private com.google.protobuf.LazyStringList metadata_;
-  /**
-   * <code>repeated string metadata = 10;</code>
-   */
-  public com.google.protobuf.ProtocolStringList
-      getMetadataList() {
+  /** <code>repeated string metadata = 10;</code> */
+  public com.google.protobuf.ProtocolStringList getMetadataList() {
     return metadata_;
   }
-  /**
-   * <code>repeated string metadata = 10;</code>
-   */
+  /** <code>repeated string metadata = 10;</code> */
   public int getMetadataCount() {
     return metadata_.size();
   }
-  /**
-   * <code>repeated string metadata = 10;</code>
-   */
+  /** <code>repeated string metadata = 10;</code> */
   public java.lang.String getMetadata(int index) {
     return metadata_.get(index);
   }
-  /**
-   * <code>repeated string metadata = 10;</code>
-   */
-  public com.google.protobuf.ByteString
-      getMetadataBytes(int index) {
+  /** <code>repeated string metadata = 10;</code> */
+  public com.google.protobuf.ByteString getMetadataBytes(int index) {
     return metadata_.getByteString(index);
   }
 
   public static final int METRICS_FIELD_NUMBER = 11;
   private io.netifi.proteus.admin.om.Metrics metrics_;
-  /**
-   * <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code>
-   */
+  /** <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code> */
   public boolean hasMetrics() {
     return metrics_ != null;
   }
-  /**
-   * <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code>
-   */
+  /** <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code> */
   public io.netifi.proteus.admin.om.Metrics getMetrics() {
     return metrics_ == null ? io.netifi.proteus.admin.om.Metrics.getDefaultInstance() : metrics_;
   }
-  /**
-   * <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code>
-   */
+  /** <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code> */
   public io.netifi.proteus.admin.om.MetricsOrBuilder getMetricsOrBuilder() {
     return getMetrics();
   }
 
   private byte memoizedIsInitialized = -1;
+
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
@@ -488,8 +423,7 @@ private static final long serialVersionUID = 0L;
     return true;
   }
 
-  public void writeTo(com.google.protobuf.CodedOutputStream output)
-                      throws java.io.IOException {
+  public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
     if (!getRendererBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, renderer_);
     }
@@ -541,23 +475,19 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, entryNode_);
     }
     if (maxVolume_ != 0D) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeDoubleSize(4, maxVolume_);
+      size += com.google.protobuf.CodedOutputStream.computeDoubleSize(4, maxVolume_);
     }
     if (!getClass_Bytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, class__);
     }
     if (updated_ != 0L) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt64Size(6, updated_);
+      size += com.google.protobuf.CodedOutputStream.computeInt64Size(6, updated_);
     }
     for (int i = 0; i < nodes_.size(); i++) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(7, nodes_.get(i));
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(7, nodes_.get(i));
     }
     for (int i = 0; i < connection_.size(); i++) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(8, connection_.get(i));
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(8, connection_.get(i));
     }
     if (!getDisplayNameBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, displayName_);
@@ -571,8 +501,7 @@ private static final long serialVersionUID = 0L;
       size += 1 * getMetadataList().size();
     }
     if (metrics_ != null) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(11, getMetrics());
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(11, getMetrics());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -582,7 +511,7 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public boolean equals(final java.lang.Object obj) {
     if (obj == this) {
-     return true;
+      return true;
     }
     if (!(obj instanceof io.netifi.proteus.admin.om.Node)) {
       return super.equals(obj);
@@ -590,32 +519,22 @@ private static final long serialVersionUID = 0L;
     io.netifi.proteus.admin.om.Node other = (io.netifi.proteus.admin.om.Node) obj;
 
     boolean result = true;
-    result = result && getRenderer()
-        .equals(other.getRenderer());
-    result = result && getName()
-        .equals(other.getName());
-    result = result && getEntryNode()
-        .equals(other.getEntryNode());
-    result = result && (
-        java.lang.Double.doubleToLongBits(getMaxVolume())
-        == java.lang.Double.doubleToLongBits(
-            other.getMaxVolume()));
-    result = result && getClass_()
-        .equals(other.getClass_());
-    result = result && (getUpdated()
-        == other.getUpdated());
-    result = result && getNodesList()
-        .equals(other.getNodesList());
-    result = result && getConnectionList()
-        .equals(other.getConnectionList());
-    result = result && getDisplayName()
-        .equals(other.getDisplayName());
-    result = result && getMetadataList()
-        .equals(other.getMetadataList());
+    result = result && getRenderer().equals(other.getRenderer());
+    result = result && getName().equals(other.getName());
+    result = result && getEntryNode().equals(other.getEntryNode());
+    result =
+        result
+            && (java.lang.Double.doubleToLongBits(getMaxVolume())
+                == java.lang.Double.doubleToLongBits(other.getMaxVolume()));
+    result = result && getClass_().equals(other.getClass_());
+    result = result && (getUpdated() == other.getUpdated());
+    result = result && getNodesList().equals(other.getNodesList());
+    result = result && getConnectionList().equals(other.getConnectionList());
+    result = result && getDisplayName().equals(other.getDisplayName());
+    result = result && getMetadataList().equals(other.getMetadataList());
     result = result && (hasMetrics() == other.hasMetrics());
     if (hasMetrics()) {
-      result = result && getMetrics()
-          .equals(other.getMetrics());
+      result = result && getMetrics().equals(other.getMetrics());
     }
     result = result && unknownFields.equals(other.unknownFields);
     return result;
@@ -635,13 +554,14 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + ENTRYNODE_FIELD_NUMBER;
     hash = (53 * hash) + getEntryNode().hashCode();
     hash = (37 * hash) + MAXVOLUME_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-        java.lang.Double.doubleToLongBits(getMaxVolume()));
+    hash =
+        (53 * hash)
+            + com.google.protobuf.Internal.hashLong(
+                java.lang.Double.doubleToLongBits(getMaxVolume()));
     hash = (37 * hash) + CLASS_FIELD_NUMBER;
     hash = (53 * hash) + getClass_().hashCode();
     hash = (37 * hash) + UPDATED_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-        getUpdated());
+    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(getUpdated());
     if (getNodesCount() > 0) {
       hash = (37 * hash) + NODES_FIELD_NUMBER;
       hash = (53 * hash) + getNodesList().hashCode();
@@ -665,109 +585,112 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static io.netifi.proteus.admin.om.Node parseFrom(
-      java.nio.ByteBuffer data)
+  public static io.netifi.proteus.admin.om.Node parseFrom(java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
+
   public static io.netifi.proteus.admin.om.Node parseFrom(
-      java.nio.ByteBuffer data,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.netifi.proteus.admin.om.Node parseFrom(
-      com.google.protobuf.ByteString data)
+
+  public static io.netifi.proteus.admin.om.Node parseFrom(com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
+
   public static io.netifi.proteus.admin.om.Node parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.Node parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
+
   public static io.netifi.proteus.admin.om.Node parseFrom(
-      byte[] data,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.Node parseFrom(java.io.InputStream input)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseWithIOException(PARSER, input);
+    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
+
   public static io.netifi.proteus.admin.om.Node parseFrom(
-      java.io.InputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseWithIOException(PARSER, input, extensionRegistry);
+    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+        PARSER, input, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.Node parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseDelimitedWithIOException(PARSER, input);
+    return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
+
   public static io.netifi.proteus.admin.om.Node parseDelimitedFrom(
-      java.io.InputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
+        PARSER, input, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.Node parseFrom(
-      com.google.protobuf.CodedInputStream input)
-      throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseWithIOException(PARSER, input);
+      com.google.protobuf.CodedInputStream input) throws java.io.IOException {
+    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
+
   public static io.netifi.proteus.admin.om.Node parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseWithIOException(PARSER, input, extensionRegistry);
+    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+        PARSER, input, extensionRegistry);
   }
 
-  public Builder newBuilderForType() { return newBuilder(); }
+  public Builder newBuilderForType() {
+    return newBuilder();
+  }
+
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
+
   public static Builder newBuilder(io.netifi.proteus.admin.om.Node prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
+
   public Builder toBuilder() {
-    return this == DEFAULT_INSTANCE
-        ? new Builder() : new Builder().mergeFrom(this);
+    return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
   }
 
   @java.lang.Override
-  protected Builder newBuilderForType(
-      com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+  protected Builder newBuilderForType(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
-  /**
-   * Protobuf type {@code io.netifi.proteus.admin.om.Node}
-   */
-  public static final class Builder extends
-      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+  /** Protobuf type {@code io.netifi.proteus.admin.om.Node} */
+  public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
+      implements
       // @@protoc_insertion_point(builder_implements:io.netifi.proteus.admin.om.Node)
       io.netifi.proteus.admin.om.NodeOrBuilder {
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_Node_descriptor;
+    public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+      return io.netifi.proteus.admin.om.ProteusAdmin
+          .internal_static_io_netifi_proteus_admin_om_Node_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_Node_fieldAccessorTable
+      return io.netifi.proteus.admin.om.ProteusAdmin
+          .internal_static_io_netifi_proteus_admin_om_Node_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               io.netifi.proteus.admin.om.Node.class, io.netifi.proteus.admin.om.Node.Builder.class);
     }
@@ -777,18 +700,18 @@ private static final long serialVersionUID = 0L;
       maybeForceBuilderInitialization();
     }
 
-    private Builder(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+    private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
+
     private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3
-              .alwaysUseFieldBuilders) {
+      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
         getNodesFieldBuilder();
         getConnectionFieldBuilder();
       }
     }
+
     public Builder clear() {
       super.clear();
       renderer_ = "";
@@ -828,9 +751,9 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    public com.google.protobuf.Descriptors.Descriptor
-        getDescriptorForType() {
-      return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_Node_descriptor;
+    public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
+      return io.netifi.proteus.admin.om.ProteusAdmin
+          .internal_static_io_netifi_proteus_admin_om_Node_descriptor;
     }
 
     public io.netifi.proteus.admin.om.Node getDefaultInstanceForType() {
@@ -892,32 +815,33 @@ private static final long serialVersionUID = 0L;
     public Builder clone() {
       return (Builder) super.clone();
     }
+
     public Builder setField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        java.lang.Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return (Builder) super.setField(field, value);
     }
-    public Builder clearField(
-        com.google.protobuf.Descriptors.FieldDescriptor field) {
+
+    public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
       return (Builder) super.clearField(field);
     }
-    public Builder clearOneof(
-        com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+
+    public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
       return (Builder) super.clearOneof(oneof);
     }
+
     public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        int index, java.lang.Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, int index, java.lang.Object value) {
       return (Builder) super.setRepeatedField(field, index, value);
     }
+
     public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        java.lang.Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return (Builder) super.addRepeatedField(field, value);
     }
+
     public Builder mergeFrom(com.google.protobuf.Message other) {
       if (other instanceof io.netifi.proteus.admin.om.Node) {
-        return mergeFrom((io.netifi.proteus.admin.om.Node)other);
+        return mergeFrom((io.netifi.proteus.admin.om.Node) other);
       } else {
         super.mergeFrom(other);
         return this;
@@ -966,9 +890,10 @@ private static final long serialVersionUID = 0L;
             nodesBuilder_ = null;
             nodes_ = other.nodes_;
             bitField0_ = (bitField0_ & ~0x00000040);
-            nodesBuilder_ = 
-              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getNodesFieldBuilder() : null;
+            nodesBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
+                    ? getNodesFieldBuilder()
+                    : null;
           } else {
             nodesBuilder_.addAllMessages(other.nodes_);
           }
@@ -992,9 +917,10 @@ private static final long serialVersionUID = 0L;
             connectionBuilder_ = null;
             connection_ = other.connection_;
             bitField0_ = (bitField0_ & ~0x00000080);
-            connectionBuilder_ = 
-              com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                 getConnectionFieldBuilder() : null;
+            connectionBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
+                    ? getConnectionFieldBuilder()
+                    : null;
           } else {
             connectionBuilder_.addAllMessages(other.connection_);
           }
@@ -1043,17 +969,15 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
+
     private int bitField0_;
 
     private java.lang.Object renderer_ = "";
-    /**
-     * <code>string renderer = 1;</code>
-     */
+    /** <code>string renderer = 1;</code> */
     public java.lang.String getRenderer() {
       java.lang.Object ref = renderer_;
       if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         renderer_ = s;
         return s;
@@ -1061,68 +985,53 @@ private static final long serialVersionUID = 0L;
         return (java.lang.String) ref;
       }
     }
-    /**
-     * <code>string renderer = 1;</code>
-     */
-    public com.google.protobuf.ByteString
-        getRendererBytes() {
+    /** <code>string renderer = 1;</code> */
+    public com.google.protobuf.ByteString getRendererBytes() {
       java.lang.Object ref = renderer_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         renderer_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    /**
-     * <code>string renderer = 1;</code>
-     */
-    public Builder setRenderer(
-        java.lang.String value) {
+    /** <code>string renderer = 1;</code> */
+    public Builder setRenderer(java.lang.String value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        throw new NullPointerException();
+      }
+
       renderer_ = value;
       onChanged();
       return this;
     }
-    /**
-     * <code>string renderer = 1;</code>
-     */
+    /** <code>string renderer = 1;</code> */
     public Builder clearRenderer() {
-      
+
       renderer_ = getDefaultInstance().getRenderer();
       onChanged();
       return this;
     }
-    /**
-     * <code>string renderer = 1;</code>
-     */
-    public Builder setRendererBytes(
-        com.google.protobuf.ByteString value) {
+    /** <code>string renderer = 1;</code> */
+    public Builder setRendererBytes(com.google.protobuf.ByteString value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
       renderer_ = value;
       onChanged();
       return this;
     }
 
     private java.lang.Object name_ = "";
-    /**
-     * <code>string name = 2;</code>
-     */
+    /** <code>string name = 2;</code> */
     public java.lang.String getName() {
       java.lang.Object ref = name_;
       if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         name_ = s;
         return s;
@@ -1130,68 +1039,53 @@ private static final long serialVersionUID = 0L;
         return (java.lang.String) ref;
       }
     }
-    /**
-     * <code>string name = 2;</code>
-     */
-    public com.google.protobuf.ByteString
-        getNameBytes() {
+    /** <code>string name = 2;</code> */
+    public com.google.protobuf.ByteString getNameBytes() {
       java.lang.Object ref = name_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         name_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    /**
-     * <code>string name = 2;</code>
-     */
-    public Builder setName(
-        java.lang.String value) {
+    /** <code>string name = 2;</code> */
+    public Builder setName(java.lang.String value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        throw new NullPointerException();
+      }
+
       name_ = value;
       onChanged();
       return this;
     }
-    /**
-     * <code>string name = 2;</code>
-     */
+    /** <code>string name = 2;</code> */
     public Builder clearName() {
-      
+
       name_ = getDefaultInstance().getName();
       onChanged();
       return this;
     }
-    /**
-     * <code>string name = 2;</code>
-     */
-    public Builder setNameBytes(
-        com.google.protobuf.ByteString value) {
+    /** <code>string name = 2;</code> */
+    public Builder setNameBytes(com.google.protobuf.ByteString value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
       name_ = value;
       onChanged();
       return this;
     }
 
     private java.lang.Object entryNode_ = "";
-    /**
-     * <code>string entryNode = 3;</code>
-     */
+    /** <code>string entryNode = 3;</code> */
     public java.lang.String getEntryNode() {
       java.lang.Object ref = entryNode_;
       if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         entryNode_ = s;
         return s;
@@ -1199,94 +1093,73 @@ private static final long serialVersionUID = 0L;
         return (java.lang.String) ref;
       }
     }
-    /**
-     * <code>string entryNode = 3;</code>
-     */
-    public com.google.protobuf.ByteString
-        getEntryNodeBytes() {
+    /** <code>string entryNode = 3;</code> */
+    public com.google.protobuf.ByteString getEntryNodeBytes() {
       java.lang.Object ref = entryNode_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         entryNode_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    /**
-     * <code>string entryNode = 3;</code>
-     */
-    public Builder setEntryNode(
-        java.lang.String value) {
+    /** <code>string entryNode = 3;</code> */
+    public Builder setEntryNode(java.lang.String value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        throw new NullPointerException();
+      }
+
       entryNode_ = value;
       onChanged();
       return this;
     }
-    /**
-     * <code>string entryNode = 3;</code>
-     */
+    /** <code>string entryNode = 3;</code> */
     public Builder clearEntryNode() {
-      
+
       entryNode_ = getDefaultInstance().getEntryNode();
       onChanged();
       return this;
     }
-    /**
-     * <code>string entryNode = 3;</code>
-     */
-    public Builder setEntryNodeBytes(
-        com.google.protobuf.ByteString value) {
+    /** <code>string entryNode = 3;</code> */
+    public Builder setEntryNodeBytes(com.google.protobuf.ByteString value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
       entryNode_ = value;
       onChanged();
       return this;
     }
 
-    private double maxVolume_ ;
-    /**
-     * <code>double maxVolume = 4;</code>
-     */
+    private double maxVolume_;
+    /** <code>double maxVolume = 4;</code> */
     public double getMaxVolume() {
       return maxVolume_;
     }
-    /**
-     * <code>double maxVolume = 4;</code>
-     */
+    /** <code>double maxVolume = 4;</code> */
     public Builder setMaxVolume(double value) {
-      
+
       maxVolume_ = value;
       onChanged();
       return this;
     }
-    /**
-     * <code>double maxVolume = 4;</code>
-     */
+    /** <code>double maxVolume = 4;</code> */
     public Builder clearMaxVolume() {
-      
+
       maxVolume_ = 0D;
       onChanged();
       return this;
     }
 
     private java.lang.Object class__ = "";
-    /**
-     * <code>string class = 5;</code>
-     */
+    /** <code>string class = 5;</code> */
     public java.lang.String getClass_() {
       java.lang.Object ref = class__;
       if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         class__ = s;
         return s;
@@ -1294,100 +1167,83 @@ private static final long serialVersionUID = 0L;
         return (java.lang.String) ref;
       }
     }
-    /**
-     * <code>string class = 5;</code>
-     */
-    public com.google.protobuf.ByteString
-        getClass_Bytes() {
+    /** <code>string class = 5;</code> */
+    public com.google.protobuf.ByteString getClass_Bytes() {
       java.lang.Object ref = class__;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         class__ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    /**
-     * <code>string class = 5;</code>
-     */
-    public Builder setClass_(
-        java.lang.String value) {
+    /** <code>string class = 5;</code> */
+    public Builder setClass_(java.lang.String value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        throw new NullPointerException();
+      }
+
       class__ = value;
       onChanged();
       return this;
     }
-    /**
-     * <code>string class = 5;</code>
-     */
+    /** <code>string class = 5;</code> */
     public Builder clearClass_() {
-      
+
       class__ = getDefaultInstance().getClass_();
       onChanged();
       return this;
     }
-    /**
-     * <code>string class = 5;</code>
-     */
-    public Builder setClass_Bytes(
-        com.google.protobuf.ByteString value) {
+    /** <code>string class = 5;</code> */
+    public Builder setClass_Bytes(com.google.protobuf.ByteString value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
       class__ = value;
       onChanged();
       return this;
     }
 
-    private long updated_ ;
-    /**
-     * <code>int64 updated = 6;</code>
-     */
+    private long updated_;
+    /** <code>int64 updated = 6;</code> */
     public long getUpdated() {
       return updated_;
     }
-    /**
-     * <code>int64 updated = 6;</code>
-     */
+    /** <code>int64 updated = 6;</code> */
     public Builder setUpdated(long value) {
-      
+
       updated_ = value;
       onChanged();
       return this;
     }
-    /**
-     * <code>int64 updated = 6;</code>
-     */
+    /** <code>int64 updated = 6;</code> */
     public Builder clearUpdated() {
-      
+
       updated_ = 0L;
       onChanged();
       return this;
     }
 
     private java.util.List<io.netifi.proteus.admin.om.Node> nodes_ =
-      java.util.Collections.emptyList();
+        java.util.Collections.emptyList();
+
     private void ensureNodesIsMutable() {
       if (!((bitField0_ & 0x00000040) == 0x00000040)) {
         nodes_ = new java.util.ArrayList<io.netifi.proteus.admin.om.Node>(nodes_);
         bitField0_ |= 0x00000040;
-       }
+      }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        io.netifi.proteus.admin.om.Node, io.netifi.proteus.admin.om.Node.Builder, io.netifi.proteus.admin.om.NodeOrBuilder> nodesBuilder_;
+            io.netifi.proteus.admin.om.Node, io.netifi.proteus.admin.om.Node.Builder,
+            io.netifi.proteus.admin.om.NodeOrBuilder>
+        nodesBuilder_;
 
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
     public java.util.List<io.netifi.proteus.admin.om.Node> getNodesList() {
       if (nodesBuilder_ == null) {
         return java.util.Collections.unmodifiableList(nodes_);
@@ -1395,9 +1251,7 @@ private static final long serialVersionUID = 0L;
         return nodesBuilder_.getMessageList();
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
     public int getNodesCount() {
       if (nodesBuilder_ == null) {
         return nodes_.size();
@@ -1405,9 +1259,7 @@ private static final long serialVersionUID = 0L;
         return nodesBuilder_.getCount();
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
     public io.netifi.proteus.admin.om.Node getNodes(int index) {
       if (nodesBuilder_ == null) {
         return nodes_.get(index);
@@ -1415,11 +1267,8 @@ private static final long serialVersionUID = 0L;
         return nodesBuilder_.getMessage(index);
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
-    public Builder setNodes(
-        int index, io.netifi.proteus.admin.om.Node value) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
+    public Builder setNodes(int index, io.netifi.proteus.admin.om.Node value) {
       if (nodesBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1432,11 +1281,8 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
-    public Builder setNodes(
-        int index, io.netifi.proteus.admin.om.Node.Builder builderForValue) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
+    public Builder setNodes(int index, io.netifi.proteus.admin.om.Node.Builder builderForValue) {
       if (nodesBuilder_ == null) {
         ensureNodesIsMutable();
         nodes_.set(index, builderForValue.build());
@@ -1446,9 +1292,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
     public Builder addNodes(io.netifi.proteus.admin.om.Node value) {
       if (nodesBuilder_ == null) {
         if (value == null) {
@@ -1462,11 +1306,8 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
-    public Builder addNodes(
-        int index, io.netifi.proteus.admin.om.Node value) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
+    public Builder addNodes(int index, io.netifi.proteus.admin.om.Node value) {
       if (nodesBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1479,11 +1320,8 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
-    public Builder addNodes(
-        io.netifi.proteus.admin.om.Node.Builder builderForValue) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
+    public Builder addNodes(io.netifi.proteus.admin.om.Node.Builder builderForValue) {
       if (nodesBuilder_ == null) {
         ensureNodesIsMutable();
         nodes_.add(builderForValue.build());
@@ -1493,11 +1331,8 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
-    public Builder addNodes(
-        int index, io.netifi.proteus.admin.om.Node.Builder builderForValue) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
+    public Builder addNodes(int index, io.netifi.proteus.admin.om.Node.Builder builderForValue) {
       if (nodesBuilder_ == null) {
         ensureNodesIsMutable();
         nodes_.add(index, builderForValue.build());
@@ -1507,24 +1342,19 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
     public Builder addAllNodes(
         java.lang.Iterable<? extends io.netifi.proteus.admin.om.Node> values) {
       if (nodesBuilder_ == null) {
         ensureNodesIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, nodes_);
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(values, nodes_);
         onChanged();
       } else {
         nodesBuilder_.addAllMessages(values);
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
     public Builder clearNodes() {
       if (nodesBuilder_ == null) {
         nodes_ = java.util.Collections.emptyList();
@@ -1535,9 +1365,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
     public Builder removeNodes(int index) {
       if (nodesBuilder_ == null) {
         ensureNodesIsMutable();
@@ -1548,62 +1376,51 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
-    public io.netifi.proteus.admin.om.Node.Builder getNodesBuilder(
-        int index) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
+    public io.netifi.proteus.admin.om.Node.Builder getNodesBuilder(int index) {
       return getNodesFieldBuilder().getBuilder(index);
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
-    public io.netifi.proteus.admin.om.NodeOrBuilder getNodesOrBuilder(
-        int index) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
+    public io.netifi.proteus.admin.om.NodeOrBuilder getNodesOrBuilder(int index) {
       if (nodesBuilder_ == null) {
-        return nodes_.get(index);  } else {
+        return nodes_.get(index);
+      } else {
         return nodesBuilder_.getMessageOrBuilder(index);
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
-    public java.util.List<? extends io.netifi.proteus.admin.om.NodeOrBuilder> 
-         getNodesOrBuilderList() {
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
+    public java.util.List<? extends io.netifi.proteus.admin.om.NodeOrBuilder>
+        getNodesOrBuilderList() {
       if (nodesBuilder_ != null) {
         return nodesBuilder_.getMessageOrBuilderList();
       } else {
         return java.util.Collections.unmodifiableList(nodes_);
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
     public io.netifi.proteus.admin.om.Node.Builder addNodesBuilder() {
-      return getNodesFieldBuilder().addBuilder(
-          io.netifi.proteus.admin.om.Node.getDefaultInstance());
+      return getNodesFieldBuilder()
+          .addBuilder(io.netifi.proteus.admin.om.Node.getDefaultInstance());
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
-    public io.netifi.proteus.admin.om.Node.Builder addNodesBuilder(
-        int index) {
-      return getNodesFieldBuilder().addBuilder(
-          index, io.netifi.proteus.admin.om.Node.getDefaultInstance());
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
+    public io.netifi.proteus.admin.om.Node.Builder addNodesBuilder(int index) {
+      return getNodesFieldBuilder()
+          .addBuilder(index, io.netifi.proteus.admin.om.Node.getDefaultInstance());
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code>
-     */
-    public java.util.List<io.netifi.proteus.admin.om.Node.Builder> 
-         getNodesBuilderList() {
+    /** <code>repeated .io.netifi.proteus.admin.om.Node nodes = 7;</code> */
+    public java.util.List<io.netifi.proteus.admin.om.Node.Builder> getNodesBuilderList() {
       return getNodesFieldBuilder().getBuilderList();
     }
+
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        io.netifi.proteus.admin.om.Node, io.netifi.proteus.admin.om.Node.Builder, io.netifi.proteus.admin.om.NodeOrBuilder> 
+            io.netifi.proteus.admin.om.Node, io.netifi.proteus.admin.om.Node.Builder,
+            io.netifi.proteus.admin.om.NodeOrBuilder>
         getNodesFieldBuilder() {
       if (nodesBuilder_ == null) {
-        nodesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-            io.netifi.proteus.admin.om.Node, io.netifi.proteus.admin.om.Node.Builder, io.netifi.proteus.admin.om.NodeOrBuilder>(
+        nodesBuilder_ =
+            new com.google.protobuf.RepeatedFieldBuilderV3<
+                io.netifi.proteus.admin.om.Node, io.netifi.proteus.admin.om.Node.Builder,
+                io.netifi.proteus.admin.om.NodeOrBuilder>(
                 nodes_,
                 ((bitField0_ & 0x00000040) == 0x00000040),
                 getParentForChildren(),
@@ -1614,20 +1431,21 @@ private static final long serialVersionUID = 0L;
     }
 
     private java.util.List<io.netifi.proteus.admin.om.Connection> connection_ =
-      java.util.Collections.emptyList();
+        java.util.Collections.emptyList();
+
     private void ensureConnectionIsMutable() {
       if (!((bitField0_ & 0x00000080) == 0x00000080)) {
         connection_ = new java.util.ArrayList<io.netifi.proteus.admin.om.Connection>(connection_);
         bitField0_ |= 0x00000080;
-       }
+      }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        io.netifi.proteus.admin.om.Connection, io.netifi.proteus.admin.om.Connection.Builder, io.netifi.proteus.admin.om.ConnectionOrBuilder> connectionBuilder_;
+            io.netifi.proteus.admin.om.Connection, io.netifi.proteus.admin.om.Connection.Builder,
+            io.netifi.proteus.admin.om.ConnectionOrBuilder>
+        connectionBuilder_;
 
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
     public java.util.List<io.netifi.proteus.admin.om.Connection> getConnectionList() {
       if (connectionBuilder_ == null) {
         return java.util.Collections.unmodifiableList(connection_);
@@ -1635,9 +1453,7 @@ private static final long serialVersionUID = 0L;
         return connectionBuilder_.getMessageList();
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
     public int getConnectionCount() {
       if (connectionBuilder_ == null) {
         return connection_.size();
@@ -1645,9 +1461,7 @@ private static final long serialVersionUID = 0L;
         return connectionBuilder_.getCount();
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
     public io.netifi.proteus.admin.om.Connection getConnection(int index) {
       if (connectionBuilder_ == null) {
         return connection_.get(index);
@@ -1655,11 +1469,8 @@ private static final long serialVersionUID = 0L;
         return connectionBuilder_.getMessage(index);
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
-    public Builder setConnection(
-        int index, io.netifi.proteus.admin.om.Connection value) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
+    public Builder setConnection(int index, io.netifi.proteus.admin.om.Connection value) {
       if (connectionBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1672,9 +1483,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
     public Builder setConnection(
         int index, io.netifi.proteus.admin.om.Connection.Builder builderForValue) {
       if (connectionBuilder_ == null) {
@@ -1686,9 +1495,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
     public Builder addConnection(io.netifi.proteus.admin.om.Connection value) {
       if (connectionBuilder_ == null) {
         if (value == null) {
@@ -1702,11 +1509,8 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
-    public Builder addConnection(
-        int index, io.netifi.proteus.admin.om.Connection value) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
+    public Builder addConnection(int index, io.netifi.proteus.admin.om.Connection value) {
       if (connectionBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1719,11 +1523,8 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
-    public Builder addConnection(
-        io.netifi.proteus.admin.om.Connection.Builder builderForValue) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
+    public Builder addConnection(io.netifi.proteus.admin.om.Connection.Builder builderForValue) {
       if (connectionBuilder_ == null) {
         ensureConnectionIsMutable();
         connection_.add(builderForValue.build());
@@ -1733,9 +1534,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
     public Builder addConnection(
         int index, io.netifi.proteus.admin.om.Connection.Builder builderForValue) {
       if (connectionBuilder_ == null) {
@@ -1747,24 +1546,19 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
     public Builder addAllConnection(
         java.lang.Iterable<? extends io.netifi.proteus.admin.om.Connection> values) {
       if (connectionBuilder_ == null) {
         ensureConnectionIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, connection_);
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(values, connection_);
         onChanged();
       } else {
         connectionBuilder_.addAllMessages(values);
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
     public Builder clearConnection() {
       if (connectionBuilder_ == null) {
         connection_ = java.util.Collections.emptyList();
@@ -1775,9 +1569,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
     public Builder removeConnection(int index) {
       if (connectionBuilder_ == null) {
         ensureConnectionIsMutable();
@@ -1788,62 +1580,53 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
-    public io.netifi.proteus.admin.om.Connection.Builder getConnectionBuilder(
-        int index) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
+    public io.netifi.proteus.admin.om.Connection.Builder getConnectionBuilder(int index) {
       return getConnectionFieldBuilder().getBuilder(index);
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
-    public io.netifi.proteus.admin.om.ConnectionOrBuilder getConnectionOrBuilder(
-        int index) {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
+    public io.netifi.proteus.admin.om.ConnectionOrBuilder getConnectionOrBuilder(int index) {
       if (connectionBuilder_ == null) {
-        return connection_.get(index);  } else {
+        return connection_.get(index);
+      } else {
         return connectionBuilder_.getMessageOrBuilder(index);
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
-    public java.util.List<? extends io.netifi.proteus.admin.om.ConnectionOrBuilder> 
-         getConnectionOrBuilderList() {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
+    public java.util.List<? extends io.netifi.proteus.admin.om.ConnectionOrBuilder>
+        getConnectionOrBuilderList() {
       if (connectionBuilder_ != null) {
         return connectionBuilder_.getMessageOrBuilderList();
       } else {
         return java.util.Collections.unmodifiableList(connection_);
       }
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
     public io.netifi.proteus.admin.om.Connection.Builder addConnectionBuilder() {
-      return getConnectionFieldBuilder().addBuilder(
-          io.netifi.proteus.admin.om.Connection.getDefaultInstance());
+      return getConnectionFieldBuilder()
+          .addBuilder(io.netifi.proteus.admin.om.Connection.getDefaultInstance());
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
-    public io.netifi.proteus.admin.om.Connection.Builder addConnectionBuilder(
-        int index) {
-      return getConnectionFieldBuilder().addBuilder(
-          index, io.netifi.proteus.admin.om.Connection.getDefaultInstance());
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
+    public io.netifi.proteus.admin.om.Connection.Builder addConnectionBuilder(int index) {
+      return getConnectionFieldBuilder()
+          .addBuilder(index, io.netifi.proteus.admin.om.Connection.getDefaultInstance());
     }
-    /**
-     * <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code>
-     */
-    public java.util.List<io.netifi.proteus.admin.om.Connection.Builder> 
-         getConnectionBuilderList() {
+    /** <code>repeated .io.netifi.proteus.admin.om.Connection connection = 8;</code> */
+    public java.util.List<io.netifi.proteus.admin.om.Connection.Builder>
+        getConnectionBuilderList() {
       return getConnectionFieldBuilder().getBuilderList();
     }
+
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        io.netifi.proteus.admin.om.Connection, io.netifi.proteus.admin.om.Connection.Builder, io.netifi.proteus.admin.om.ConnectionOrBuilder> 
+            io.netifi.proteus.admin.om.Connection, io.netifi.proteus.admin.om.Connection.Builder,
+            io.netifi.proteus.admin.om.ConnectionOrBuilder>
         getConnectionFieldBuilder() {
       if (connectionBuilder_ == null) {
-        connectionBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-            io.netifi.proteus.admin.om.Connection, io.netifi.proteus.admin.om.Connection.Builder, io.netifi.proteus.admin.om.ConnectionOrBuilder>(
+        connectionBuilder_ =
+            new com.google.protobuf.RepeatedFieldBuilderV3<
+                io.netifi.proteus.admin.om.Connection,
+                io.netifi.proteus.admin.om.Connection.Builder,
+                io.netifi.proteus.admin.om.ConnectionOrBuilder>(
                 connection_,
                 ((bitField0_ & 0x00000080) == 0x00000080),
                 getParentForChildren(),
@@ -1854,14 +1637,11 @@ private static final long serialVersionUID = 0L;
     }
 
     private java.lang.Object displayName_ = "";
-    /**
-     * <code>string displayName = 9;</code>
-     */
+    /** <code>string displayName = 9;</code> */
     public java.lang.String getDisplayName() {
       java.lang.Object ref = displayName_;
       if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         displayName_ = s;
         return s;
@@ -1869,147 +1649,112 @@ private static final long serialVersionUID = 0L;
         return (java.lang.String) ref;
       }
     }
-    /**
-     * <code>string displayName = 9;</code>
-     */
-    public com.google.protobuf.ByteString
-        getDisplayNameBytes() {
+    /** <code>string displayName = 9;</code> */
+    public com.google.protobuf.ByteString getDisplayNameBytes() {
       java.lang.Object ref = displayName_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         displayName_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    /**
-     * <code>string displayName = 9;</code>
-     */
-    public Builder setDisplayName(
-        java.lang.String value) {
+    /** <code>string displayName = 9;</code> */
+    public Builder setDisplayName(java.lang.String value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        throw new NullPointerException();
+      }
+
       displayName_ = value;
       onChanged();
       return this;
     }
-    /**
-     * <code>string displayName = 9;</code>
-     */
+    /** <code>string displayName = 9;</code> */
     public Builder clearDisplayName() {
-      
+
       displayName_ = getDefaultInstance().getDisplayName();
       onChanged();
       return this;
     }
-    /**
-     * <code>string displayName = 9;</code>
-     */
-    public Builder setDisplayNameBytes(
-        com.google.protobuf.ByteString value) {
+    /** <code>string displayName = 9;</code> */
+    public Builder setDisplayNameBytes(com.google.protobuf.ByteString value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
       displayName_ = value;
       onChanged();
       return this;
     }
 
-    private com.google.protobuf.LazyStringList metadata_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringList metadata_ =
+        com.google.protobuf.LazyStringArrayList.EMPTY;
+
     private void ensureMetadataIsMutable() {
       if (!((bitField0_ & 0x00000200) == 0x00000200)) {
         metadata_ = new com.google.protobuf.LazyStringArrayList(metadata_);
         bitField0_ |= 0x00000200;
-       }
+      }
     }
-    /**
-     * <code>repeated string metadata = 10;</code>
-     */
-    public com.google.protobuf.ProtocolStringList
-        getMetadataList() {
+    /** <code>repeated string metadata = 10;</code> */
+    public com.google.protobuf.ProtocolStringList getMetadataList() {
       return metadata_.getUnmodifiableView();
     }
-    /**
-     * <code>repeated string metadata = 10;</code>
-     */
+    /** <code>repeated string metadata = 10;</code> */
     public int getMetadataCount() {
       return metadata_.size();
     }
-    /**
-     * <code>repeated string metadata = 10;</code>
-     */
+    /** <code>repeated string metadata = 10;</code> */
     public java.lang.String getMetadata(int index) {
       return metadata_.get(index);
     }
-    /**
-     * <code>repeated string metadata = 10;</code>
-     */
-    public com.google.protobuf.ByteString
-        getMetadataBytes(int index) {
+    /** <code>repeated string metadata = 10;</code> */
+    public com.google.protobuf.ByteString getMetadataBytes(int index) {
       return metadata_.getByteString(index);
     }
-    /**
-     * <code>repeated string metadata = 10;</code>
-     */
-    public Builder setMetadata(
-        int index, java.lang.String value) {
+    /** <code>repeated string metadata = 10;</code> */
+    public Builder setMetadata(int index, java.lang.String value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureMetadataIsMutable();
+        throw new NullPointerException();
+      }
+      ensureMetadataIsMutable();
       metadata_.set(index, value);
       onChanged();
       return this;
     }
-    /**
-     * <code>repeated string metadata = 10;</code>
-     */
-    public Builder addMetadata(
-        java.lang.String value) {
+    /** <code>repeated string metadata = 10;</code> */
+    public Builder addMetadata(java.lang.String value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureMetadataIsMutable();
+        throw new NullPointerException();
+      }
+      ensureMetadataIsMutable();
       metadata_.add(value);
       onChanged();
       return this;
     }
-    /**
-     * <code>repeated string metadata = 10;</code>
-     */
-    public Builder addAllMetadata(
-        java.lang.Iterable<java.lang.String> values) {
+    /** <code>repeated string metadata = 10;</code> */
+    public Builder addAllMetadata(java.lang.Iterable<java.lang.String> values) {
       ensureMetadataIsMutable();
-      com.google.protobuf.AbstractMessageLite.Builder.addAll(
-          values, metadata_);
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(values, metadata_);
       onChanged();
       return this;
     }
-    /**
-     * <code>repeated string metadata = 10;</code>
-     */
+    /** <code>repeated string metadata = 10;</code> */
     public Builder clearMetadata() {
       metadata_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       bitField0_ = (bitField0_ & ~0x00000200);
       onChanged();
       return this;
     }
-    /**
-     * <code>repeated string metadata = 10;</code>
-     */
-    public Builder addMetadataBytes(
-        com.google.protobuf.ByteString value) {
+    /** <code>repeated string metadata = 10;</code> */
+    public Builder addMetadataBytes(com.google.protobuf.ByteString value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
       ensureMetadataIsMutable();
       metadata_.add(value);
       onChanged();
@@ -2018,26 +1763,24 @@ private static final long serialVersionUID = 0L;
 
     private io.netifi.proteus.admin.om.Metrics metrics_ = null;
     private com.google.protobuf.SingleFieldBuilderV3<
-        io.netifi.proteus.admin.om.Metrics, io.netifi.proteus.admin.om.Metrics.Builder, io.netifi.proteus.admin.om.MetricsOrBuilder> metricsBuilder_;
-    /**
-     * <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code>
-     */
+            io.netifi.proteus.admin.om.Metrics, io.netifi.proteus.admin.om.Metrics.Builder,
+            io.netifi.proteus.admin.om.MetricsOrBuilder>
+        metricsBuilder_;
+    /** <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code> */
     public boolean hasMetrics() {
       return metricsBuilder_ != null || metrics_ != null;
     }
-    /**
-     * <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code>
-     */
+    /** <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code> */
     public io.netifi.proteus.admin.om.Metrics getMetrics() {
       if (metricsBuilder_ == null) {
-        return metrics_ == null ? io.netifi.proteus.admin.om.Metrics.getDefaultInstance() : metrics_;
+        return metrics_ == null
+            ? io.netifi.proteus.admin.om.Metrics.getDefaultInstance()
+            : metrics_;
       } else {
         return metricsBuilder_.getMessage();
       }
     }
-    /**
-     * <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code>
-     */
+    /** <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code> */
     public Builder setMetrics(io.netifi.proteus.admin.om.Metrics value) {
       if (metricsBuilder_ == null) {
         if (value == null) {
@@ -2051,11 +1794,8 @@ private static final long serialVersionUID = 0L;
 
       return this;
     }
-    /**
-     * <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code>
-     */
-    public Builder setMetrics(
-        io.netifi.proteus.admin.om.Metrics.Builder builderForValue) {
+    /** <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code> */
+    public Builder setMetrics(io.netifi.proteus.admin.om.Metrics.Builder builderForValue) {
       if (metricsBuilder_ == null) {
         metrics_ = builderForValue.build();
         onChanged();
@@ -2065,14 +1805,14 @@ private static final long serialVersionUID = 0L;
 
       return this;
     }
-    /**
-     * <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code>
-     */
+    /** <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code> */
     public Builder mergeMetrics(io.netifi.proteus.admin.om.Metrics value) {
       if (metricsBuilder_ == null) {
         if (metrics_ != null) {
           metrics_ =
-            io.netifi.proteus.admin.om.Metrics.newBuilder(metrics_).mergeFrom(value).buildPartial();
+              io.netifi.proteus.admin.om.Metrics.newBuilder(metrics_)
+                  .mergeFrom(value)
+                  .buildPartial();
         } else {
           metrics_ = value;
         }
@@ -2083,9 +1823,7 @@ private static final long serialVersionUID = 0L;
 
       return this;
     }
-    /**
-     * <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code>
-     */
+    /** <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code> */
     public Builder clearMetrics() {
       if (metricsBuilder_ == null) {
         metrics_ = null;
@@ -2097,43 +1835,39 @@ private static final long serialVersionUID = 0L;
 
       return this;
     }
-    /**
-     * <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code>
-     */
+    /** <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code> */
     public io.netifi.proteus.admin.om.Metrics.Builder getMetricsBuilder() {
-      
+
       onChanged();
       return getMetricsFieldBuilder().getBuilder();
     }
-    /**
-     * <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code>
-     */
+    /** <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code> */
     public io.netifi.proteus.admin.om.MetricsOrBuilder getMetricsOrBuilder() {
       if (metricsBuilder_ != null) {
         return metricsBuilder_.getMessageOrBuilder();
       } else {
-        return metrics_ == null ?
-            io.netifi.proteus.admin.om.Metrics.getDefaultInstance() : metrics_;
+        return metrics_ == null
+            ? io.netifi.proteus.admin.om.Metrics.getDefaultInstance()
+            : metrics_;
       }
     }
-    /**
-     * <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code>
-     */
+    /** <code>.io.netifi.proteus.admin.om.Metrics metrics = 11;</code> */
     private com.google.protobuf.SingleFieldBuilderV3<
-        io.netifi.proteus.admin.om.Metrics, io.netifi.proteus.admin.om.Metrics.Builder, io.netifi.proteus.admin.om.MetricsOrBuilder> 
+            io.netifi.proteus.admin.om.Metrics, io.netifi.proteus.admin.om.Metrics.Builder,
+            io.netifi.proteus.admin.om.MetricsOrBuilder>
         getMetricsFieldBuilder() {
       if (metricsBuilder_ == null) {
-        metricsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            io.netifi.proteus.admin.om.Metrics, io.netifi.proteus.admin.om.Metrics.Builder, io.netifi.proteus.admin.om.MetricsOrBuilder>(
-                getMetrics(),
-                getParentForChildren(),
-                isClean());
+        metricsBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                io.netifi.proteus.admin.om.Metrics, io.netifi.proteus.admin.om.Metrics.Builder,
+                io.netifi.proteus.admin.om.MetricsOrBuilder>(
+                getMetrics(), getParentForChildren(), isClean());
         metrics_ = null;
       }
       return metricsBuilder_;
     }
-    public final Builder setUnknownFields(
-        final com.google.protobuf.UnknownFieldSet unknownFields) {
+
+    public final Builder setUnknownFields(final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFieldsProto3(unknownFields);
     }
 
@@ -2142,12 +1876,12 @@ private static final long serialVersionUID = 0L;
       return super.mergeUnknownFields(unknownFields);
     }
 
-
     // @@protoc_insertion_point(builder_scope:io.netifi.proteus.admin.om.Node)
   }
 
   // @@protoc_insertion_point(class_scope:io.netifi.proteus.admin.om.Node)
   private static final io.netifi.proteus.admin.om.Node DEFAULT_INSTANCE;
+
   static {
     DEFAULT_INSTANCE = new io.netifi.proteus.admin.om.Node();
   }
@@ -2156,15 +1890,15 @@ private static final long serialVersionUID = 0L;
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<Node>
-      PARSER = new com.google.protobuf.AbstractParser<Node>() {
-    public Node parsePartialFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Node(input, extensionRegistry);
-    }
-  };
+  private static final com.google.protobuf.Parser<Node> PARSER =
+      new com.google.protobuf.AbstractParser<Node>() {
+        public Node parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new Node(input, extensionRegistry);
+        }
+      };
 
   public static com.google.protobuf.Parser<Node> parser() {
     return PARSER;
@@ -2178,6 +1912,4 @@ private static final long serialVersionUID = 0L;
   public io.netifi.proteus.admin.om.Node getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
-
 }
-

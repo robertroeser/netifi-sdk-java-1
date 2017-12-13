@@ -37,14 +37,14 @@ public class DecayingCounter {
     update();
     return value;
   }
-  
+
   /** Increments the counter by 1 and returns the new value. */
   public synchronized double increment() {
     update();
     value += 1.0;
     return value;
   }
-  
+
   /** Increments the counter by 1 and returns the new value. */
   public synchronized double increment(double incr) {
     update();

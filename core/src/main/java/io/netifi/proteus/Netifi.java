@@ -1,6 +1,5 @@
 package io.netifi.proteus;
 
-import io.netifi.proteus.rs.RequestHandlingRSocket;
 import io.netifi.proteus.balancer.LoadBalancedRSocketSupplier;
 import io.netifi.proteus.balancer.transport.ClientTransportSupplierFactory;
 import io.netifi.proteus.connection.DestinationNameFactory;
@@ -12,6 +11,7 @@ import io.netifi.proteus.rs.DefaultNetifiSocket;
 import io.netifi.proteus.rs.MetadataUnwrappingRSocket;
 import io.netifi.proteus.rs.NetifiSocket;
 import io.netifi.proteus.rs.PresenceAwareRSocket;
+import io.netifi.proteus.rs.RequestHandlingRSocket;
 import io.netifi.proteus.rs.WeightedReconnectingRSocket;
 import io.netifi.proteus.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;

@@ -2,6 +2,11 @@ package io.netifi.proteus.rs;
 
 import io.netifi.proteus.Netifi;
 import io.netifi.testing.protobuf.*;
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -9,12 +14,6 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 
 @Ignore
 public class ProteusLocalRoutingIntegrationTest {
@@ -25,7 +24,7 @@ public class ProteusLocalRoutingIntegrationTest {
   // private static final String host = "192.168.99.100";
   private static final int port = 8001;
   // private static final int server_port = 8001;
-  private static final int server_port = 8001;
+  private static final int server_port = 8002;
   private static Netifi server;
   private static Netifi client;
   private static NetifiSocket netifiSocket;
@@ -72,13 +71,12 @@ public class ProteusLocalRoutingIntegrationTest {
 
     System.out.println(simpleResponse.getResponseMessage());
   }
-  
+
   @Test
   public void testUnaryRpc_100() {
     doTest(100);
   }
-    
-    
+
   @Test
   public void testUnaryRpc_multiple() {
     doTest(1_000_000);

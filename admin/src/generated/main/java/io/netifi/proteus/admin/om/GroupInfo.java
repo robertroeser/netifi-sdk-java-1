@@ -3,18 +3,17 @@
 
 package io.netifi.proteus.admin.om;
 
-/**
- * Protobuf type {@code io.netifi.proteus.admin.om.GroupInfo}
- */
-public  final class GroupInfo extends
-    com.google.protobuf.GeneratedMessageV3 implements
+/** Protobuf type {@code io.netifi.proteus.admin.om.GroupInfo} */
+public final class GroupInfo extends com.google.protobuf.GeneratedMessageV3
+    implements
     // @@protoc_insertion_point(message_implements:io.netifi.proteus.admin.om.GroupInfo)
     GroupInfoOrBuilder {
-private static final long serialVersionUID = 0L;
+  private static final long serialVersionUID = 0L;
   // Use GroupInfo.newBuilder() to construct.
   private GroupInfo(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
+
   private GroupInfo() {
     name_ = "";
     accountId_ = 0L;
@@ -22,10 +21,10 @@ private static final long serialVersionUID = 0L;
   }
 
   @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet
-  getUnknownFields() {
+  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
     return this.unknownFields;
   }
+
   private GroupInfo(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -42,80 +41,76 @@ private static final long serialVersionUID = 0L;
           case 0:
             done = true;
             break;
-          default: {
-            if (!parseUnknownFieldProto3(
-                input, unknownFields, extensionRegistry, tag)) {
-              done = true;
+          default:
+            {
+              if (!parseUnknownFieldProto3(input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
             }
-            break;
-          }
-          case 10: {
-            java.lang.String s = input.readStringRequireUtf8();
+          case 10:
+            {
+              java.lang.String s = input.readStringRequireUtf8();
 
-            name_ = s;
-            break;
-          }
-          case 16: {
-
-            accountId_ = input.readInt64();
-            break;
-          }
-          case 24: {
-
-            size_ = input.readInt32();
-            break;
-          }
+              name_ = s;
+              break;
+            }
+          case 16:
+            {
+              accountId_ = input.readInt64();
+              break;
+            }
+          case 24:
+            {
+              size_ = input.readInt32();
+              break;
+            }
         }
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
     } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(
-          e).setUnfinishedMessage(this);
+      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     } finally {
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
     }
   }
-  public static final com.google.protobuf.Descriptors.Descriptor
-      getDescriptor() {
-    return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_GroupInfo_descriptor;
+
+  public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+    return io.netifi.proteus.admin.om.ProteusAdmin
+        .internal_static_io_netifi_proteus_admin_om_GroupInfo_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_GroupInfo_fieldAccessorTable
+    return io.netifi.proteus.admin.om.ProteusAdmin
+        .internal_static_io_netifi_proteus_admin_om_GroupInfo_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            io.netifi.proteus.admin.om.GroupInfo.class, io.netifi.proteus.admin.om.GroupInfo.Builder.class);
+            io.netifi.proteus.admin.om.GroupInfo.class,
+            io.netifi.proteus.admin.om.GroupInfo.Builder.class);
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
   private volatile java.lang.Object name_;
-  /**
-   * <code>string name = 1;</code>
-   */
+  /** <code>string name = 1;</code> */
   public java.lang.String getName() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       name_ = s;
       return s;
     }
   }
-  /**
-   * <code>string name = 1;</code>
-   */
-  public com.google.protobuf.ByteString
-      getNameBytes() {
+  /** <code>string name = 1;</code> */
+  public com.google.protobuf.ByteString getNameBytes() {
     java.lang.Object ref = name_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
       name_ = b;
       return b;
     } else {
@@ -125,23 +120,20 @@ private static final long serialVersionUID = 0L;
 
   public static final int ACCOUNTID_FIELD_NUMBER = 2;
   private long accountId_;
-  /**
-   * <code>int64 accountId = 2;</code>
-   */
+  /** <code>int64 accountId = 2;</code> */
   public long getAccountId() {
     return accountId_;
   }
 
   public static final int SIZE_FIELD_NUMBER = 3;
   private int size_;
-  /**
-   * <code>int32 size = 3;</code>
-   */
+  /** <code>int32 size = 3;</code> */
   public int getSize() {
     return size_;
   }
 
   private byte memoizedIsInitialized = -1;
+
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
     if (isInitialized == 1) return true;
@@ -151,8 +143,7 @@ private static final long serialVersionUID = 0L;
     return true;
   }
 
-  public void writeTo(com.google.protobuf.CodedOutputStream output)
-                      throws java.io.IOException {
+  public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
     if (!getNameBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
     }
@@ -174,12 +165,10 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
     }
     if (accountId_ != 0L) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt64Size(2, accountId_);
+      size += com.google.protobuf.CodedOutputStream.computeInt64Size(2, accountId_);
     }
     if (size_ != 0) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(3, size_);
+      size += com.google.protobuf.CodedOutputStream.computeInt32Size(3, size_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -189,7 +178,7 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public boolean equals(final java.lang.Object obj) {
     if (obj == this) {
-     return true;
+      return true;
     }
     if (!(obj instanceof io.netifi.proteus.admin.om.GroupInfo)) {
       return super.equals(obj);
@@ -197,12 +186,9 @@ private static final long serialVersionUID = 0L;
     io.netifi.proteus.admin.om.GroupInfo other = (io.netifi.proteus.admin.om.GroupInfo) obj;
 
     boolean result = true;
-    result = result && getName()
-        .equals(other.getName());
-    result = result && (getAccountId()
-        == other.getAccountId());
-    result = result && (getSize()
-        == other.getSize());
+    result = result && getName().equals(other.getName());
+    result = result && (getAccountId() == other.getAccountId());
+    result = result && (getSize() == other.getSize());
     result = result && unknownFields.equals(other.unknownFields);
     return result;
   }
@@ -217,8 +203,7 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + NAME_FIELD_NUMBER;
     hash = (53 * hash) + getName().hashCode();
     hash = (37 * hash) + ACCOUNTID_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-        getAccountId());
+    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(getAccountId());
     hash = (37 * hash) + SIZE_FIELD_NUMBER;
     hash = (53 * hash) + getSize();
     hash = (29 * hash) + unknownFields.hashCode();
@@ -226,111 +211,115 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static io.netifi.proteus.admin.om.GroupInfo parseFrom(
-      java.nio.ByteBuffer data)
+  public static io.netifi.proteus.admin.om.GroupInfo parseFrom(java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
+
   public static io.netifi.proteus.admin.om.GroupInfo parseFrom(
-      java.nio.ByteBuffer data,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static io.netifi.proteus.admin.om.GroupInfo parseFrom(
-      com.google.protobuf.ByteString data)
+
+  public static io.netifi.proteus.admin.om.GroupInfo parseFrom(com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
+
   public static io.netifi.proteus.admin.om.GroupInfo parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.GroupInfo parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
+
   public static io.netifi.proteus.admin.om.GroupInfo parseFrom(
-      byte[] data,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.GroupInfo parseFrom(java.io.InputStream input)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseWithIOException(PARSER, input);
+    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
+
   public static io.netifi.proteus.admin.om.GroupInfo parseFrom(
-      java.io.InputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseWithIOException(PARSER, input, extensionRegistry);
+    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+        PARSER, input, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.GroupInfo parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseDelimitedWithIOException(PARSER, input);
+    return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
+
   public static io.netifi.proteus.admin.om.GroupInfo parseDelimitedFrom(
-      java.io.InputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
+        PARSER, input, extensionRegistry);
   }
+
   public static io.netifi.proteus.admin.om.GroupInfo parseFrom(
-      com.google.protobuf.CodedInputStream input)
-      throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseWithIOException(PARSER, input);
+      com.google.protobuf.CodedInputStream input) throws java.io.IOException {
+    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
+
   public static io.netifi.proteus.admin.om.GroupInfo parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
-    return com.google.protobuf.GeneratedMessageV3
-        .parseWithIOException(PARSER, input, extensionRegistry);
+    return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+        PARSER, input, extensionRegistry);
   }
 
-  public Builder newBuilderForType() { return newBuilder(); }
+  public Builder newBuilderForType() {
+    return newBuilder();
+  }
+
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
+
   public static Builder newBuilder(io.netifi.proteus.admin.om.GroupInfo prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
+
   public Builder toBuilder() {
-    return this == DEFAULT_INSTANCE
-        ? new Builder() : new Builder().mergeFrom(this);
+    return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
   }
 
   @java.lang.Override
-  protected Builder newBuilderForType(
-      com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+  protected Builder newBuilderForType(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
-  /**
-   * Protobuf type {@code io.netifi.proteus.admin.om.GroupInfo}
-   */
-  public static final class Builder extends
-      com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+  /** Protobuf type {@code io.netifi.proteus.admin.om.GroupInfo} */
+  public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
+      implements
       // @@protoc_insertion_point(builder_implements:io.netifi.proteus.admin.om.GroupInfo)
       io.netifi.proteus.admin.om.GroupInfoOrBuilder {
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_GroupInfo_descriptor;
+    public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
+      return io.netifi.proteus.admin.om.ProteusAdmin
+          .internal_static_io_netifi_proteus_admin_om_GroupInfo_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_GroupInfo_fieldAccessorTable
+      return io.netifi.proteus.admin.om.ProteusAdmin
+          .internal_static_io_netifi_proteus_admin_om_GroupInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              io.netifi.proteus.admin.om.GroupInfo.class, io.netifi.proteus.admin.om.GroupInfo.Builder.class);
+              io.netifi.proteus.admin.om.GroupInfo.class,
+              io.netifi.proteus.admin.om.GroupInfo.Builder.class);
     }
 
     // Construct using io.netifi.proteus.admin.om.GroupInfo.newBuilder()
@@ -338,16 +327,15 @@ private static final long serialVersionUID = 0L;
       maybeForceBuilderInitialization();
     }
 
-    private Builder(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+    private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
+
     private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3
-              .alwaysUseFieldBuilders) {
-      }
+      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
+
     public Builder clear() {
       super.clear();
       name_ = "";
@@ -359,9 +347,9 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    public com.google.protobuf.Descriptors.Descriptor
-        getDescriptorForType() {
-      return io.netifi.proteus.admin.om.ProteusAdmin.internal_static_io_netifi_proteus_admin_om_GroupInfo_descriptor;
+    public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
+      return io.netifi.proteus.admin.om.ProteusAdmin
+          .internal_static_io_netifi_proteus_admin_om_GroupInfo_descriptor;
     }
 
     public io.netifi.proteus.admin.om.GroupInfo getDefaultInstanceForType() {
@@ -388,32 +376,33 @@ private static final long serialVersionUID = 0L;
     public Builder clone() {
       return (Builder) super.clone();
     }
+
     public Builder setField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        java.lang.Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return (Builder) super.setField(field, value);
     }
-    public Builder clearField(
-        com.google.protobuf.Descriptors.FieldDescriptor field) {
+
+    public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
       return (Builder) super.clearField(field);
     }
-    public Builder clearOneof(
-        com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+
+    public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
       return (Builder) super.clearOneof(oneof);
     }
+
     public Builder setRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        int index, java.lang.Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, int index, java.lang.Object value) {
       return (Builder) super.setRepeatedField(field, index, value);
     }
+
     public Builder addRepeatedField(
-        com.google.protobuf.Descriptors.FieldDescriptor field,
-        java.lang.Object value) {
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
       return (Builder) super.addRepeatedField(field, value);
     }
+
     public Builder mergeFrom(com.google.protobuf.Message other) {
       if (other instanceof io.netifi.proteus.admin.om.GroupInfo) {
-        return mergeFrom((io.netifi.proteus.admin.om.GroupInfo)other);
+        return mergeFrom((io.netifi.proteus.admin.om.GroupInfo) other);
       } else {
         super.mergeFrom(other);
         return this;
@@ -460,14 +449,11 @@ private static final long serialVersionUID = 0L;
     }
 
     private java.lang.Object name_ = "";
-    /**
-     * <code>string name = 1;</code>
-     */
+    /** <code>string name = 1;</code> */
     public java.lang.String getName() {
       java.lang.Object ref = name_;
       if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         name_ = s;
         return s;
@@ -475,112 +461,88 @@ private static final long serialVersionUID = 0L;
         return (java.lang.String) ref;
       }
     }
-    /**
-     * <code>string name = 1;</code>
-     */
-    public com.google.protobuf.ByteString
-        getNameBytes() {
+    /** <code>string name = 1;</code> */
+    public com.google.protobuf.ByteString getNameBytes() {
       java.lang.Object ref = name_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
         name_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    /**
-     * <code>string name = 1;</code>
-     */
-    public Builder setName(
-        java.lang.String value) {
+    /** <code>string name = 1;</code> */
+    public Builder setName(java.lang.String value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        throw new NullPointerException();
+      }
+
       name_ = value;
       onChanged();
       return this;
     }
-    /**
-     * <code>string name = 1;</code>
-     */
+    /** <code>string name = 1;</code> */
     public Builder clearName() {
-      
+
       name_ = getDefaultInstance().getName();
       onChanged();
       return this;
     }
-    /**
-     * <code>string name = 1;</code>
-     */
-    public Builder setNameBytes(
-        com.google.protobuf.ByteString value) {
+    /** <code>string name = 1;</code> */
+    public Builder setNameBytes(com.google.protobuf.ByteString value) {
       if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+
       name_ = value;
       onChanged();
       return this;
     }
 
-    private long accountId_ ;
-    /**
-     * <code>int64 accountId = 2;</code>
-     */
+    private long accountId_;
+    /** <code>int64 accountId = 2;</code> */
     public long getAccountId() {
       return accountId_;
     }
-    /**
-     * <code>int64 accountId = 2;</code>
-     */
+    /** <code>int64 accountId = 2;</code> */
     public Builder setAccountId(long value) {
-      
+
       accountId_ = value;
       onChanged();
       return this;
     }
-    /**
-     * <code>int64 accountId = 2;</code>
-     */
+    /** <code>int64 accountId = 2;</code> */
     public Builder clearAccountId() {
-      
+
       accountId_ = 0L;
       onChanged();
       return this;
     }
 
-    private int size_ ;
-    /**
-     * <code>int32 size = 3;</code>
-     */
+    private int size_;
+    /** <code>int32 size = 3;</code> */
     public int getSize() {
       return size_;
     }
-    /**
-     * <code>int32 size = 3;</code>
-     */
+    /** <code>int32 size = 3;</code> */
     public Builder setSize(int value) {
-      
+
       size_ = value;
       onChanged();
       return this;
     }
-    /**
-     * <code>int32 size = 3;</code>
-     */
+    /** <code>int32 size = 3;</code> */
     public Builder clearSize() {
-      
+
       size_ = 0;
       onChanged();
       return this;
     }
-    public final Builder setUnknownFields(
-        final com.google.protobuf.UnknownFieldSet unknownFields) {
+
+    public final Builder setUnknownFields(final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFieldsProto3(unknownFields);
     }
 
@@ -589,12 +551,12 @@ private static final long serialVersionUID = 0L;
       return super.mergeUnknownFields(unknownFields);
     }
 
-
     // @@protoc_insertion_point(builder_scope:io.netifi.proteus.admin.om.GroupInfo)
   }
 
   // @@protoc_insertion_point(class_scope:io.netifi.proteus.admin.om.GroupInfo)
   private static final io.netifi.proteus.admin.om.GroupInfo DEFAULT_INSTANCE;
+
   static {
     DEFAULT_INSTANCE = new io.netifi.proteus.admin.om.GroupInfo();
   }
@@ -603,15 +565,15 @@ private static final long serialVersionUID = 0L;
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<GroupInfo>
-      PARSER = new com.google.protobuf.AbstractParser<GroupInfo>() {
-    public GroupInfo parsePartialFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-        return new GroupInfo(input, extensionRegistry);
-    }
-  };
+  private static final com.google.protobuf.Parser<GroupInfo> PARSER =
+      new com.google.protobuf.AbstractParser<GroupInfo>() {
+        public GroupInfo parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new GroupInfo(input, extensionRegistry);
+        }
+      };
 
   public static com.google.protobuf.Parser<GroupInfo> parser() {
     return PARSER;
@@ -625,6 +587,4 @@ private static final long serialVersionUID = 0L;
   public io.netifi.proteus.admin.om.GroupInfo getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
-
 }
-

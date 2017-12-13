@@ -4,7 +4,6 @@ import io.netifi.proteus.frames.BitUtil;
 import io.netifi.proteus.frames.FrameHeaderFlyweight;
 import io.netifi.proteus.frames.FrameType;
 import io.netty.buffer.ByteBuf;
-
 import java.nio.charset.StandardCharsets;
 
 /** */

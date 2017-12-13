@@ -6,26 +6,21 @@ import io.netifi.proteus.admin.frames.AdminSetupFlyweight;
 import io.netifi.proteus.admin.rs.AdminRSocket;
 import io.netifi.proteus.admin.tracing.AdminTraceService;
 import io.netifi.proteus.admin.tracing.DefaultAdminTraceService;
-import io.netifi.proteus.connection.SocketAddressFactory;
 import io.netifi.proteus.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
-import io.rsocket.Closeable;
-import io.rsocket.Payload;
-import io.rsocket.RSocket;
-import io.rsocket.RSocketFactory;
+import io.rsocket.*;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.ByteBufPayload;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoProcessor;
-
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.*;
 import java.util.function.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoProcessor;
 
 public class NetifiAdmin implements Closeable {
   private static final Logger logger = LoggerFactory.getLogger(NetifiAdmin.class);
@@ -38,22 +33,23 @@ public class NetifiAdmin implements Closeable {
 
   private TimebasedIdGenerator idGenerator;
 
-  private NetifiAdmin(SocketAddressFactory socketAddressFactory) {
+  private NetifiAdmin(List<SocketAddress> socketAddresses) {
     this.onClose = MonoProcessor.create();
     this.idGenerator = new TimebasedIdGenerator(id);
 
     Function<SocketAddress, Mono<RSocket>> rSocketFactory =
         address ->
             RSocketFactory.connect()
+                .frameDecoder(Frame::retain)
                 .setupPayload(createPayload())
                 .transport(() -> TcpClientTransport.create((InetSocketAddress) address))
                 .start();
 
     Function<SocketAddress, Mono<AdminRSocket>> adminSocketFactory =
-        address -> Mono.fromSupplier(() -> new AdminRSocket(address, rSocketFactory));
+        address -> Mono.fromSupplier(() -> new AdminRSocket(address, rSocketFactory, idGenerator));
 
     ConnectionManager connectionManager =
-        new DefaultConnectionManager(socketAddressFactory.get(), adminSocketFactory);
+        new DefaultConnectionManager(idGenerator, adminSocketFactory, socketAddresses);
 
     this.adminTraceService = new DefaultAdminTraceService(idGenerator, connectionManager);
   }
@@ -87,7 +83,6 @@ public class NetifiAdmin implements Closeable {
     private List<SocketAddress> addresses;
     private String host;
     private int port;
-    private SocketAddressFactory socketAddressFactory;
 
     private Builder() {}
 
@@ -126,23 +121,17 @@ public class NetifiAdmin implements Closeable {
       return socketAddress(list);
     }
 
-    public Builder socketAddressFactory(SocketAddressFactory socketAddressFactory) {
-      this.socketAddressFactory = socketAddressFactory;
-      return this;
-    }
-
     public NetifiAdmin build() {
-      if (socketAddressFactory == null) {
-        if (addresses == null) {
-          Objects.requireNonNull(host, "host is required");
-          Objects.requireNonNull(port, "port is required");
-          socketAddressFactory = SocketAddressFactory.from(host, port);
-        } else {
-          socketAddressFactory = SocketAddressFactory.from(addresses);
-        }
+      List<SocketAddress> a;
+      if (addresses == null) {
+        Objects.requireNonNull(host, "host is required");
+        Objects.requireNonNull(port, "port is required");
+        a = Arrays.asList(InetSocketAddress.createUnresolved(host, port));
+      } else {
+        a = addresses;
       }
 
-      return new NetifiAdmin(socketAddressFactory);
+      return new NetifiAdmin(a);
     }
   }
 }

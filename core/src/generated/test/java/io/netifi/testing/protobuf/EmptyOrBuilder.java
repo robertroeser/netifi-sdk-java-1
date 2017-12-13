@@ -3,7 +3,7 @@
 
 package io.netifi.testing.protobuf;
 
-public interface EmptyOrBuilder extends
+public interface EmptyOrBuilder
+    extends
     // @@protoc_insertion_point(interface_extends:io.netifi.testing.Empty)
-    com.google.protobuf.MessageOrBuilder {
-}
+    com.google.protobuf.MessageOrBuilder {}

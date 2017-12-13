@@ -2,8 +2,15 @@ package io.netifi.proteus.admin.connection;
 
 import io.netifi.proteus.admin.rs.AdminRSocket;
 import io.netifi.proteus.connection.DiscoveryEvent;
+import io.netifi.proteus.util.TimebasedIdGenerator;
 import io.rsocket.Closeable;
-import io.rsocket.RSocket;
+import java.net.SocketAddress;
+import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
@@ -12,25 +19,21 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 
-import java.net.SocketAddress;
-import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
-
 public class DefaultConnectionManager implements ConnectionManager, Closeable {
   private static final Logger logger = LoggerFactory.getLogger(DefaultConnectionManager.class);
+  private static final int EFFORT = 5;
   private final CopyOnWriteArrayList<AdminRSocket> rSockets;
   private final Function<SocketAddress, Mono<AdminRSocket>> adminSocketFactory;
   private final MonoProcessor<Void> onClose;
   private final DirectProcessor<AdminRSocket> newSocketProcessor;
-
+  private final RouterInfoSocketAddressFactory socketAddressFactory;
   private MonoProcessor<Void> onConnectionPresent;
   private boolean missed;
 
   public DefaultConnectionManager(
-      Flux<DiscoveryEvent> eventFlux,
-      Function<SocketAddress, Mono<AdminRSocket>> adminSocketFactory) {
+      TimebasedIdGenerator idGenerator,
+      Function<SocketAddress, Mono<AdminRSocket>> adminSocketFactory,
+      List<SocketAddress> socketAddresses) {
     this.newSocketProcessor = DirectProcessor.create();
     this.rSockets = new CopyOnWriteArrayList<>();
     this.adminSocketFactory = adminSocketFactory;
@@ -38,11 +41,30 @@ public class DefaultConnectionManager implements ConnectionManager, Closeable {
 
     reset();
 
-    Disposable subscribe =
-        eventFlux
+    this.socketAddressFactory = new RouterInfoSocketAddressFactory(this, idGenerator);
+
+    Flux<AdminRSocket> seedFlux =
+        Flux.fromIterable(socketAddresses)
+            .map(DiscoveryEvent::add)
             .flatMap(this::handelEvent)
             .doOnNext(rSockets::add)
-            .doOnNext(newSocketProcessor::onNext)
+            .doOnNext(newSocketProcessor::onNext);
+
+    Flux<AdminRSocket> adminRSocketFlux =
+        socketAddressFactory
+            .get()
+            .flatMap(this::handelEvent)
+            .doOnNext(rSockets::add)
+            .doOnNext(newSocketProcessor::onNext);
+
+    Disposable subscribe =
+        seedFlux
+            .thenMany(adminRSocketFlux)
+            .onErrorResume(
+                t -> {
+                  logger.error("error updating Admin RSockets", t);
+                  return Mono.delay(Duration.ofSeconds(5)).then(Mono.error(t));
+                })
             .retry()
             .subscribe();
 
@@ -52,14 +74,32 @@ public class DefaultConnectionManager implements ConnectionManager, Closeable {
   private synchronized Mono<AdminRSocket> handelEvent(DiscoveryEvent event) {
     missed = true;
     Mono<AdminRSocket> mono;
+    String routerId = event.getId();
     SocketAddress address = event.getAddress();
     if (event == DiscoveryEvent.Add) {
-      logger.debug("adding AdminRSocket for socket address {}", address);
-      mono = adminSocketFactory.apply(address);
+      Optional<AdminRSocket> first =
+          rSockets.stream().filter(s -> s.getRouterId().equals(routerId)).findFirst();
+
+      if (first.isPresent()) {
+        return Mono.empty();
+      } else {
+        logger.debug("adding AdminRSocket for socket address {}", address);
+        mono =
+            adminSocketFactory
+                .apply(address)
+                .flatMap(adminRSocket -> adminRSocket.onReady().then(Mono.just(adminRSocket)))
+                .doOnNext(
+                    adminRSocket -> {
+                      if (!onConnectionPresent.isTerminated()) {
+                        logger.debug("notifying an AdminRSocket is present");
+                        onConnectionPresent.onComplete();
+                      }
+                    });
+      }
     } else {
       logger.debug("removing AdminRSocket for socket address {}", address);
       Optional<AdminRSocket> first =
-          rSockets.stream().filter(s -> s.getSocketAddress().equals(address)).findFirst();
+          rSockets.stream().filter(s -> s.getRouterId().equals(routerId)).findFirst();
 
       if (first.isPresent()) {
         AdminRSocket adminRSocket = first.get();
@@ -67,44 +107,49 @@ public class DefaultConnectionManager implements ConnectionManager, Closeable {
         adminRSocket.close().subscribe();
       }
 
-      mono = Mono.empty();
-    }
-
-    if (rSockets.isEmpty()) {
-      logger.debug("no client transport suppliers present, reset to wait an AdminRSocket");
-      reset();
-    } else {
-      if (!onConnectionPresent.isTerminated()) {
-        logger.debug("notifying an AdminRSocket is present");
-        onConnectionPresent.onComplete();
-      }
+      mono =
+          Mono.fromRunnable(
+              () -> {
+                if (rSockets.isEmpty()) {
+                  logger.debug(
+                      "no client transport suppliers present, reset to wait an AdminRSocket");
+                  reset();
+                }
+              });
     }
 
     return mono;
   }
 
   private synchronized void reset() {
-    this.onConnectionPresent = MonoProcessor.create();
+    if (onConnectionPresent == null || onConnectionPresent.isTerminated()) {
+      this.onConnectionPresent = MonoProcessor.create();
+    }
   }
 
   private synchronized Mono<Void> getOnConnectionPresent() {
     return onConnectionPresent;
   }
 
-  private RSocket get() {
-    RSocket rSocket;
+  private AdminRSocket get() {
+    AdminRSocket rSocket = null;
     for (; ; ) {
       synchronized (this) {
         missed = false;
       }
-      int size = rSockets.size();
-      if (size == 1) {
-        rSocket = rSockets.get(0);
-      } else {
-        int i = ThreadLocalRandom.current().nextInt(size);
-        rSocket = rSockets.get(i);
-      }
+      for (int i = 0; i < EFFORT; i++) {
+        int size = rSockets.size();
+        if (size == 1) {
+          rSocket = rSockets.get(0);
+        } else {
+          int k = ThreadLocalRandom.current().nextInt(size);
+          rSocket = rSockets.get(k);
+        }
 
+        if (rSocket.availability() > 0.0) {
+          break;
+        }
+      }
       synchronized (this) {
         if (!missed) {
           break;
@@ -116,12 +161,12 @@ public class DefaultConnectionManager implements ConnectionManager, Closeable {
   }
 
   @Override
-  public Mono<RSocket> getRSocket() {
+  public Mono<AdminRSocket> getRSocket() {
     return getOnConnectionPresent().then(Mono.fromSupplier(this::get));
   }
 
   @Override
-  public Flux<? extends RSocket> getRSockets() {
+  public Flux<AdminRSocket> getRSockets() {
     return Flux.fromIterable(rSockets).concatWith(newSocketProcessor.onBackpressureBuffer());
   }
 
