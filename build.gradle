@@ -30,6 +30,12 @@ googleJavaFormat {
     toolVersion = '1.4'
 }
 
+project(':admin') {
+    description = 'Netifi Admin Module'
+    ext.artifactName = 'netifi-sdk-auth'
+}
+
+
 project(':auth') {
     description = 'Netifi Common Authentication and Authorization Components'
     ext.artifactName = 'netifi-sdk-auth'

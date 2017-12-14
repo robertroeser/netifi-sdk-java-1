@@ -1,4 +1,5 @@
 rootProject.name = 'netifi-sdk-java'
+include 'admin'
 include 'auth'
 include 'core'
 include 'frames'
