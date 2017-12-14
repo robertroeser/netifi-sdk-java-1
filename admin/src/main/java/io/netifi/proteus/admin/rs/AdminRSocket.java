@@ -9,10 +9,6 @@ import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.util.ByteBufPayload;
-import java.net.SocketAddress;
-import java.time.Duration;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +17,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 import reactor.core.publisher.ReplayProcessor;
+
+import java.net.SocketAddress;
+import java.nio.channels.ClosedChannelException;
+import java.time.Duration;
+import java.util.function.Function;
 
 public class AdminRSocket implements RSocket {
   private static final Logger logger = LoggerFactory.getLogger(AdminRSocket.class);
@@ -32,8 +33,7 @@ public class AdminRSocket implements RSocket {
   private String routerId;
   private MonoProcessor<RSocket> currentSink;
   private volatile double available;
-  
-  
+
   public AdminRSocket(
       SocketAddress address,
       Function<SocketAddress, Mono<RSocket>> rSocketFactory,
@@ -47,12 +47,12 @@ public class AdminRSocket implements RSocket {
 
     connect(1).subscribe();
   }
-  
+
   private Mono<RSocket> connect(int retry) {
     if (onClose.isTerminated()) {
       return Mono.empty();
     }
-    
+
     return rSocketFactory
         .apply(address)
         .flatMap(
@@ -91,27 +91,77 @@ public class AdminRSocket implements RSocket {
 
   @Override
   public Mono<Void> fireAndForget(Payload payload) {
-    return getRSocket().flatMap(rSocket -> rSocket.fireAndForget(payload));
+    return getRSocket()
+        .flatMap(rSocket -> rSocket.fireAndForget(payload))
+        .onErrorResume(
+            t -> {
+              if (t instanceof ClosedChannelException) {
+                logger.debug("caught ClosedChannelException, ignoring");
+                return Mono.empty();
+              } else {
+                return Mono.error(t);
+              }
+            });
   }
 
   @Override
   public Mono<Payload> requestResponse(Payload payload) {
-    return getRSocket().flatMap(rSocket -> rSocket.requestResponse(payload));
+    return getRSocket()
+        .flatMap(rSocket -> rSocket.requestResponse(payload))
+        .onErrorResume(
+            t -> {
+              if (t instanceof ClosedChannelException) {
+                logger.debug("caught ClosedChannelException, ignoring");
+                return Mono.empty();
+              } else {
+                return Mono.error(t);
+              }
+            });
   }
 
   @Override
   public Flux<Payload> requestStream(Payload payload) {
-    return getRSocket().flatMapMany(rSocket -> rSocket.requestStream(payload));
+    return getRSocket()
+        .flatMapMany(rSocket -> rSocket.requestStream(payload))
+        .onErrorResume(
+            t -> {
+              if (t instanceof ClosedChannelException) {
+                logger.debug("caught ClosedChannelException, ignoring");
+                return Mono.empty();
+              } else {
+                return Mono.error(t);
+              }
+            });
   }
 
   @Override
   public Flux<Payload> requestChannel(Publisher<Payload> payloads) {
-    return getRSocket().flatMapMany(rSocket -> rSocket.requestChannel(payloads));
+    return getRSocket()
+        .flatMapMany(rSocket -> rSocket.requestChannel(payloads))
+        .onErrorResume(
+            t -> {
+              if (t instanceof ClosedChannelException) {
+                logger.debug("caught ClosedChannelException, ignoring");
+                return Mono.empty();
+              } else {
+                return Mono.error(t);
+              }
+            });
   }
 
   @Override
   public Mono<Void> metadataPush(Payload payload) {
-    return getRSocket().flatMap(rSocket -> rSocket.metadataPush(payload));
+    return getRSocket()
+        .flatMap(rSocket -> rSocket.metadataPush(payload))
+        .onErrorResume(
+            t -> {
+              if (t instanceof ClosedChannelException) {
+                logger.debug("caught ClosedChannelException, ignoring");
+                return Mono.empty();
+              } else {
+                return Mono.error(t);
+              }
+            });
   }
 
   private void resetMono() {
@@ -179,5 +229,10 @@ public class AdminRSocket implements RSocket {
   @Override
   public Mono<Void> onClose() {
     return onClose;
+  }
+
+  @Override
+  public String toString() {
+    return "AdminRSocket{" + "address=" + address + ", routerId='" + routerId + '\'' + '}';
   }
 }

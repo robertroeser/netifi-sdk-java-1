@@ -19,16 +19,18 @@ import io.netty.buffer.Unpooled;
 import io.rsocket.Closeable;
 import io.rsocket.Payload;
 import io.rsocket.util.ByteBufPayload;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
+import reactor.core.scheduler.Schedulers;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class DefaultAdminTraceService implements AdminTraceService, Closeable {
   private static final Logger logger = LoggerFactory.getLogger(DefaultAdminTraceService.class);
@@ -39,15 +41,25 @@ public class DefaultAdminTraceService implements AdminTraceService, Closeable {
       TimebasedIdGenerator idGenerator, ConnectionManager connectionManager) {
     this.onClose = MonoProcessor.create();
 
-    Payload request = createPayload();
 
     streamData =
         connectionManager
             .getRSockets()
             .flatMap(
                 rsocket -> {
-                  logger.debug("streaming tracing data from server {}", rsocket);
-                  return rsocket.requestStream(request);
+                  logger.debug(
+                      "streaming tracing data from router id {} from address {}",
+                      rsocket.getRouterId(),
+                      rsocket.getSocketAddress());
+                  Payload request = createPayload();
+                  return rsocket
+                      .requestStream(request)
+                      .doOnRequest(value -> System.out.println(rsocket.getRouterId() + " - requesting " + value))
+                      .doOnNext(
+                          payload -> {
+                            System.out.println("on next from " + rsocket.getRouterId());
+                          })
+                      .subscribeOn(Schedulers.elastic());
                 })
             .doOnError(t -> logger.error(t.getMessage(), t))
             .scan(createRootNode(), this::handleResponse)

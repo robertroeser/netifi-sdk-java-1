@@ -45,27 +45,13 @@ public class DefaultConnectionManager implements ConnectionManager, Closeable {
     this.socketAddressFactory = new RouterInfoSocketAddressFactory(this, idGenerator);
 
     Flux<AdminRSocket> seedFlux =
-        Flux.fromIterable(socketAddresses)
-            .map(DiscoveryEvent::add)
-            .flatMap(this::handelEvent)
-            .doOnNext(
-                adminRSocket -> {
-                  synchronized (this) {
-                    rSockets.add(adminRSocket);
-                  }
+        Flux.fromIterable(socketAddresses).map(DiscoveryEvent::add).flatMap(this::handelEvent);
 
-                  if (!onConnectionPresent.isTerminated()) {
-                    logger.debug("notifying an AdminRSocket is present");
-                    onConnectionPresent.onComplete();
-                  }
-                });
-
-    Flux<AdminRSocket> adminRSocketFlux =
-        socketAddressFactory.get().flatMap(this::handelEvent).doOnNext(rSockets::add);
+    Flux<AdminRSocket> adminRSocketFlux = socketAddressFactory.get().flatMap(this::handelEvent);
 
     Disposable subscribe =
         Flux.merge(seedFlux, adminRSocketFlux)
-            .doOnNext(newSocketProcessor::onNext)
+            .doOnNext(this::addNewAdminSocket)
             .onErrorResume(
                 t -> {
                   logger.error("error updating Admin RSockets", t.getMessage());
@@ -76,6 +62,39 @@ public class DefaultConnectionManager implements ConnectionManager, Closeable {
             .subscribe();
 
     onClose.doFinally(s -> subscribe.dispose()).subscribe();
+  }
+
+  private void addNewAdminSocket(AdminRSocket adminRSocket) {
+    boolean add;
+    MonoProcessor<Void> p;
+    synchronized (this) {
+      p = onConnectionPresent;
+      Optional<AdminRSocket> first =
+          rSockets
+              .stream()
+              .filter(s -> s.getRouterId().equals(adminRSocket.getRouterId()))
+              .findFirst();
+      if (!first.isPresent()) {
+        add = true;
+        rSockets.add(adminRSocket);
+      } else {
+        add = false;
+        logger.debug(
+            "connection already present for router id {} to address {}",
+            adminRSocket.getRouterId(),
+            adminRSocket.getSocketAddress());
+        adminRSocket.close().subscribe();
+      }
+    }
+
+    if (add) {
+      newSocketProcessor.onNext(adminRSocket);
+
+      if (!p.isTerminated()) {
+        logger.debug("notifying an AdminRSocket is present");
+        p.onComplete();
+      }
+    }
   }
 
   private synchronized Mono<AdminRSocket> handelEvent(DiscoveryEvent event) {
@@ -169,7 +188,7 @@ public class DefaultConnectionManager implements ConnectionManager, Closeable {
 
   @Override
   public Flux<AdminRSocket> getRSockets() {
-    return Flux.fromIterable(rSockets).concatWith(newSocketProcessor.onBackpressureBuffer());
+    return Flux.merge(Flux.fromIterable(rSockets), newSocketProcessor);
   }
 
   @Override
