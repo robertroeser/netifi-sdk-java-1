@@ -2,17 +2,13 @@ package io.netifi.proteus;
 
 import io.netifi.proteus.balancer.LoadBalancedRSocketSupplier;
 import io.netifi.proteus.balancer.transport.ClientTransportSupplierFactory;
-import io.netifi.proteus.connection.DestinationNameFactory;
-import io.netifi.proteus.connection.SocketAddressFactory;
+import io.netifi.proteus.discovery.DestinationNameFactory;
+import io.netifi.proteus.discovery.RouterInfoSocketAddressFactory;
 import io.netifi.proteus.frames.DestinationSetupFlyweight;
+import io.netifi.proteus.frames.InfoSetupFlyweight;
 import io.netifi.proteus.presence.DefaultPresenceNotifier;
 import io.netifi.proteus.presence.PresenceNotifier;
-import io.netifi.proteus.rs.DefaultNetifiSocket;
-import io.netifi.proteus.rs.MetadataUnwrappingRSocket;
-import io.netifi.proteus.rs.NetifiSocket;
-import io.netifi.proteus.rs.PresenceAwareRSocket;
-import io.netifi.proteus.rs.RequestHandlingRSocket;
-import io.netifi.proteus.rs.WeightedReconnectingRSocket;
+import io.netifi.proteus.rs.*;
 import io.netifi.proteus.util.TimebasedIdGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -20,9 +16,17 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.rsocket.Closeable;
 import io.rsocket.Payload;
+import io.rsocket.RSocket;
+import io.rsocket.RSocketFactory;
 import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.ByteBufPayload;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoProcessor;
+import reactor.ipc.netty.tcp.TcpClient;
+
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.*;
@@ -33,11 +37,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoProcessor;
-import reactor.ipc.netty.tcp.TcpClient;
 
 /** This is where the magic happens */
 public class Netifi implements Closeable {
@@ -75,8 +74,10 @@ public class Netifi implements Closeable {
       int missedAcks,
       int poolSize,
       DestinationNameFactory destinationNameFactory,
-      SocketAddressFactory socketAddressFactory,
-      Executor executor) {
+      List<SocketAddress> socketAddresses,
+      Executor executor,
+      int minHostsAtStartup,
+      long minHostsAtStartupTimeout) {
     this.onClose = MonoProcessor.create();
     this.keepalive = keepalive;
     this.accessKey = accessKey;
@@ -87,8 +88,44 @@ public class Netifi implements Closeable {
     this.executor = executor;
     this.accessTokenBytes = accessTokenBytes;
     this.requestHandlingRSocket = new RequestHandlingRSocket();
+
+    final Function<SocketAddress, Mono<RSocket>> rSocketFactory =
+        address -> {
+          logger.debug(
+              "creating an information connection with group {} and destination {} to socket address {}",
+              group,
+              fromDestination,
+              address);
+
+          int length = InfoSetupFlyweight.computeLength(false, fromDestination, group);
+
+          ByteBuf metadata = ByteBufAllocator.DEFAULT.directBuffer(length);
+          InfoSetupFlyweight.encode(
+              metadata,
+              Unpooled.EMPTY_BUFFER,
+              Unpooled.wrappedBuffer(accessTokenBytes),
+              idGenerator.nextId(),
+              accessKey,
+              fromDestination,
+              group);
+
+          Payload payload = ByteBufPayload.create(Unpooled.EMPTY_BUFFER, metadata);
+
+          return RSocketFactory.connect()
+              .setupPayload(payload)
+              .transport(TcpClientTransport.create((InetSocketAddress) address))
+              .start();
+        };
+
+    RouterInfoSocketAddressFactory routerInfoSocketAddressFactory =
+        new RouterInfoSocketAddressFactory(socketAddresses, rSocketFactory, idGenerator);
+
     this.transportSupplierFactory =
-        new ClientTransportSupplierFactory(socketAddressFactory.get(), this::createClientTransport);
+        new ClientTransportSupplierFactory(
+            routerInfoSocketAddressFactory,
+            this::createClientTransport,
+            minHostsAtStartup,
+            minHostsAtStartupTimeout);
 
     final Function<String, Payload> setupPayloadSupplier =
         d -> {
@@ -206,7 +243,7 @@ public class Netifi implements Closeable {
   public static class Builder {
     private String host;
     private Integer port = 8001;
-    private List<SocketAddress> addresses;
+    private List<SocketAddress> seedAddresses;
     private Long accessKey;
     private Long accountId;
     private String group;
@@ -218,12 +255,23 @@ public class Netifi implements Closeable {
     private long ackTimeoutSeconds = 120;
     private int missedAcks = 3;
     private int poolSize = Math.max(4, Runtime.getRuntime().availableProcessors());
+    private int minHostsAtStartup = 3;
+    private long minHostsAtStartupTimeout = 5;
     private DestinationNameFactory destinationNameFactory;
-    private SocketAddressFactory socketAddressFactory;
 
     private Executor executor = null;
 
     private Builder() {}
+
+    public Builder minHostsAtStartup(int minHostsAtStartup) {
+      this.minHostsAtStartup = minHostsAtStartup;
+      return this;
+    }
+
+    public Builder minHostsAtStartupTimeout(long minHostsAtStartupTimeout) {
+      this.minHostsAtStartupTimeout = minHostsAtStartupTimeout;
+      return this;
+    }
 
     public Builder keepalive(boolean useKeepAlive) {
       this.keepalive = keepalive;
@@ -255,19 +303,19 @@ public class Netifi implements Closeable {
       return this;
     }
 
-    public Builder socketAddress(Collection<SocketAddress> addresses) {
+    public Builder seedAddresses(Collection<SocketAddress> addresses) {
       if (addresses instanceof List) {
-        this.addresses = (List<SocketAddress>) addresses;
+        this.seedAddresses = (List<SocketAddress>) addresses;
       } else {
         List<SocketAddress> list = new ArrayList<>();
         list.addAll(addresses);
-        this.addresses = list;
+        this.seedAddresses = list;
       }
 
       return this;
     }
 
-    public Builder socketAddress(SocketAddress address, SocketAddress... addresses) {
+    public Builder seedAddresses(SocketAddress address, SocketAddress... addresses) {
       List<SocketAddress> list = new ArrayList<>();
       list.add(address);
 
@@ -275,7 +323,7 @@ public class Netifi implements Closeable {
         list.addAll(Arrays.asList(addresses));
       }
 
-      return socketAddress(list);
+      return seedAddresses(list);
     }
 
     public Builder accountId(long accountId) {
@@ -321,11 +369,6 @@ public class Netifi implements Closeable {
       return this;
     }
 
-    public Builder socketAddressFactory(SocketAddressFactory socketAddressFactory) {
-      this.socketAddressFactory = socketAddressFactory;
-      return this;
-    }
-
     public Netifi build() {
       Objects.requireNonNull(accessKey, "account key is required");
       Objects.requireNonNull(accessToken, "account token is required");
@@ -348,14 +391,13 @@ public class Netifi implements Closeable {
         }
       }
 
-      if (socketAddressFactory == null) {
-        if (addresses == null) {
-          Objects.requireNonNull(host, "host is required");
-          Objects.requireNonNull(port, "port is required");
-          socketAddressFactory = SocketAddressFactory.from(host, port);
-        } else {
-          socketAddressFactory = SocketAddressFactory.from(addresses);
-        }
+      List<SocketAddress> socketAddresses;
+      if (seedAddresses == null) {
+        Objects.requireNonNull(host, "host is required");
+        Objects.requireNonNull(port, "port is required");
+        socketAddresses = Arrays.asList(InetSocketAddress.createUnresolved(host, port));
+      } else {
+        socketAddresses = seedAddresses;
       }
 
       logger.info(
@@ -381,8 +423,10 @@ public class Netifi implements Closeable {
                     missedAcks,
                     poolSize,
                     destinationNameFactory,
-                    socketAddressFactory,
-                    executor);
+                    socketAddresses,
+                    executor,
+                    minHostsAtStartup,
+                    minHostsAtStartupTimeout);
             netifi.onClose.doFinally(s -> NETIFI.remove(netifiKey)).subscribe();
             return netifi;
           });

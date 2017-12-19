@@ -46,7 +46,7 @@ public class FrugalQuantile implements Quantile {
     this(quantile, 1.0, new Random());
   }
 
-  public void reset(double quantile) {
+  public synchronized void reset(double quantile) {
     this.quantile = quantile;
     this.estimate = 0.0;
     this.step = 1;

@@ -2,12 +2,6 @@ package io.netifi.proteus.rs;
 
 import io.netifi.proteus.Netifi;
 import io.netifi.testing.protobuf.*;
-import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-
 import io.netty.buffer.ByteBuf;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -16,6 +10,13 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 @Ignore
 public class ProteusLocalRoutingIntegrationTest {
@@ -43,6 +44,7 @@ public class ProteusLocalRoutingIntegrationTest {
             .accessToken(accessToken)
             .host(host)
             .port(server_port)
+            .poolSize(1)
             .build();
 
     client =
@@ -55,6 +57,7 @@ public class ProteusLocalRoutingIntegrationTest {
             .accessToken(accessToken)
             .host(host)
             .port(port)
+            .poolSize(1)
             .build();
 
     server.addService(new SimpleServiceServer(new DefaultSimpleService()));
@@ -82,18 +85,19 @@ public class ProteusLocalRoutingIntegrationTest {
   @Test
   public void testUnaryRpc_multiple() {
     doTest(1_000_000);
-    doTest(1_000_000);
+    // doTest(1_000_000);
   }
 
   public void doTest(int count) {
     SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
     long start = System.nanoTime();
     Flux.range(1, count)
+        .doOnRequest(l -> System.out.println("requested -> " + l))
         .flatMap(
             i ->
                 simpleServiceClient
-                    .unaryRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build())
-                    .doOnError(Throwable::printStackTrace))
+                    .unaryRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build()).timeout(Duration.ofSeconds(30))
+                    .doOnError(Throwable::printStackTrace), 8)
         .blockLast();
 
     double time = (System.nanoTime() - start) / 1_000_000d;
@@ -115,7 +119,20 @@ public class ProteusLocalRoutingIntegrationTest {
 
     System.out.println(response.getResponseMessage());
   }
-
+  
+  @Test
+  public void testServerStreamingFireHose() {
+    SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
+    SimpleResponse response =
+        simpleServiceClient
+            .serverStreamingRpc(SimpleRequest.newBuilder().setRequestMessage("a message").build())
+            .take(100_000)
+            .blockLast();
+    
+    System.out.println(response.getResponseMessage());
+  }
+  
+  
   @Test
   public void testClientStreamingRpc() {
     SimpleServiceClient simpleServiceClient = new SimpleServiceClient(netifiSocket);
@@ -134,6 +151,7 @@ public class ProteusLocalRoutingIntegrationTest {
 
     Flux<SimpleRequest> map =
         Flux.range(1, 300_000)
+            .publishOn(Schedulers.parallel())
             .map(i -> SimpleRequest.newBuilder().setRequestMessage("a message -> " + i).build());
 
     long count =
@@ -153,7 +171,7 @@ public class ProteusLocalRoutingIntegrationTest {
 
   @Test
   public void testFireAndForget() throws Exception {
-    int count = 100;
+    int count = 1;
     CountDownLatch latch = new CountDownLatch(count);
     SimpleServiceClient client = new SimpleServiceClient(netifiSocket);
     client
@@ -169,7 +187,7 @@ public class ProteusLocalRoutingIntegrationTest {
                   SimpleRequest.newBuilder().setRequestMessage("fire -> " + i).build());
             })
         .doOnError(Throwable::printStackTrace)
-        .subscribe();
+        .blockLast();
     latch.await();
   }
 
@@ -201,7 +219,8 @@ public class ProteusLocalRoutingIntegrationTest {
     }
 
     @Override
-    public Mono<SimpleResponse> clientStreamingRpc(Publisher<SimpleRequest> messages, ByteBuf metadata) {
+    public Mono<SimpleResponse> clientStreamingRpc(
+        Publisher<SimpleRequest> messages, ByteBuf metadata) {
       return Flux.from(messages)
           .windowTimeout(10, Duration.ofSeconds(500))
           .take(1)
@@ -248,7 +267,19 @@ public class ProteusLocalRoutingIntegrationTest {
     }
 
     @Override
-    public Flux<SimpleResponse> bidiStreamingRpc(Publisher<SimpleRequest> messages, ByteBuf metadata) {
+    public Flux<SimpleResponse> serverStreamingFireHose(SimpleRequest message, ByteBuf metadata) {
+      String requestMessage = message.getRequestMessage();
+      return Flux.range(1, 100_000_00)
+          .publish()
+          .refCount()
+          .onBackpressureDrop()
+          .map(i -> i + " - got message - " + requestMessage)
+          .map(s -> SimpleResponse.newBuilder().setResponseMessage(s).build());
+    }
+
+    @Override
+    public Flux<SimpleResponse> bidiStreamingRpc(
+        Publisher<SimpleRequest> messages, ByteBuf metadata) {
       return Flux.from(messages).flatMap(message -> unaryRpc(message, metadata));
     }
   }

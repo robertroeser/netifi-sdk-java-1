@@ -20,13 +20,14 @@ public class WeighedClientTransportSupplierTest {
     MonoProcessor<Void> onClose = MonoProcessor.create();
     DuplexConnection duplexConnection = Mockito.mock(DuplexConnection.class);
     Mockito.when(duplexConnection.onClose()).thenReturn(onClose);
+    Mockito.when(duplexConnection.close()).thenReturn(Mono.never());
 
     ClientTransport transport = Mockito.mock(ClientTransport.class);
     Mockito.when(transport.connect()).thenReturn(Mono.just(duplexConnection));
     Supplier<ClientTransport> clientTransportSupplier = () -> transport;
 
     WeighedClientTransportSupplier supplier =
-        new WeighedClientTransportSupplier(
+        new WeighedClientTransportSupplier("test",
             clientTransportSupplier, InetSocketAddress.createUnresolved("localhost", 8081));
 
     DirectProcessor<WeightedRSocket> p = DirectProcessor.create();
@@ -43,4 +44,5 @@ public class WeighedClientTransportSupplierTest {
 
     Assert.assertEquals(0, i);
   }
+  
 }

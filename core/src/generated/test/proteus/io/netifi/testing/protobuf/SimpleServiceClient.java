@@ -10,6 +10,7 @@ public final class SimpleServiceClient implements SimpleService {
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.netifi.testing.protobuf.SimpleResponse>, ? extends org.reactivestreams.Publisher<io.netifi.testing.protobuf.SimpleResponse>> unaryRpc;
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.netifi.testing.protobuf.SimpleResponse>, ? extends org.reactivestreams.Publisher<io.netifi.testing.protobuf.SimpleResponse>> clientStreamingRpc;
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.netifi.testing.protobuf.SimpleResponse>, ? extends org.reactivestreams.Publisher<io.netifi.testing.protobuf.SimpleResponse>> serverStreamingRpc;
+  private final java.util.function.Function<? super org.reactivestreams.Publisher<io.netifi.testing.protobuf.SimpleResponse>, ? extends org.reactivestreams.Publisher<io.netifi.testing.protobuf.SimpleResponse>> serverStreamingFireHose;
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.netifi.testing.protobuf.SimpleResponse>, ? extends org.reactivestreams.Publisher<io.netifi.testing.protobuf.SimpleResponse>> bidiStreamingRpc;
 
   public SimpleServiceClient(io.rsocket.RSocket rSocket) {
@@ -19,6 +20,7 @@ public final class SimpleServiceClient implements SimpleService {
     this.unaryRpc = java.util.function.Function.identity();
     this.clientStreamingRpc = java.util.function.Function.identity();
     this.serverStreamingRpc = java.util.function.Function.identity();
+    this.serverStreamingFireHose = java.util.function.Function.identity();
     this.bidiStreamingRpc = java.util.function.Function.identity();
   }
 
@@ -29,6 +31,7 @@ public final class SimpleServiceClient implements SimpleService {
     this.unaryRpc = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.client", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "unaryRpc");
     this.clientStreamingRpc = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.client", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "clientStreamingRpc");
     this.serverStreamingRpc = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.client", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "serverStreamingRpc");
+    this.serverStreamingFireHose = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.client", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "serverStreamingFireHose");
     this.bidiStreamingRpc = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.client", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "bidiStreamingRpc");
   }
 
@@ -127,6 +130,24 @@ public final class SimpleServiceClient implements SimpleService {
         return rSocket.requestStream(io.rsocket.util.ByteBufPayload.create(data, metadataBuf));
       }
     }).map(deserializer(io.netifi.testing.protobuf.SimpleResponse.parser())).transform(serverStreamingRpc);
+  }
+
+  public reactor.core.publisher.Flux<io.netifi.testing.protobuf.SimpleResponse> serverStreamingFireHose(io.netifi.testing.protobuf.SimpleRequest message) {
+    return serverStreamingFireHose(message, io.netty.buffer.Unpooled.EMPTY_BUFFER);
+  }
+
+  @java.lang.Override
+  public reactor.core.publisher.Flux<io.netifi.testing.protobuf.SimpleResponse> serverStreamingFireHose(io.netifi.testing.protobuf.SimpleRequest message, io.netty.buffer.ByteBuf metadata) {
+    return reactor.core.publisher.Flux.defer(new java.util.function.Supplier<reactor.core.publisher.Flux<io.rsocket.Payload>>() {
+      @java.lang.Override
+      public reactor.core.publisher.Flux<io.rsocket.Payload> get() {
+        final int length = io.netifi.proteus.frames.ProteusMetadata.computeLength();
+        io.netty.buffer.ByteBuf metadataBuf = io.netty.buffer.ByteBufAllocator.DEFAULT.directBuffer(length);
+        io.netifi.proteus.frames.ProteusMetadata.encode(metadataBuf, SimpleService.NAMESPACE_ID, SimpleService.SERVICE_ID, SimpleService.METHOD_SERVER_STREAMING_FIRE_HOSE, metadata);
+        io.netty.buffer.ByteBuf data = serialize(message);
+        return rSocket.requestStream(io.rsocket.util.ByteBufPayload.create(data, metadataBuf));
+      }
+    }).map(deserializer(io.netifi.testing.protobuf.SimpleResponse.parser())).transform(serverStreamingFireHose);
   }
 
   public reactor.core.publisher.Flux<io.netifi.testing.protobuf.SimpleResponse> bidiStreamingRpc(org.reactivestreams.Publisher<io.netifi.testing.protobuf.SimpleRequest> messages) {

@@ -41,7 +41,7 @@ public final class SimpleServiceProto {
       "\n)io.netifi.sdk.proteus/simpleservice.pr" +
       "oto\022\021io.netifi.testing\"\007\n\005Empty\"\'\n\rSimpl" +
       "eRequest\022\026\n\016requestMessage\030\001 \001(\t\")\n\016Simp" +
-      "leResponse\022\027\n\017responseMessage\030\001 \001(\t2\250\004\n\r" +
+      "leResponse\022\027\n\017responseMessage\030\001 \001(\t2\214\005\n\r" +
       "SimpleService\022M\n\rFireAndForget\022 .io.neti" +
       "fi.testing.SimpleRequest\032\030.io.netifi.tes" +
       "ting.Empty\"\000\022X\n\025StreamOnFireAndForget\022\030." +
@@ -53,11 +53,13 @@ public final class SimpleServiceProto {
       "t\032!.io.netifi.testing.SimpleResponse\"\000(\001" +
       "\022]\n\022ServerStreamingRpc\022 .io.netifi.testi" +
       "ng.SimpleRequest\032!.io.netifi.testing.Sim" +
-      "pleResponse\"\0000\001\022]\n\020BidiStreamingRpc\022 .io" +
-      ".netifi.testing.SimpleRequest\032!.io.netif" +
-      "i.testing.SimpleResponse\"\000(\0010\001B2\n\032io.net" +
-      "ifi.testing.protobufB\022SimpleServiceProto" +
-      "P\001b\006proto3"
+      "pleResponse\"\0000\001\022b\n\027ServerStreamingFireHo" +
+      "se\022 .io.netifi.testing.SimpleRequest\032!.i" +
+      "o.netifi.testing.SimpleResponse\"\0000\001\022]\n\020B" +
+      "idiStreamingRpc\022 .io.netifi.testing.Simp" +
+      "leRequest\032!.io.netifi.testing.SimpleResp" +
+      "onse\"\000(\0010\001B2\n\032io.netifi.testing.protobuf" +
+      "B\022SimpleServiceProtoP\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

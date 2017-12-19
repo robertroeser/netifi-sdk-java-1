@@ -23,6 +23,9 @@ service SimpleService {
   // Simple server-to-client streaming RPC.
   rpc ServerStreamingRpc (SimpleRequest) returns (stream SimpleResponse) {}
 
+  // Simple server-to-client streaming RPC.
+  rpc ServerStreamingFireHose (SimpleRequest) returns (stream SimpleResponse) {}
+
   // Simple bidirectional streaming RPC.
   rpc BidiStreamingRpc (stream SimpleRequest) returns (stream SimpleResponse) {}
 }

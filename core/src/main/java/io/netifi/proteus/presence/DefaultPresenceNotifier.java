@@ -10,13 +10,15 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
 import io.rsocket.util.ByteBufPayload;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ReplayProcessor;
+
+import java.time.Duration;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Implementation of {@link PresenceNotifier} */
 public class DefaultPresenceNotifier implements PresenceNotifier {
@@ -168,6 +170,7 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
 
   @SuppressWarnings("unchecked")
   public Mono<Void> notify(long accountId, String group) {
+    logger.debug("looking for account id {} and group {}", accountId, group);
     if (!watchingSubscriptions.contains(groupKey(accountId, group))) {
       watch(accountId, group);
     }
@@ -176,12 +179,23 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
     if (presenceInfo.contains(info)) {
       return Mono.empty();
     } else {
-      return onChange.filter(o -> presenceInfo.contains(info)).next().then();
+      return onChange
+          .filter(o -> presenceInfo.contains(info))
+          .next()
+          .then()
+          .timeout(Duration.ofSeconds(5))
+          .doOnError(
+              throwable ->
+                  logger.error(
+                      "error waiting for notification for " + accountId + " and group " + group,
+                      throwable));
     }
   }
 
   @SuppressWarnings("unchecked")
   public Mono<Void> notify(long accountId, String destination, String group) {
+    logger.debug(
+        "looking for account id {}, destination {}, and group {}", accountId, destination, group);
     if (!watchingSubscriptions.contains(destinationkey(accountId, destination, group))) {
       watch(accountId, destination, group);
     }
@@ -190,7 +204,16 @@ public class DefaultPresenceNotifier implements PresenceNotifier {
     if (presenceInfo.contains(info)) {
       return Mono.empty();
     } else {
-      return onChange.filter(o -> presenceInfo.contains(info)).next().then();
+      return onChange
+          .filter(o -> presenceInfo.contains(info))
+          .next()
+          .then()
+          .timeout(Duration.ofSeconds(5))
+          .doOnError(
+              throwable ->
+                  logger.error(
+                      "error waiting for notification for " + accountId + " and group " + group,
+                      throwable));
     }
   }
 

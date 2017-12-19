@@ -1,7 +1,7 @@
 package io.netifi.proteus.admin.connection;
 
 import io.netifi.proteus.admin.rs.AdminRSocket;
-import io.netifi.proteus.connection.DiscoveryEvent;
+import io.netifi.proteus.discovery.DiscoveryEvent;
 import io.netifi.proteus.util.TimebasedIdGenerator;
 import io.rsocket.Closeable;
 import org.slf4j.Logger;
@@ -102,7 +102,7 @@ public class DefaultConnectionManager implements ConnectionManager, Closeable {
     Mono<AdminRSocket> mono;
     String routerId = event.getId();
     SocketAddress address = event.getAddress();
-    if (event == DiscoveryEvent.Add) {
+    if (event.getType() == DiscoveryEvent.DiscoveryEventType.Add) {
       Optional<AdminRSocket> first =
           rSockets.stream().filter(s -> s.getRouterId().equals(routerId)).findFirst();
 

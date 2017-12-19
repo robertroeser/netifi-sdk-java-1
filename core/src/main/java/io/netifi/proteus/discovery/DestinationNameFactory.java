@@ -1,4 +1,4 @@
-package io.netifi.proteus.connection;
+package io.netifi.proteus.discovery;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;

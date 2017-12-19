@@ -16,6 +16,7 @@ public interface SimpleService {
   int METHOD_UNARY_RPC = -1434830019;
   int METHOD_CLIENT_STREAMING_RPC = 356703499;
   int METHOD_SERVER_STREAMING_RPC = -803409785;
+  int METHOD_SERVER_STREAMING_FIRE_HOSE = 374837461;
   int METHOD_BIDI_STREAMING_RPC = -1207876110;
 
   /**
@@ -52,6 +53,13 @@ public interface SimpleService {
    * </pre>
    */
   reactor.core.publisher.Flux<io.netifi.testing.protobuf.SimpleResponse> serverStreamingRpc(io.netifi.testing.protobuf.SimpleRequest message, io.netty.buffer.ByteBuf metadata);
+
+  /**
+   * <pre>
+   * Simple server-to-client streaming RPC.
+   * </pre>
+   */
+  reactor.core.publisher.Flux<io.netifi.testing.protobuf.SimpleResponse> serverStreamingFireHose(io.netifi.testing.protobuf.SimpleRequest message, io.netty.buffer.ByteBuf metadata);
 
   /**
    * <pre>

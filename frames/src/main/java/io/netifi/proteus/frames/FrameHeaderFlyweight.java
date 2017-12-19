@@ -44,8 +44,12 @@ public class FrameHeaderFlyweight {
 
     byteBuf.setInt(0, header);
     byteBuf.setLong(BitUtil.SIZE_OF_INT, seqId);
-
-    return computeFrameHeaderLength();
+  
+    int offset = computeFrameHeaderLength();
+    
+    byteBuf.writerIndex(offset);
+    
+    return offset;
   }
 
   public static FrameType frameType(ByteBuf byteBuf) {

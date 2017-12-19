@@ -21,7 +21,7 @@ public class Median extends FrugalQuantile {
     super(0.5, 1.0, null);
   }
 
-  public void reset() {
+  public synchronized void reset() {
     super.reset(0.5);
   }
 

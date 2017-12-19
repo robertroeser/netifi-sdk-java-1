@@ -2,12 +2,6 @@ package io.netifi.proteus.rs;
 
 import io.netifi.proteus.Netifi;
 import io.netifi.testing.protobuf.*;
-import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-
 import io.netty.buffer.ByteBuf;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -17,6 +11,12 @@ import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+
+import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 @Ignore
 public class ProteusRoutingIntegrationTest {
@@ -157,7 +157,8 @@ public class ProteusRoutingIntegrationTest {
     }
 
     @Override
-    public Mono<SimpleResponse> clientStreamingRpc(Publisher<SimpleRequest> messages, ByteBuf metadata) {
+    public Mono<SimpleResponse> clientStreamingRpc(
+        Publisher<SimpleRequest> messages, ByteBuf metadata) {
       return Flux.from(messages)
           .windowTimeout(10, Duration.ofSeconds(500))
           .take(1)
@@ -202,7 +203,19 @@ public class ProteusRoutingIntegrationTest {
     }
 
     @Override
-    public Flux<SimpleResponse> bidiStreamingRpc(Publisher<SimpleRequest> messages, ByteBuf metadata) {
+    public Flux<SimpleResponse> serverStreamingFireHose(SimpleRequest message, ByteBuf metadata) {
+      String requestMessage = message.getRequestMessage();
+      return Flux.range(1, 100_000_00)
+          .publish()
+          .refCount()
+          .onBackpressureDrop()
+          .map(i -> i + " - got message - " + requestMessage)
+          .map(s -> SimpleResponse.newBuilder().setResponseMessage(s).build());
+    }
+
+    @Override
+    public Flux<SimpleResponse> bidiStreamingRpc(
+        Publisher<SimpleRequest> messages, ByteBuf metadata) {
       return Flux.from(messages).flatMap(message -> unaryRpc(message, metadata));
     }
   }

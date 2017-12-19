@@ -13,7 +13,12 @@ public enum FrameType {
   DESTINATION_AVAIL_RESULT(0x08),
   AUTH_REQUEST(0x09),
   AUTH_RESPONSE(0x0A),
+  INFO_SETUP(0x10),
+  ROUTER_INFO(0x11),
+  ROUTER_INFO_SNAPSHOT(0x12),
+  ROUTER_INFO_RESULT(0x13),
   EXTENSION_FRAME(0x7F);
+  
 
   private static class Flags {
     private Flags() {}

@@ -10,6 +10,7 @@ public final class SimpleServiceServer extends io.netifi.proteus.AbstractProteus
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> unaryRpc;
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> clientStreamingRpc;
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> serverStreamingRpc;
+  private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> serverStreamingFireHose;
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> bidiStreamingRpc;
 
   public SimpleServiceServer(SimpleService service) {
@@ -19,6 +20,7 @@ public final class SimpleServiceServer extends io.netifi.proteus.AbstractProteus
     this.unaryRpc = java.util.function.Function.identity();
     this.clientStreamingRpc = java.util.function.Function.identity();
     this.serverStreamingRpc = java.util.function.Function.identity();
+    this.serverStreamingFireHose = java.util.function.Function.identity();
     this.bidiStreamingRpc = java.util.function.Function.identity();
   }
 
@@ -29,6 +31,7 @@ public final class SimpleServiceServer extends io.netifi.proteus.AbstractProteus
     this.unaryRpc = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "unaryRpc");
     this.clientStreamingRpc = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "clientStreamingRpc");
     this.serverStreamingRpc = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "serverStreamingRpc");
+    this.serverStreamingFireHose = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "serverStreamingFireHose");
     this.bidiStreamingRpc = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.testing", "service", "SimpleService", "method", "bidiStreamingRpc");
   }
 
@@ -94,6 +97,10 @@ public final class SimpleServiceServer extends io.netifi.proteus.AbstractProteus
         case SimpleService.METHOD_SERVER_STREAMING_RPC: {
           com.google.protobuf.CodedInputStream is = com.google.protobuf.CodedInputStream.newInstance(payload.getData());
           return service.serverStreamingRpc(io.netifi.testing.protobuf.SimpleRequest.parseFrom(is), metadata).map(serializer).transform(serverStreamingRpc);
+        }
+        case SimpleService.METHOD_SERVER_STREAMING_FIRE_HOSE: {
+          com.google.protobuf.CodedInputStream is = com.google.protobuf.CodedInputStream.newInstance(payload.getData());
+          return service.serverStreamingFireHose(io.netifi.testing.protobuf.SimpleRequest.parseFrom(is), metadata).map(serializer).transform(serverStreamingFireHose);
         }
         default: {
           return reactor.core.publisher.Flux.error(new UnsupportedOperationException());

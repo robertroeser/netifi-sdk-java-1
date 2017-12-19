@@ -2,54 +2,66 @@ package io.netifi.proteus.balancer.transport;
 
 import io.netifi.proteus.balancer.stats.Ewma;
 import io.netifi.proteus.rs.WeightedRSocket;
+import io.rsocket.Closeable;
 import io.rsocket.transport.ClientTransport;
 import io.rsocket.util.Clock;
-import java.net.SocketAddress;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoProcessor;
+
+import java.net.SocketAddress;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class WeighedClientTransportSupplier
-    implements Function<Flux<WeightedRSocket>, Supplier<ClientTransport>> {
+    implements Function<Flux<WeightedRSocket>, Supplier<ClientTransport>>, Closeable {
 
   private static final Logger logger =
       LoggerFactory.getLogger(WeighedClientTransportSupplier.class);
-
   private static AtomicInteger SUPPLIER_ID = new AtomicInteger();
-
+  private final MonoProcessor<Void> onClose;
+  private final String routerId;
   private final int supplierId;
-
   private final Supplier<ClientTransport> internal;
-
   private final Ewma errorPercentage;
-
   private final Ewma latency;
-
   private final SocketAddress socketAddress;
-
   private final AtomicInteger activeConnections;
 
+  @SuppressWarnings("unused")
+  private volatile int selectedCounter = 1;
+
   public WeighedClientTransportSupplier(
-      Supplier<ClientTransport> internal, SocketAddress socketAddress) {
+      String routerId, Supplier<ClientTransport> internal, SocketAddress socketAddress) {
+    this.routerId = routerId;
     this.supplierId = SUPPLIER_ID.incrementAndGet();
     this.internal = internal;
     this.socketAddress = socketAddress;
     this.errorPercentage = new Ewma(5, TimeUnit.SECONDS, 1.0);
     this.latency = new Ewma(1, TimeUnit.MINUTES, Clock.unit().convert(1L, TimeUnit.SECONDS));
     this.activeConnections = new AtomicInteger();
+    this.onClose = MonoProcessor.create();
   }
 
   @Override
   public Supplier<ClientTransport> apply(Flux<WeightedRSocket> weightedSocketFlux) {
+    if (onClose.isTerminated()) {
+      throw new IllegalStateException("WeightedClientTransportSupplier is closed");
+    }
+
     Disposable subscribe =
         weightedSocketFlux
             .doOnNext(
                 weightedRSocket -> {
+                  if (logger.isDebugEnabled()) {
+                    logger.debug("recording stats {}", weightedRSocket.toString());
+                  }
                   double e = weightedRSocket.errorPercentage();
                   double i = weightedRSocket.higherQuantileLatency();
 
@@ -72,6 +84,9 @@ public class WeighedClientTransportSupplier
                           socketAddress,
                           i);
 
+                      Disposable onCloseDisposable =
+                          onClose.then(duplexConnection.close()).subscribe();
+
                       duplexConnection
                           .onClose()
                           .doFinally(
@@ -82,6 +97,7 @@ public class WeighedClientTransportSupplier
                                     supplierId,
                                     socketAddress,
                                     d);
+                                onCloseDisposable.dispose();
                                 subscribe.dispose();
                               })
                           .subscribe();
@@ -113,6 +129,20 @@ public class WeighedClientTransportSupplier
     return socketAddress;
   }
 
+  public String getRouterId() {
+    return routerId;
+  }
+
+  @Override
+  public Mono<Void> close() {
+    return Mono.fromRunnable(onClose::onComplete);
+  }
+
+  @Override
+  public Mono<Void> onClose() {
+    return onClose;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -127,18 +157,17 @@ public class WeighedClientTransportSupplier
   public int hashCode() {
     return socketAddress.hashCode();
   }
-
+  
   @Override
   public String toString() {
-    return "WeighedClientTransportSupplier{"
-        + ", errorPercentage="
-        + errorPercentage.value()
-        + ", latency="
-        + latency.value()
-        + ", socketAddress="
-        + socketAddress
-        + ", activeConnections="
-        + activeConnections.get()
-        + '}';
+    return "WeighedClientTransportSupplier{" +
+               "routerId='" + routerId + '\'' +
+               ", supplierId=" + supplierId +
+               ", errorPercentage=" + errorPercentage +
+               ", latency=" + latency +
+               ", socketAddress=" + socketAddress +
+               ", activeConnections=" + activeConnections +
+               ", selectedCounter=" + selectedCounter +
+               '}';
   }
 }

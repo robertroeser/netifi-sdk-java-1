@@ -1,4 +1,4 @@
-package io.netifi.proteus.connection;
+package io.netifi.proteus.discovery;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
